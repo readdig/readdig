@@ -1,0 +1,22 @@
+.checkout {
+  padding: 1.25rem 0;
+  height: 100%;
+
+  .plan {
+    display: flex;
+    justify-content: space-between;
+    margin: auto;
+    max-width: 643px;
+    font-size: rem(16px);
+    font-weight: 600;
+    height: rem(30px);
+    line-height: rem(30px);
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+  .checkout {
+    padding: 0;
+  }
+}

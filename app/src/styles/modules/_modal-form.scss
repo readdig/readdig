@@ -1,0 +1,32 @@
+.modal-form {
+	.text-box {
+		line-height: 1.25rem;
+		padding: rem(5px 0);
+		word-wrap: break-word;
+		word-break: break-all;
+		label {
+			display: block;
+			font-weight: 600;
+		}
+		&.text-ellipsis {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	.text-row {
+		display: flex;
+		padding: rem(5px 0);
+		label {
+			word-wrap: break-word;
+			word-break: break-all;
+			font-weight: 600;
+		}
+		.text-col,
+		.text-box {
+			width: 50%;
+			padding: 0;
+		}
+	}
+}

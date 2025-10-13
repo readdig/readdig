@@ -1,0 +1,56 @@
+.auth-view {
+	margin: auto;
+	width: 30rem;
+	text-align: center;
+
+	.logo {
+		display: inline-block;
+		margin: 1rem auto;
+
+		img {
+			width: rem(128px);
+		}
+	}
+
+	>form {
+		margin: rem(0 10px);
+
+		>h2 {
+			margin-top: 0;
+			margin-bottom: 1rem;
+		}
+
+		&.auth-form {
+			position: relative;
+			text-align: center;
+			border-radius: $border-radius;
+			box-shadow: $box-shadow;
+			border: 1px solid var(--divider);
+			padding: 2rem;
+		}
+	}
+
+	>p {
+		&.info {
+			margin-bottom: 1rem;
+		}
+
+		&.back {
+			margin: 1rem auto;
+			a:link,
+			a:visited,
+			a:active,
+			a:hover {
+				color: var(--text-light);
+				text-decoration: none;
+			}
+		}
+	}
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+	.auth-view {
+		width: 100%;
+	}
+}

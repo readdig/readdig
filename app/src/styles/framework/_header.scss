@@ -1,0 +1,267 @@
+.header {
+	position: relative;
+	display: flex;
+	border-bottom: 1px solid var(--divider);
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	z-index: 1000;
+	user-select: none;
+	height: $header-height;
+	box-shadow: $box-shadow;
+	transition: transform 0.3s ease-out;
+
+	&.hidden {
+		height: 0;
+		border: none;
+		box-shadow: none;
+		overflow: hidden;
+		transform: translateY(-$header-height);
+	}
+
+	.left {
+		display: flex;
+		align-items: center;
+		width: 15%;
+		height: 100%;
+		padding-left: 0.375rem;
+
+		.icon {
+			width: 2rem;
+			height: 2rem;
+			opacity: 0.5;
+			transition: 0.3s ease-in-out;
+			cursor: pointer;
+			border: none;
+			padding: 0;
+			background-color: transparent;
+
+			@media (hover: hover) {
+				&:hover {
+					opacity: 1;
+					transition: 0.3s ease-in-out;
+				}
+			}
+
+			svg {
+				width: 2rem;
+				height: 2rem;
+			}
+
+			&.back {
+				display: none;
+			}
+		}
+	}
+
+	.middle {
+		width: 70%;
+		text-align: center;
+
+		.feed,
+		>.title {
+			display: none;
+		}
+
+		>.title {
+			font-size: rem(16px);
+		}
+	}
+
+	.right {
+		width: 15%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding-right: 0.75rem;
+
+		.user {
+			height: 100%;
+			display: flex;
+			align-items: center;
+			cursor: pointer;
+			border: 0;
+			padding: 0;
+			background-color: transparent;
+
+			.avatar {
+				display: flex;
+				align-items: center;
+
+				img {
+					border-radius: $border-radius-circle;
+					width: 1.75rem;
+					height: 1.75rem;
+					text-indent: -9999px;
+				}
+
+				.placeholder {
+					border-radius: $border-radius-circle;
+					width: 1.75rem;
+					height: 1.75rem;
+					background-color: var(--bg-medium);
+				}
+			}
+
+			.username {
+				display: flex;
+				align-items: center;
+				font-weight: 600;
+				margin-left: 0.5rem;
+				color: var(--text-dark);
+			}
+		}
+
+		>.action {
+			display: none;
+		}
+	}
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+	.header {
+		.middle {
+			.search {
+				height: 0;
+				overflow: hidden;
+			}
+
+			.title {
+				display: block;
+				font-weight: 600;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+
+		.right {
+			.user {
+				.username {
+					display: none;
+				}
+			}
+		}
+	}
+
+	.view {
+		.header {
+			.left {
+				width: auto;
+
+				.icon {
+
+					&.menu,
+					&.home {
+						display: none;
+					}
+
+					&.back {
+						display: block;
+					}
+				}
+			}
+
+			.middle {
+				width: auto;
+				flex-grow: 1;
+				flex-shrink: 1;
+				flex-basis: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+
+				.feed {
+					display: flex;
+					align-items: center;
+					justify-content: left;
+					padding-left: rem(10px);
+
+					.icon {
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						width: 1.25rem;
+						height: 1.25rem;
+						margin-right: rem(5px);
+
+						img {
+							width: 1.25rem;
+							height: 1.25rem;
+							border-radius: $border-radius-sm;
+						}
+
+						.placeholder {
+							width: 1.25rem;
+							height: 1.25rem;
+							border-radius: $border-radius-sm;
+							background-color: var(--bg-medium);
+						}
+					}
+
+					.title {
+						color: var(--primary);
+					}
+				}
+			}
+
+			.right {
+				width: auto;
+
+				>.action {
+					display: flex;
+					align-items: stretch;
+					align-self: stretch;
+
+					>* {
+						display: flex;
+						align-items: center;
+						padding: 0 rem(8px);
+						cursor: pointer;
+
+						@media (hover: hover) {
+							&:hover {
+								background-color: var(--bg-light);
+							}
+						}
+
+						>svg {
+							width: 1.25rem;
+							height: 1.25rem;
+						}
+
+						&.disabled {
+							cursor: not-allowed;
+
+							@media (hover: hover) {
+								&:hover {
+									background-color: transparent;
+								}
+							}
+
+							>svg {
+								fill: var(--svg-medium);
+							}
+						}
+					}
+
+					.loader {
+						display: flex;
+						align-items: center;
+
+						svg {
+							width: 1.25rem;
+							height: 1.25rem;
+						}
+					}
+				}
+			}
+		}
+
+		.article-header {
+			display: none;
+		}
+	}
+}

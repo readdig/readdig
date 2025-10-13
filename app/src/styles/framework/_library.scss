@@ -1,0 +1,43 @@
+.main {
+  &.toggler {
+    .sources {
+      width: auto;
+      flex-grow: 1;
+      flex-shrink: 1;
+      flex-basis: 0;
+    }
+  }
+}
+
+.sources {
+  width: 80%;
+  height: 100%;
+  overflow: auto;
+
+  .no-content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--text-light);
+  }
+}
+
+/* 4K Styles */
+@media (min-width: 1441px) {
+  .sources {
+    width: 85%;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+  .sources {
+    width: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    margin-left: 2.875rem;
+  }
+}

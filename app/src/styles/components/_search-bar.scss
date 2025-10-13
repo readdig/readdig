@@ -1,0 +1,178 @@
+.header {
+  .search {
+    background-color: var(--bg);
+    &.open {
+      form {
+        .search-container {
+          border-color: var(--divider);
+        }
+        .panel {
+          display: block;
+          border-top-right-radius: 0;
+          border-top-left-radius: 0;
+          border-top: 0;
+        }
+      }
+      .click-catcher {
+        display: block;
+      }
+    }
+
+    form {
+      position: relative;
+      z-index: 1000;
+      .search-container {
+        width: 100%;
+        padding: rem(4px 6px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid transparent;
+        border-bottom: 0;
+        border-top-right-radius: $border-radius;
+        border-top-left-radius: $border-radius;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        .search-input {
+          input {
+            width: 100%;
+            border-radius: rem(50px);
+            height: 1.75rem;
+            padding: 0 0.75rem;
+            border: none;
+            background-color: var(--bg-light);
+          }
+          svg {
+            right: rem(12px);
+          }
+        }
+        .btn {
+          display: none;
+          padding: 0;
+          margin-left: 3px;
+        }
+      }
+      .panel {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        overflow: auto;
+      
+        > * {
+          &.panel-element {
+            margin: 0;
+            padding: 0.5rem 0.75rem;
+            &.loader,
+            &.no-content {
+              padding: 1.047rem 0.75rem;
+              justify-content: center;
+              color: var(--text-light);
+              @media (hover: hover) {
+                &:hover {
+                  cursor: default;
+                  background-color: transparent;
+                }
+              }
+            }
+          }
+      
+          &.selected {
+            background-color: var(--bg-light);
+          }
+      
+          .icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: rem(5px);
+            img {
+              width: 1.25rem;
+              height: 1.25rem;
+              border-radius: $border-radius-sm;
+            }
+            .placeholder {
+              width: 1.25rem;
+              height: 1.25rem;
+              border-radius: $border-radius-sm;
+              background-color: var(--bg-medium);
+            }
+          }
+          .title {
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          .type {
+            color: var(--text-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            svg {
+              fill: var(--svg-medium);
+            }
+          }
+        }
+      }
+    }
+
+    .click-catcher {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@keyframes refresh-roller {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+  .header {
+    .search {
+      &.open {
+        form {
+          .search-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-color: transparent;
+            background-color: var(--bg);
+            padding: rem(0 10px);
+            height: $header-height;
+            border-bottom: 1px solid var(--divider);
+            .btn {
+              width: rem(90px);
+              height: 1.75rem;
+              display: block;
+            }
+          }
+          .panel {
+            position: fixed;
+            top: $header-height;
+            border-radius: 0;
+            border: none;
+            height: 100%;
+            max-height: 100%;
+            padding-bottom: $header-height;
+          }
+        }
+      }
+    }
+  }
+}

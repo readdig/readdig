@@ -1,0 +1,26 @@
+.go-to-top {
+  opacity: 1;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  width: rem(48px);
+  height: rem(48px);
+  cursor: pointer;
+  border-radius: $border-radius-circle;
+  background-color: var(--bg-circle);
+  box-shadow: rem(0 0 10px 2px) var(--box-shadow-circle);
+  user-select: none;
+
+  &.hide {
+    opacity: 0;
+    visibility: hidden;
+  }
+  svg {
+    width: rem(28px);
+    height: rem(28px);
+  }
+}

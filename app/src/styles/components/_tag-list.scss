@@ -1,0 +1,110 @@
+.tag-popular {
+	position: relative;
+	z-index: 2;
+	width: 100%;
+	height: rem(40px);
+	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+	user-select: none;
+	background-color: var(--bg);
+	border-bottom: 1px solid var(--divider-light);
+	.open {
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		padding: 0 0.5rem;
+		@media (hover: hover) {
+			&:hover {
+				background-color: var(--bg-light);
+			}
+		}
+	}
+	.arrow {
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		padding: 0 0.25rem;
+		@media (hover: hover) {
+			&:hover {
+				background-color: var(--bg-light);
+			}
+		}
+	}
+	.tag-item {
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		white-space: nowrap;
+		padding: 0 0.5rem;
+		height: rem(40px);
+		@media (hover: hover) {
+			&:hover {
+				background-color: var(--bg-light);
+			}
+		}
+		&.active {
+			color: var(--text);
+			background-color: var(--primary);
+		}
+	}
+
+	.react-horizontal-scrolling-menu--wrapper {
+		display: flex;
+		flex-grow: 1;
+		overflow: hidden;
+	}
+
+	.react-horizontal-scrolling-menu--scroll-container {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+}
+
+.tag-wrapper {
+	position: relative;
+	z-index: 2;
+	width: 100%;
+	.tag-list {
+		position: absolute;
+		width: 100%;
+		background-color: var(--bg);
+		border-bottom: 1px solid var(--divider);
+		box-shadow: $box-shadow;
+		ul {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			li {
+				list-style: none;
+			}
+		}
+		.tag-item {
+			cursor: pointer;
+			display: inline-block;
+			align-items: center;
+			justify-content: center;
+			white-space: nowrap;
+			padding: 0.5rem 0.625rem;
+			@media (hover: hover) {
+				&:hover {
+					background-color: var(--bg-light);
+				}
+			}
+			&.active {
+				color: var(--text);
+				background-color: var(--primary);
+				border-bottom-color: var(--primary);
+			}
+		}
+		.paging {
+			display: block;
+			text-align: center;
+			padding: 0.5rem 0.625rem 0.875rem;
+		}
+	}
+}

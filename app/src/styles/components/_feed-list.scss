@@ -1,0 +1,119 @@
+.sources {
+  .filters {
+    padding: 0.625rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--divider-light);
+  }
+
+  .source-list {
+    display: flex;
+    flex-wrap: wrap;
+
+    .source-item {
+      display: flex;
+      flex-basis: 50%;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--divider-light);
+      padding: 0.625rem;
+
+      .left {
+        .icon {
+          width: rem(60px);
+          height: rem(60px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          background-color: var(--bg-medium);
+          border-radius: $border-radius;
+
+          img {
+            max-width: rem(60px);
+            max-height: rem(60px);
+          }
+        }
+      }
+
+      .right {
+        flex-grow: 1;
+        padding: rem(0 10px);
+
+        .title {
+          font-weight: 600;
+          margin: rem(0 0 2px 0);
+        }
+
+        .meta {
+          margin: rem(3px 0);
+
+          >span {
+            color: var(--text-medium);
+            background-color: var(--bg-light);
+            margin-right: rem(5px);
+            padding: rem(1px 8px);
+            border-radius: rem(50px);
+            font-size: 0.75rem;
+          }
+        }
+
+        .desc {
+          margin: rem(3px 0);
+          color: var(--text-medium);
+          line-height: 1.125rem;
+          max-height: 2.25rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+
+        .action {
+          margin-top: rem(8px);
+        }
+      }
+    }
+  }
+
+  .end-loader,
+  .end {
+    padding: 1.25rem 0;
+    text-align: center;
+    color: var(--text-light);
+
+    >* {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .pull-loader {
+    text-align: center;
+    font-size: rem(22px);
+    padding: rem(3px 0);
+
+    &.up {
+      transform: rotate(-180deg);
+      transition: transform 0.35s;
+    }
+
+    &.down {
+      transform: rotate(0deg);
+      transition: transform 0.35s;
+    }
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 1023px) {
+  .sources {
+    .source-list {
+      flex-wrap: nowrap;
+      flex-direction: column;
+
+      .source-item {
+        flex-basis: 100%;
+      }
+    }
+  }
+}

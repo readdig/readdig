@@ -1,0 +1,36 @@
+node_modules
+build
+dist
+Dockerfile
+.dockerignore
+
+# Environment and config files
+.env
+.env.*
+.env.example
+
+# Docker files
+docker-compose.yml
+docker-compose.yml.example
+
+# Nginx config
+.nginx.conf.example
+
+# Git files
+.git
+.gitignore
+
+# Development files
+src
+public/electron.js
+public/preload.js
+public/actions.js
+electron-builder.yaml
+
+# Documentation
+README.md
+*.md
+
+# Logs
+logs
+*.log

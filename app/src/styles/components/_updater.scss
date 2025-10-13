@@ -1,0 +1,13 @@
+.updater {
+  display: flex;
+  justify-content: space-between;
+
+  button {
+    background-color: transparent;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+}

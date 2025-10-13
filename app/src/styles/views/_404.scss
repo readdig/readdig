@@ -1,0 +1,17 @@
+.not-found {
+	text-align: center;
+
+	.message {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		font-size: rem(18px);
+		font-weight: 600;
+		padding-top: rem(10px);
+		padding-bottom: rem(20px);
+
+		.btn {
+			font-size: rem(18px);
+		}
+	}
+}

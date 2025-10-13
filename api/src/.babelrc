@@ -1,0 +1,4 @@
+{
+	"plugins": [ "shebang"],
+	"presets": [["@babel/preset-env", { "targets": { "node": "current" } }]]
+}

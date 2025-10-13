@@ -1,0 +1,13 @@
+.modal-confirm {
+  width: rem(380px);
+  padding: rem(30px);
+
+  .message {
+    font-size: rem(16px);
+    font-weight: 600;
+  }
+
+  .buttons {
+    padding-top: rem(10px);
+  }
+}

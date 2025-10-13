@@ -1,0 +1,87 @@
+services:
+  api:
+    container_name: api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: api
+    ports:
+      - '8000:8000'
+    volumes:
+      - ../data/static:/usr/src/readdig/api/static
+    depends_on:
+      - cache
+      - database
+    links:
+      - cache
+      - database
+    networks:
+      - backend
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50MB'
+        max-file: '10'
+    env_file:
+      - .env
+    environment:
+      DOCKER: 'true'
+      NODE_ENV: production
+      API_PORT: 8000
+      API_HOST: 0.0.0.0
+      CACHE_URL: redis://cache:6379
+      DATABASE_URL: postgresql://readdig:database_password@database:5432/readdig
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+  cache:
+    image: redis
+    container_name: cache
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - ../data/redis:/data
+    networks:
+      - backend
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50MB'
+        max-file: '10'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+  database:
+    image: postgres
+    container_name: database
+    restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - ../data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: readdig
+      POSTGRES_USER: readdig
+      POSTGRES_PASSWORD: database_password
+    networks:
+      - backend
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50MB'
+        max-file: '10'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U readdig -d readdig"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+networks:
+  backend: 
+    name: backend
+    driver: bridge

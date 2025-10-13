@@ -1,0 +1,35 @@
+services:
+  app:
+    container_name: app
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_PRODUCT_URL
+        - REACT_APP_PRODUCT_NAME
+        - REACT_APP_PRODUCT_DESCRIPTION
+        - REACT_APP_API_URL
+        - REACT_APP_SENTRY_DSN
+        - REACT_APP_PADDLE_VENDOR_ID
+    env_file:
+      - .env
+    image: app
+    ports:
+      - '80:80'
+    networks:
+      - frontend
+      - backend
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '50MB'
+        max-file: '10'
+networks:
+  frontend: 
+    name: frontend
+    driver: bridge
+  backend: 
+    name: backend
+    driver: bridge
+    external: true

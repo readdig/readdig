@@ -1,0 +1,35 @@
+.loader {
+	display: flex;
+	justify-content: center;
+	height: 100%;
+	
+	svg {
+		fill: var(--primary);
+		display: block;
+		height: rem(36px);
+		width: rem(36px);
+	}
+}
+
+@keyframes lds-dual-ring {
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.loader-roll {
+	animation: lds-dual-ring 1.2s linear infinite;
+	border: 2px solid var(--primary);
+	border-bottom-color: transparent;
+	border-radius: $border-radius-circle;
+	display: inline-block;
+	flex-grow: 0 !important;
+	height: rem(28px);
+	min-width: unset !important;
+	width: rem(28px);
+	margin: auto;
+}

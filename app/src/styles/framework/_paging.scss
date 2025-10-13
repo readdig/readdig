@@ -1,0 +1,27 @@
+.paging {
+  text-align: center;
+  > div {
+    cursor: pointer;
+    display: inline-block;
+    color: var(--primary);
+    padding: 0 0.375rem;
+    @media (hover: hover) {
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  > a {
+    display: inline-block;
+    margin: 1rem 0.625rem;
+  }
+  .disabled {
+    cursor: not-allowed;
+		color: var(--text-light);
+    @media (hover: hover) {
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+}

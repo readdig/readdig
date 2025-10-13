@@ -1,0 +1,44 @@
+.article-list {
+  .toast {
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+    padding: 0.625rem;
+    text-align: center;
+    background-color: var(--bg-light);
+    border-bottom: 1px solid var(--divider-light);
+
+    >span {
+      margin-right: rem(8px);
+    }
+  }
+
+  .end-loader,
+  .end {
+    padding: 1.25rem 0;
+    text-align: center;
+    color: var(--text-light);
+
+    >* {
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .pull-loader {
+    text-align: center;
+    font-size: rem(22px);
+    padding: rem(3px 0);
+    color: var(--text-light);
+
+    &.up {
+      transform: rotate(-180deg);
+      transition: transform 0.35s;
+    }
+
+    &.down {
+      transform: rotate(0deg);
+      transition: transform 0.35s;
+    }
+  }
+}

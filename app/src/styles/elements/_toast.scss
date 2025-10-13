@@ -1,0 +1,35 @@
+@import 'react-toastify/dist/ReactToastify.css';
+
+.Toastify {
+  .Toastify__toast--info {
+    .Toastify__toast-icon {
+      svg {
+        fill: var(--toastify-icon-color-info);
+      }
+    }
+  }
+
+  .Toastify__toast--success {
+    .Toastify__toast-icon {
+      svg {
+        fill: var(--toastify-icon-color-success);
+      }
+    }
+  }
+
+  .Toastify__toast--warning {
+    .Toastify__toast-icon {
+      svg {
+        fill: var(--toastify-icon-color-warning);
+      }
+    }
+  }
+
+  .Toastify__toast--error {
+    .Toastify__toast-icon {
+      svg {
+        fill: var(--toastify-icon-color-error);
+      }
+    }
+  }
+}

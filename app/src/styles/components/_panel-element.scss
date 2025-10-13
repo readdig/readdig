@@ -1,0 +1,46 @@
+.panel {
+	background-color: var(--bg);
+	border-radius: $border-radius;
+	box-shadow: $box-shadow;
+	border: 1px solid var(--divider);
+
+	.panel-element {
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		border-top: 1px solid var(--divider-light);
+		color: inherit;
+		margin: 0 1rem;
+		padding: 1rem 0;
+		text-decoration: inherit;
+		transition-duration: 0.2s;
+		transition-property: margin-left;
+		white-space: nowrap;
+
+		@media (hover: hover) {
+			&:hover {
+				background-color: var(--bg-light);
+			}
+		}
+
+		> * {
+			margin-right: 1rem;
+
+			&:last-child {
+				margin-right: unset;
+				text-align: right;
+			}
+
+			&:nth-child(2) {
+				flex-grow: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+
+		&:first-child {
+			border-top: none;
+		}
+	}
+}

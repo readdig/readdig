@@ -1,0 +1,37 @@
+.avatar-upload {
+  width: rem(148px);
+  background-color: var(--bg-light);
+  .avatar-dropzone {
+    text-align: center;
+    outline: none;
+    &:focus {
+      border-color: var(--primary);
+    }
+    canvas {
+      display: block;
+    }
+  }
+  .upload-text {
+    width: 100%;
+    border: none;
+    color: var(--text-medium);
+    font-weight: 600;
+    line-height: rem(28px);
+    background-color: var(--bg-medium);
+    border-top: 1px solid var(--bg);
+    &:focus {
+      outline: none;
+    }
+  }
+  .avatar-zoom {
+    padding: rem(5px 0);
+    background-color: var(--bg);
+    input {
+      width: 100%;
+      border: none;
+      padding: 0;
+      margin: 0;
+      height: rem(6px);
+    }
+  } 
+}

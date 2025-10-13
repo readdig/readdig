@@ -1,0 +1,35 @@
+node_modules
+build
+Dockerfile
+.dockerignore
+
+# Environment and config files
+.env
+.env.*
+.env.example
+
+# PM2 config files
+ecosystem.config.cjs
+ecosystem.config.prod.cjs.example
+
+# Docker files
+docker-compose.yml
+docker-compose.yml.example
+
+# Git files
+.git
+.gitignore
+
+# Development files
+test
+*.test.js
+*.spec.js
+coverage
+
+# Documentation
+README.md
+*.md
+
+# Logs
+logs
+*.log

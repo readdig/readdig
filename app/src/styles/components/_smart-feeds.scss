@@ -1,0 +1,105 @@
+.menu-list {
+  margin: 0;
+  padding: rem(5px 0);
+  list-style: none;
+  border-bottom: 1px solid var(--divider);
+
+  li {
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--bg-light);
+      }
+    }
+
+    &.active {
+      background-color: var(--primary);
+
+      a {
+        * {
+          color: var(--text) !important;
+        }
+
+        svg {
+          fill: var(--svg-light) !important;
+        }
+
+        .dot {
+          background-color: var(--bg) !important;
+        }
+
+        .action {
+          @media (hover: hover) {
+            &:hover {
+              svg {
+                fill: var(--primary-dark) !important;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      padding: 0.375rem 0.75rem 0.375rem 0.625rem;
+      color: var(--text-dark);
+      text-decoration: none;
+      user-select: none;
+
+      .icon {
+        display: flex;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: rem(5px);
+
+        svg {
+          width: 1.5rem;
+          height: 1.5rem;
+        }
+      }
+
+      .title {
+        height: 1.25rem;
+        line-height: 1.25rem;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      .action {
+        display: flex;
+        align-items: center;
+        padding: 0 0.3125rem;
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+
+        @media (hover: hover) {
+          &:hover {
+            svg {
+              fill: var(--primary);
+            }
+          }
+        }
+      }
+
+      .count {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 2.375rem;
+        margin-left: rem(3px);
+        color: var(--text-medium);
+        text-align: right;
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+$font: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+	Cantarell, 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+$font-size: 16px;
+
+$box-shadow: rem(0 6px 10px 0) var(--box-shadow);
+$border-radius: 0.375rem;
+$border-radius-sm: 0.25rem;
+$border-radius-circle: 50%;
+$header-height: 3.125rem;
+$player-height: 3.75rem;
+
+$rem-baseline: $font-size;
+
+:root {
+  --box-shadow:             rgb(0 0 0 / 5%);
+  --box-shadow-circle:      rgb(0 0 0 / 15%);
+  --sidebar-overlay:        rgb(0 0 0 / 20%);
+  --modal-overlay:          rgb(255 255 255 / 80%);
+  --player-progress-linear: linear-gradient(rgb(255 255 255 / 50%), rgb(0 0 0 / 10%));
+
+  --danger:         #E74C3C;
+  --danger-dark:    #d14232;
+  --secondary:      #7f858a;
+
+  --primary: 			  #28B463;
+  --primary-dark:   #28a25d;
+  --primary-light:  #82E0AA;
+
+  --bg:             #FFFFFF;
+  --bg-dark:        #121212;
+  --bg-medium:      #D7DBDD;
+  --bg-light:       #F4F6F6;
+  --bg-circle:      #FFFFFF;
+
+  --input:          #FFFFFF;
+
+  --text:				    #FFFFFF;
+  --text-dark:      #121212;
+  --text-medium:    #626567;
+  --text-light:     #BDC3C7;
+
+  --svg:            #909497;
+  --svg-medium:     #E5E7E9;
+  --svg-light:		  #FFFFFF;
+  --svg-dark:       #121212;
+
+  --divider:        #D7DBDD;
+  --divider-dark:   #A6ACAF;
+  --divider-medium: #CACFD2;
+  --divider-light:  #F2F3F4;
+}

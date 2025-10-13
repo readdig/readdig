@@ -1,0 +1,32 @@
+body {
+  &.dark {
+    --box-shadow:             rgb(255 255 255 / 8%);
+    --box-shadow-circle:      rgb(0 0 0 / 20%);
+    --sidebar-overlay:        rgb(0 0 0 / 50%);
+    --modal-overlay:          rgb(0 0 0 / 80%);
+    --player-progress-linear: linear-gradient(rgb(255 255 255 / 8%), rgb(0 0 0 / 50%));
+
+    --bg:             #000000;
+    --bg-dark:        #000000;
+    --bg-medium:      #212124;
+    --bg-light:       #161618;
+    --bg-circle:      #212124;
+  
+    --input:          #101012;
+
+    --text:				    #FFFFFF;
+    --text-dark:      #C1C1C1;
+    --text-medium:    #818181;
+    --text-light:     #515151;
+  
+    --svg:            #818181;
+    --svg-medium:     #212124;
+    --svg-light:		  #FFFFFF;
+    --svg-dark:       #C1C1C1;
+
+    --divider:        #212124;
+    --divider-dark:   #515151;
+    --divider-medium: #818181;
+    --divider-light:  #161618;
+  }
+}

@@ -465,7 +465,3 @@ yarn start        # Start development server
 yarn build        # Build for production
 yarn test         # Run tests
 ```
-
-## License
-
-[Your License Information]

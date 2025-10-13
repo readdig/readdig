@@ -463,5 +463,4 @@ yarn db:studio    # Open Drizzle Studio
 ```bash
 yarn start        # Start development server
 yarn build        # Build for production
-yarn test         # Run tests
 ```

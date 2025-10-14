@@ -50,8 +50,8 @@ The application consists of:
 #### 1. Clone Repository
 
 ```bash
-git clone <your-repository-url>
-cd readdig_pg
+git clone https://github.com/readdig/readdig.git
+cd readdig
 ```
 
 #### 2. Setup API
@@ -99,7 +99,7 @@ The app will be available at `http://localhost:3000`
 
 ```bash
 git clone <your-repository-url>
-cd readdig_pg
+cd readdig
 ```
 
 #### 2. Configure API Service

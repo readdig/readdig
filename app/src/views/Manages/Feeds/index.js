@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 
 import ActionPopover from './ActionPopover';
 import FilterPopover from './FilterPopover';
@@ -14,7 +15,8 @@ import SearchInput from '../../../components/SearchInput';
 import MoreIcon from '../../../components/MoreIcon';
 import Paging from '../../../components/Paging';
 
-import { getFeeds } from '../../../api/feed';
+import config from '../../../config';
+import { getFeeds, exportOPML } from '../../../api/feed';
 
 import { ReactComponent as FeedIcon } from '../../../images/icons/rss.svg';
 import { ReactComponent as PodcastIcon } from '../../../images/icons/podcast.svg';
@@ -22,6 +24,7 @@ import { ReactComponent as PodcastIcon } from '../../../images/icons/podcast.svg
 const Feeds = () => {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(true);
+	const [exporting, setExporting] = useState(false);
 	const [feed, setFeed] = useState();
 	const [feeds, setFeeds] = useState([]);
 	const [modal, setModal] = useState({});
@@ -42,6 +45,26 @@ const Feeds = () => {
 			setLoading(false);
 		}
 	}, [filters]);
+
+	const handleExport = async () => {
+		try {
+			toast.dismiss();
+			setExporting(true);
+			const res = await exportOPML();
+			if (res.data) {
+				const link = document.createElement('a');
+				const blob = new Blob([res.data], { type: 'text/xml' });
+				link.href = URL.createObjectURL(blob);
+				link.download = `${config.product.name.toLowerCase()}-all-feeds.xml`;
+				link.click();
+				toast.success(t('Feeds exported successfully'));
+			}
+			setExporting(false);
+		} catch (err) {
+			setExporting(false);
+			toast.error(t('Failed to export feeds'));
+		}
+	};
 
 	useEffect(() => {
 		fetchData();
@@ -83,6 +106,14 @@ const Feeds = () => {
 						}}
 					/>
 				</div>
+				<button
+					className="btn primary opml"
+					onClick={handleExport}
+					disabled={exporting}
+					type="button"
+				>
+					{exporting ? t('Exporting...') : t('Export OPML')}
+				</button>
 				<FilterPopover
 					sortBy={filters.sort_by}
 					onChange={(value) => {

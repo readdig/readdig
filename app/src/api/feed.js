@@ -39,3 +39,7 @@ export const deleteFeed = (feedId) => {
 export const mergeFeed = (lFeedId, rFeedId) => {
 	return fetch('PUT', '/feeds/merge', { lFeedId, rFeedId });
 };
+
+export const exportOPML = () => {
+	return fetch('GET', '/feeds/opml');
+};

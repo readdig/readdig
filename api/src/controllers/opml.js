@@ -96,7 +96,7 @@ exports.get = async (req, res) => {
 	const opml = opmlGenerator(header, outlines.concat(noFolderFollows));
 
 	res.set({
-		'Content-Disposition': `attachment; filename="${config.product.name.toLowerCase()}-opml.xml"`,
+		'Content-Disposition': `attachment; filename="${config.product.name.toLowerCase()}-feeds.xml"`,
 		'Content-Type': 'application/xml; charset=utf-8',
 	});
 

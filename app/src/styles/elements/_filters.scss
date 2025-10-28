@@ -57,6 +57,11 @@
       border-top-right-radius: $border-radius-sm;
       border-bottom-right-radius: $border-radius-sm;
     }
+
+    &.opml {
+      width: auto;
+      padding: 0 12px;
+    }
   }
 }
 

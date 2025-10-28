@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
 
 import PageTitle from '../../components/PageTitle';
+import config from '../../config';
 import { opmlDownload } from '../../api/opml';
 
 const OPML = () => {
@@ -18,8 +19,9 @@ const OPML = () => {
 				const link = document.createElement('a');
 				const blob = new Blob([res.data], { type: 'text/xml' });
 				link.href = URL.createObjectURL(blob);
-				link.download = 'readdig.com-opml.xml';
+				link.download = `${config.product.name.toLowerCase()}-feeds.xml`;
 				link.click();
+				toast.success(t('Feeds exported successfully'));
 			}
 			setSubmitting(false);
 		} catch (err) {

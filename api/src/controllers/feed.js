@@ -1,5 +1,9 @@
 import { eq, like, desc, asc, and, sql, or, ne, isNull, inArray } from 'drizzle-orm';
+import moment from 'moment';
+import opmlGenerator from 'opml-generator';
+import { sort } from 'fast-sort';
 
+import { config } from '../config';
 import { db } from '../db';
 import { lower } from '../db/lower';
 import { feeds, articles } from '../db/schema';
@@ -296,4 +300,47 @@ exports.merge = async (req, res) => {
 	await mergeFeeds(lFeedId, rFeedId);
 
 	res.sendStatus(204);
+};
+
+exports.opml = async (req, res) => {
+	if (!req.User || !req.User.admin) {
+		return res.status(403).json('You must be an admin to perform this action.');
+	}
+
+	const header = {
+		dateCreated: moment().toISOString(),
+		ownerName: req.User.name,
+		title: `All Feeds in ${config.product.name}`,
+	};
+
+	const allFeeds = await db
+		.select({
+			id: feeds.id,
+			title: feeds.title,
+			feedUrl: feeds.feedUrl,
+			url: feeds.url,
+			type: feeds.type,
+		})
+		.from(feeds)
+		.where(and(isNull(feeds.duplicateOfId), eq(feeds.valid, true)))
+		.orderBy(feeds.title);
+
+	const outlines = sort(
+		allFeeds.map((feed) => ({
+			text: feed.title,
+			title: feed.title,
+			type: feed.type || '',
+			htmlUrl: feed.url || '',
+			xmlUrl: feed.feedUrl,
+		})),
+	).asc('title');
+
+	const opml = opmlGenerator(header, outlines);
+
+	res.set({
+		'Content-Disposition': `attachment; filename="${config.product.name.toLowerCase()}-all-feeds.xml"`,
+		'Content-Type': 'application/xml; charset=utf-8',
+	});
+
+	res.end(opml);
 };

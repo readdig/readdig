@@ -108,8 +108,8 @@ cd readdig
 cd api
 
 # Copy configuration templates
-cp docker-compose.yml.example docker-compose.yml
 cp .env.example .env
+cp docker-compose.yml.example docker-compose.yml
 cp ecosystem.config.prod.cjs.example ecosystem.config.prod.cjs
 ```
 
@@ -119,9 +119,6 @@ Edit `api/.env`:
 # Production environment
 NODE_ENV=production
 
-# API Configuration
-API_PORT=8000
-API_HOST=0.0.0.0
 
 # Product Information
 PRODUCT_URL=https://www.readdig.com
@@ -189,8 +186,9 @@ The API will be available at `http://localhost:8000`
 cd ../app
 
 # Copy configuration templates
-cp docker-compose.yml.example docker-compose.yml
 cp .env.example .env
+cp docker-compose.yml.example docker-compose.yml
+cp nginx.conf.example nginx.conf
 ```
 
 Edit `app/.env`:
@@ -211,8 +209,54 @@ REACT_APP_API_URL=https://api.readdig.com
 # Optional: Analytics and Monitoring
 REACT_APP_SENTRY_DSN=your-sentry-dsn
 REACT_APP_PADDLE_VENDOR_ID=your-paddle-vendor-id
-REACT_APP_GOOGLE_ANALYTICS=your-ga-tracking-id
 ```
+
+Edit `app/nginx.conf` (replace domain names):
+
+```nginx
+server {
+  listen 80;
+  listen [::]:80;
+  server_name yourdomain.com;
+  return 301 http://www.yourdomain.com$request_uri;
+}
+
+server {
+  listen 80;
+  listen [::]:80;
+  server_name www.yourdomain.com;
+
+  # Serve React app static files
+  location / {
+    root /usr/share/nginx/html;
+    try_files $uri $uri/ /index.html =404;
+  }
+
+  # Proxy API requests to backend
+  location /api/ {
+    proxy_pass http://api:8000/;
+    proxy_http_version  1.1;
+    proxy_cache_bypass  $http_upgrade;
+
+    proxy_set_header Upgrade            $http_upgrade;
+    proxy_set_header Connection         "upgrade";
+    proxy_set_header Host               $host;
+    proxy_set_header X-Real-IP          $remote_addr;
+    proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-Host   $host;
+    proxy_set_header X-Forwarded-Port   $server_port;
+  }
+}
+```
+
+**Notes**:
+- This is the Nginx configuration **inside the app Docker container**
+- Replace `yourdomain.com` with your actual domain name
+- The first server block redirects non-www to www
+- `proxy_pass http://api:8000/` - points to the API container (using Docker network name)
+- The trailing slash in `/api/` and `http://api:8000/` is important - it removes `/api` prefix when forwarding
+- For production deployments with external reverse proxy, you may need to adjust this configuration
 
 #### 5. Build and Start App Service
 
@@ -269,37 +313,33 @@ Open your browser:
 | `REACT_APP_API_URL` | API endpoint URL | Yes |
 | `REACT_APP_SENTRY_DSN` | Sentry DSN | No |
 | `REACT_APP_PADDLE_VENDOR_ID` | Paddle vendor ID | No |
-| `REACT_APP_GOOGLE_ANALYTICS` | Google Analytics ID | No |
 
 ### Production Deployment with Reverse Proxy
 
-For production, use a reverse proxy (Nginx/Caddy) to:
+For production, use a reverse proxy Nginx on your host to:
 - Handle SSL/TLS certificates
 - Route requests to appropriate services
 - Serve both app and API from the same domain
 
-Example Nginx configuration:
+**Important**: This is the **host-level reverse proxy** configuration, separate from the `nginx.conf` inside the app Docker container. The architecture is:
 
-```nginx
-server {
-    listen 80;
-    server_name www.readdig.com;
-
-    # Frontend
-    location / {
-        proxy_pass http://localhost:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # API
-    location /api {
-        proxy_pass http://localhost:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
 ```
+Internet → Host Nginx (SSL/proxy) → Docker Containers
+                ├─ App container (port 80)
+                └─ API container (port 8000)
+```
+
+
+**Configuration Summary**:
+
+| Configuration | Location | Purpose |
+|--------------|----------|---------|
+| `app/nginx.conf` | Inside app Docker container | Serves React static files and proxies `/api/` to backend container |
+
+**Deployment scenarios**:
+- **Local development**: Only `app/nginx.conf` needed (no SSL)
+- **Production with Docker only**: Only `app/nginx.conf` needed (add SSL to Docker config)
+- **Production with host reverse proxy** (recommended): Both configs needed - host Nginx handles SSL, `app/nginx.conf` handles internal routing
 
 ## Maintenance
 

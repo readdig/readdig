@@ -1,5 +1,5 @@
 # Use the latest version of Node
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 # Create app directory
 WORKDIR /usr/src/readdig/app
@@ -7,7 +7,7 @@ WORKDIR /usr/src/readdig/app
 # Copy app source code
 COPY . .
 
-# Inatall package and build
+# Install package and build
 RUN yarn install
 
 # Build arguments for React environment variables

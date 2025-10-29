@@ -21,7 +21,6 @@ docker-compose.yml.example
 .gitignore
 
 # Development files
-src
 public/electron.js
 public/preload.js
 public/actions.js

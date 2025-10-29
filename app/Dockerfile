@@ -10,14 +10,6 @@ COPY . .
 # Install package and build
 RUN yarn install
 
-# Build arguments for React environment variables
-ARG REACT_APP_PRODUCT_URL
-ARG REACT_APP_PRODUCT_NAME
-ARG REACT_APP_PRODUCT_DESCRIPTION
-ARG REACT_APP_API_URL
-ARG REACT_APP_SENTRY_DSN
-ARG REACT_APP_PADDLE_VENDOR_ID
-
 # Build app
 RUN yarn build
 

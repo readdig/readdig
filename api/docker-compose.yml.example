@@ -23,8 +23,6 @@ services:
       options:
         max-size: '50MB'
         max-file: '10'
-    env_file:
-      - .env
     environment:
       DOCKER: 'true'
       NODE_ENV: production

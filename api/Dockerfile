@@ -31,4 +31,4 @@ EXPOSE 8000
 
 # Use entrypoint script to run migrations before starting app
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["pm2-runtime", "start", "ecosystem.config.prod.cjs"]
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

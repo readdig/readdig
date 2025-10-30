@@ -110,7 +110,7 @@ cd api
 # Copy configuration templates
 cp .env.example .env
 cp docker-compose.yml.example docker-compose.yml
-cp ecosystem.config.prod.cjs.example ecosystem.config.prod.cjs
+cp ecosystem.config.js.example ecosystem.config.js
 ```
 
 Edit `api/.env`:

@@ -1,0 +1,45 @@
+module.exports = {
+  apps: [
+    {
+      name: 'api',
+      script: './dist/server.js',
+      instances: 1,
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production'
+      }
+    },
+    {
+      name: 'conductor',
+      script: './dist/workers/conductor.js',
+      instances: 1,
+      env: {
+        NODE_ENV: 'production'
+      }
+    },
+    {
+      name: 'feed',
+      script: './dist/workers/feed.js',
+      instances: 1,
+      env: {
+        NODE_ENV: 'production'
+      }
+    },
+    {
+      name: 'og',
+      script: './dist/workers/og.js',
+      instances: 1,
+      env: {
+        NODE_ENV: 'production'
+      }
+    },
+    {
+      name: 'clean',
+      script: './dist/workers/clean.js',
+      instances: 1,
+      env: {
+        NODE_ENV: 'production'
+      }
+    }
+  ]
+};

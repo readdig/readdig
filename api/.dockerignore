@@ -8,8 +8,8 @@ Dockerfile
 .env.example
 
 # PM2 config files (exclude dev config and examples)
-ecosystem.config.dev.js
-ecosystem.config.js.example
+ecosystem.dev.config.js
+ecosystem.prod.config.js.example
 
 # Docker files
 docker-compose.yml

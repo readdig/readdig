@@ -31,12 +31,12 @@ services:
       CACHE_URL: redis://cache:6379
       DATABASE_URL: postgresql://readdig:database_password@database:5432/readdig
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
       interval: 10s
       timeout: 30s
       retries: 300
   cache:
-    image: redis
+    image: redis:8-alpine
     container_name: cache
     restart: always
     ports:
@@ -56,7 +56,7 @@ services:
       timeout: 30s
       retries: 300
   database:
-    image: postgres
+    image: postgres:18-alpine
     container_name: database
     restart: always
     ports:

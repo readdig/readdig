@@ -76,6 +76,9 @@ const _default = {
 		vendorAuthCode: process.env.PADDLE_VENDOR_AUTH_CODE,
 		publicKey: process.env.PADDLE_PUBLIC_KEY,
 	},
+	gravatar: {
+		cdn: process.env.GRAVATAR_CDN,
+	},
 	newrelic: false,
 };
 

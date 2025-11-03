@@ -87,3 +87,21 @@ blockquote {
 	padding: 0 rem(18px);
   border-left: 5px solid var(--bg-light);
 }
+
+// https://danielpietzsch.com/articles/how-to-create-a-blurry-status-bar-for-pwas-on-ios
+/* Wrap it in a @supports rule so it only takes effect on devices that understand this */
+@supports (padding: env(safe-area-inset-top)) {
+	/* This is for PWA (on iOS), so that the status bar has a transparent yet blurry background. */
+	body::before {
+		content: '';
+		z-index: 2; /* necessary to be above <audio> elements */
+		position: fixed; /* position it fixed to it stays put at the top */
+		top: 0;
+		left: 0;
+		right: 0;
+		height: env(safe-area-inset-top); /* i.e. the exact height of the status bar */
+		backdrop-filter: blur(10px);
+		/* Fully blur the top half, then up to 0.7 blur-opacity/strength for the next quarter, and at last, go from 0.7 to full transparent (i.e. no blur) at the very bottom. */
+		mask: linear-gradient(to bottom, black, black 50%, rgba(0, 0, 0, 0.7) 75%, rgba(0, 0, 0, 0) 100%);
+	}
+}

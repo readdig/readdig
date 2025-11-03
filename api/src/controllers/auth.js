@@ -21,7 +21,13 @@ exports.signup = async (req, res) => {
 		name: body.username,
 		username: body.username,
 		password: body.password,
-		settings: { language },
+		settings: {
+			language,
+			unreadOnly: false,
+			mobileHideSidebar: true,
+			fontSize: 0,
+			textSize: 0,
+		},
 	};
 
 	if (!data.email || !data.username || !data.password) {

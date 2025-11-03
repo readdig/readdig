@@ -1,8 +1,8 @@
 # Use node
 FROM node:20-alpine
 
-# Install PM2 globally
-RUN yarn global add pm2
+# Install PM2 and redis-cli, postgresql-client globally
+RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
 
 # Create app directory
 WORKDIR /usr/src/readdig/api

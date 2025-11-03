@@ -2,22 +2,19 @@
 set -e
 
 echo "Waiting for database to be ready..."
-until node -e "
-const postgres = require('postgres');
-const client = postgres(process.env.DATABASE_URL);
-client\`SELECT 1\`.then(() => {
-  console.log('Database is ready');
-  process.exit(0);
-}).catch(() => {
-  process.exit(1);
-});
-" 2>/dev/null; do
+until pg_isready -d "$DATABASE_URL" -q; do
   echo "Database is unavailable - sleeping"
   sleep 2
 done
+echo "Database is ready"
 
 echo "Running database migrations..."
 yarn db:migrate
+
+echo "Clearing Redis queue cache..."
+redis-cli -u "$CACHE_URL" --scan --pattern "queue:*" | xargs -r redis-cli -u "$CACHE_URL" DEL
+redis-cli -u "$CACHE_URL" --scan --pattern "queue-status:*" | xargs -r redis-cli -u "$CACHE_URL" DEL
+echo "Queue cache cleared"
 
 echo "Starting application..."
 exec "$@"

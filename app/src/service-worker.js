@@ -32,8 +32,12 @@ registerRoute(
 		if (request.mode !== 'navigate') {
 			return false;
 		}
-		// If this is a URL that starts with /_ or /api/, skip.
-		if (url.pathname.startsWith('/_') || url.pathname.startsWith('/api/')) {
+		// If this is a URL that starts with /_ or /api/ or /avatar/, skip.
+		if (
+			url.pathname.startsWith('/_') ||
+			url.pathname.startsWith('/api/') ||
+			url.pathname.startsWith('/avatar/')
+		) {
 			return false;
 		}
 		// If this looks like a URL for a resource, because it contains // a file extension, skip.

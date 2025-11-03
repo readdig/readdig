@@ -23,7 +23,10 @@
     if ('%NODE_ENV%' === 'development') {
       Paddle.Environment.set('sandbox');
     }
-    Paddle.Setup({ vendor: %REACT_APP_PADDLE_VENDOR_ID% });
+    var vendorId = '%REACT_APP_PADDLE_VENDOR_ID%';
+    if (vendorId && vendorId.indexOf('%') === -1) {
+      Paddle.Setup({ vendor: parseInt(vendorId, 10) });
+    }
   </script>
 </head>
 

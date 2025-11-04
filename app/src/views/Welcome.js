@@ -30,7 +30,7 @@ const Welcome = () => {
 			<section className="jumbotron">
 				<h1>A PWA platform RSS reader and podcasts player.</h1>
 				<p>
-					Using RSS subscribe your news sites, blogs, Weibo, YouTube, X(Twitter), and
+					Using RSS subscribe your news sites, blogs, Weibo, YouTube, X, and
 					newsletters, etc.
 				</p>
 				<Link to="/signup" className="btn primary">

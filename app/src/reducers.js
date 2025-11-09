@@ -32,7 +32,7 @@ const ACTION_HANDLERS = {
 
 		for (const item of action.collections) {
 			if (item.id !== '0') {
-				folders[item.id] = { id: item.id, name: item.name, icon: item.icon };
+				folders[item.id] = { id: item.id, name: item.name, icon: item.icon, totalPostCount: item.totalPostCount || 0 };
 			}
 
 			for (const feed of item.follows) {

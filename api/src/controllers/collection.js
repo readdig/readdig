@@ -2,10 +2,10 @@ import { eq, like, asc, and, sql, or, count, isNotNull } from 'drizzle-orm';
 
 import { db } from '../db';
 import { lower } from '../db/lower';
-import { folders, follows, feeds, articles } from '../db/schema';
+import { folders, follows, feeds, articles, reads } from '../db/schema';
 import { isFeedType } from '../utils/feed';
 
-const buildConditions = ({ userId, folderId, searchText, type, status }) => {
+const buildConditions = ({ userId, folderId, searchText, type, status, unreadOnly }) => {
 	const conditions = [];
 
 	if (userId) {
@@ -50,6 +50,10 @@ const buildConditions = ({ userId, folderId, searchText, type, status }) => {
 		}
 	}
 
+  	if (unreadOnly === 'true') {
+    	conditions.push(sql`reads.id IS NULL`);
+  	}
+
 	return conditions;
 };
 
@@ -57,7 +61,8 @@ exports.list = async (req, res) => {
 	const userId = req.user.sub;
 	const query = req.query || {};
 	const searchText = decodeURIComponent(query.name || '').trim();
-
+	const unreadOnly = query.unreadOnly === true;
+ 
 	// Build subquery for feed data with article counts
 	const feedSubqueryConditions = buildConditions({
 		userId,
@@ -66,7 +71,7 @@ exports.list = async (req, res) => {
 		type: query.type,
 		status: query.status,
 	});
-
+ 
 	// Create subquery with article counts
 	const feedsWithCounts = db.$with('feeds_with_counts').as(
 		db
@@ -83,12 +88,19 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount: count(articles.id).as('post_count'),
+				postCount: sql`
+          			CASE 
+            			WHEN ${unreadOnly} = true 
+            			THEN count(${articles.id}) FILTER (WHERE ${reads.id} IS NULL)
+            			ELSE count(${articles.id})
+          			END
+        		`.as('post_count'),
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
 			.innerJoin(folders, eq(follows.folderId, folders.id))
 			.leftJoin(articles, eq(articles.feedId, feeds.id))
+			.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId)))
 			.where(and(...feedSubqueryConditions))
 			.groupBy(
 				feeds.id,
@@ -99,7 +111,7 @@ exports.list = async (req, res) => {
 				feeds.title,
 			),
 	);
-
+ 
 	// Use CTE with json_agg for aggregation
 	const result = await db
 		.with(feedsWithCounts)
@@ -139,7 +151,17 @@ exports.list = async (req, res) => {
 			sql`json_array_length(COALESCE(json_agg(${feedsWithCounts.id}) FILTER (WHERE ${feedsWithCounts.id} IS NOT NULL), '[]'::json)) > 0`,
 		)
 		.orderBy(asc(folders.name));
-
+ 
+	result.forEach(folder => {
+		if (folder.follows && folder.follows.length > 0) {
+			folder.totalPostCount = folder.follows.reduce((sum, feed) => 
+				sum + (parseInt(feed.postCount) || 0), 0
+			);
+		} else {
+			folder.totalPostCount = 0;
+		}
+	});
+ 
 	if (!query.folderId) {
 		const noFolderWhereConditions = buildConditions({
 			userId,
@@ -160,11 +182,18 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount: count(articles.id),
+				postCount: sql`
+        			CASE 
+          				WHEN ${unreadOnly} = true 
+          				THEN count(${articles.id}) FILTER (WHERE ${reads.id} IS NULL)
+          				ELSE count(${articles.id})
+        			END
+      			`,
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
 			.leftJoin(articles, eq(articles.feedId, feeds.id))
+			.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId))) 
 			.where(and(...noFolderWhereConditions))
 			.groupBy(follows.id, feeds.id)
 			.orderBy(
@@ -172,15 +201,20 @@ exports.list = async (req, res) => {
 					sql`CASE WHEN ${follows.alias} IS NOT NULL THEN ${follows.alias} ELSE ${feeds.title} END`,
 				),
 			);
-
+ 
 		if (noFolderFollows.length > 0) {
+			const totalPostCount = noFolderFollows.reduce((sum, feed) => 
+				sum + (parseInt(feed.postCount) || 0), 0
+			);
+			
 			result.push({
 				id: '0',
 				name: 'UNGROUPED',
 				follows: noFolderFollows,
+				totalPostCount: totalPostCount,
 			});
 		}
 	}
-
+ 
 	res.json(result);
 };

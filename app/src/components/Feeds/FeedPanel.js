@@ -34,11 +34,14 @@ const FeedPanel = () => {
 	const [folderPopover, setFolderPopover] = useState({});
 	const { feedId, folderId } = useParams();
 
+	const { user } = useSelector(state => state);
+	const unreadOnly = (user.settings || {}).unreadOnly || false;
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true);
-				await getCollections(dispatch);
+				await getCollections(dispatch, { unreadOnly });
 				setLoading(false);
 			} catch (err) {
 				setLoading(false);
@@ -46,7 +49,7 @@ const FeedPanel = () => {
 		};
 
 		fetchData();
-	}, [dispatch]);
+	}, [dispatch, unreadOnly]);
 
 	useEffect(() => {
 		const feedScrollPosition = localStorage['feedScrollPosition'];
@@ -135,7 +138,7 @@ const FeedPanel = () => {
 										<CustomIcon isOpen={folderState} src={folder.icon} />
 									</Holdable>
 									<div className="title">{folder.name}</div>
-									<Total title={t('Feed count') + ': '} value={feeds.length} />
+									<Total title={t('Article count') + ': '} value={folder.totalPostCount || 0} />
 									<div className="action">
 										<MoreIcon
 											onClick={(anchorRef, skipClick) =>

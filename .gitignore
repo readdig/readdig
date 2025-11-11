@@ -114,3 +114,10 @@ app/docker-compose.yml
 
 # Claude Code
 .claude
+# Redis Data Files
+*.rdb
+*.aof
+appendonly.aof
+nodes.conf
+dump.rdb
+

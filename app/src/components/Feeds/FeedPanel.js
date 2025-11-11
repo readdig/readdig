@@ -15,6 +15,7 @@ import MoreIcon from '../MoreIcon';
 import CustomIcon from '../Folders/CustomIcon';
 
 import { getCollections } from '../../api/collection';
+import { useLocation } from 'react-router-dom';
 
 const FeedPanel = () => {
 	const dispatch = useDispatch();
@@ -34,6 +35,8 @@ const FeedPanel = () => {
 	const [folderPopover, setFolderPopover] = useState({});
 	const { feedId, folderId } = useParams();
 
+	const location = useLocation();
+
 	const { user } = useSelector(state => state);
 	const unreadOnly = (user.settings || {}).unreadOnly || false;
 
@@ -49,7 +52,7 @@ const FeedPanel = () => {
 		};
 
 		fetchData();
-	}, [dispatch, unreadOnly]);
+	}, [dispatch, unreadOnly, location.pathname]);
 
 	useEffect(() => {
 		const feedScrollPosition = localStorage['feedScrollPosition'];

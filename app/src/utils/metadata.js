@@ -42,7 +42,16 @@ export const updateMetadata = (player) => {
 };
 
 export const updateActionHandlers = (actionHandlers) => {
-	for (const [action, handler] of actionHandlers) {
+	if (!('mediaSession' in navigator)) {
+		return;
+	}
+
+	for (const actionHandler of actionHandlers) {
+		if (!actionHandler || !Array.isArray(actionHandler) || actionHandler.length < 2) {
+			continue;
+		}
+
+		const [action, handler] = actionHandler;
 		try {
 			navigator.mediaSession.setActionHandler(action, handler);
 		} catch (err) {

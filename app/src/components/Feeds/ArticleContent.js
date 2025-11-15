@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import ReactPlayer from 'react-player';
 import { useTranslation } from 'react-i18next';
 
@@ -69,18 +69,31 @@ const ArticleContent = ({ article = {} }) => {
 									attachment.mimeType.includes('youtube'))
 							) {
 								return (
-									<ReactPlayer
-										width="100%"
-										height="100%"
-										controls={true}
+									<Suspense
 										key={index}
-										url={attachment.url}
-										config={{
-											youtube: {
-												playerVars: { showinfo: 0, rel: 0, playsinline: 0 },
-											},
-										}}
-									/>
+										fallback={
+											<div
+												style={{
+													aspectRatio: '16/9',
+													background: '#f5f5f5',
+												}}
+											/>
+										}
+									>
+										<ReactPlayer
+											width="100%"
+											height="100%"
+											style={{ aspectRatio: '16/9' }}
+											controls={true}
+											src={attachment.url}
+											config={{
+												youtube: {
+													rel: 0,
+													referrerpolicy: 'strict-origin-when-cross-origin',
+												},
+											}}
+										/>
+									</Suspense>
 								);
 							} else {
 								if (

@@ -45,7 +45,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-lazy-load-image-component": "^1.5.1",
     "react-modal": "^3.15.1",
-    "react-player": "^2.11.0",
+    "react-player": "^3.4.0",
     "react-range": "^1.8.7",
     "react-redux": "^7.2.4",
     "react-responsive": "^10.0.1",

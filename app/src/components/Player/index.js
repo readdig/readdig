@@ -103,18 +103,18 @@ const Player = () => {
 
 	const skipForward = () => {
 		setSeeking(false);
-		const elapsed = (duration * played + 30) / duration;
-		const time = elapsed > duration ? duration : elapsed;
-		setPlayed(time);
-		player.current.seekTo(time);
+		if (player.current && player.current.currentTime !== undefined) {
+			const newTime = player.current.currentTime + 30;
+			player.current.currentTime = Math.min(newTime, player.current.duration || newTime);
+		}
 	};
 
 	const skipRewind = () => {
 		setSeeking(false);
-		const elapsed = (duration * played - 30) / duration;
-		const time = elapsed < 0 ? 0 : elapsed;
-		setPlayed(time);
-		player.current.seekTo(time);
+		if (player.current && player.current.currentTime !== undefined) {
+			const newTime = player.current.currentTime - 30;
+			player.current.currentTime = Math.max(newTime, 0);
+		}
 	};
 
 	const setPlaybackSpeed = () => {
@@ -155,31 +155,40 @@ const Player = () => {
 
 	const fastSeek = (e) => {
 		setSeeking(false);
-		const played = e.seekTime;
-		setPlayed(played);
-		player.current.seekTo(played);
+		if (player.current && e.seekTime !== undefined) {
+			player.current.currentTime = e.seekTime * (player.current.duration || 0);
+		}
 	};
 
 	const seekTo = (e) => {
 		setSeeking(false);
-		const played = parseFloat(e.nativeEvent.offsetX / e.target.clientWidth);
-		setPlayed(played);
-		player.current.seekTo(played);
+		if (player.current && player.current.duration) {
+			const fraction = parseFloat(e.nativeEvent.offsetX / e.target.clientWidth);
+			player.current.currentTime = fraction * player.current.duration;
+		}
 	};
 
-	const playProgress = (state) => {
-		if (!seeking) {
-			setPlayed(state.played);
-			const currentTime = new Date().valueOf();
-			if (currentTime - lastSent.current >= 10000) {
-				lastSent.current = currentTime;
+	const playProgress = () => {
+		if (!seeking && player.current) {
+			if (!player.current.duration) return;
+
+			const currentTime = player.current.currentTime || 0;
+			const duration = player.current.duration || 1;
+			const played = duration > 0 ? currentTime / duration : 0;
+
+			setPlayed(played);
+			const currentTimeMs = new Date().valueOf();
+			if (currentTimeMs - lastSent.current >= 10000) {
+				lastSent.current = currentTimeMs;
 				updatePlayListen(true);
 			}
 		}
 	};
 
-	const playDuration = (duration) => {
-		setDuration(duration);
+	const playDuration = () => {
+		if (player.current && player.current.duration) {
+			setDuration(player.current.duration);
+		}
 	};
 
 	const playVolume = (volume) => {
@@ -258,15 +267,11 @@ const Player = () => {
 						</div>
 					</div>
 					<ReactPlayer
+						key={episode.id}
 						width="0"
 						height="0"
 						ref={player}
-						config={{
-							file: {
-								forceAudio: true,
-							},
-						}}
-						url={
+						src={
 							episode.attachments && episode.attachments.length > 0
 								? episode.attachments[0].url
 								: null
@@ -291,8 +296,8 @@ const Player = () => {
 						onPlay={onPlay}
 						onPause={onPause}
 						onEnded={nextTrack}
-						onProgress={playProgress}
-						onDuration={playDuration}
+						onTimeUpdate={playProgress}
+						onDurationChange={playDuration}
 						onError={onError}
 					/>
 				</div>

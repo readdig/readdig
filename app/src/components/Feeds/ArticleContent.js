@@ -60,7 +60,7 @@ const ArticleContent = ({ article = {} }) => {
 				article.attachments &&
 				article.attachments.length > 0 && (
 					<div className="attachments">
-						{article.attachments.map((attachment) => {
+						{article.attachments.map((attachment, index) => {
 							if (
 								attachment.url &&
 								attachment.mimeType &&
@@ -73,7 +73,7 @@ const ArticleContent = ({ article = {} }) => {
 										width="100%"
 										height="100%"
 										controls={true}
-										key={attachment.id}
+										key={index}
 										url={attachment.url}
 										config={{
 											youtube: {
@@ -89,7 +89,7 @@ const ArticleContent = ({ article = {} }) => {
 									!article.content.includes(attachment.url)
 								) {
 									return (
-										<div key={attachment.id}>
+										<div key={index}>
 											<img
 												src={attachment.url}
 												alt={attachment.title}

@@ -15,6 +15,7 @@ import MoreIcon from '../MoreIcon';
 import CustomIcon from '../Folders/CustomIcon';
 
 import { getCollections } from '../../api/collection';
+import { useLocation } from 'react-router-dom';
 
 const FeedPanel = () => {
 	const dispatch = useDispatch();
@@ -34,11 +35,16 @@ const FeedPanel = () => {
 	const [folderPopover, setFolderPopover] = useState({});
 	const { feedId, folderId } = useParams();
 
+	const location = useLocation();
+
+	const { user } = useSelector(state => state);
+	const unreadOnly = (user.settings || {}).unreadOnly || false;
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setLoading(true);
-				await getCollections(dispatch);
+				await getCollections(dispatch, { unreadOnly });
 				setLoading(false);
 			} catch (err) {
 				setLoading(false);
@@ -46,7 +52,7 @@ const FeedPanel = () => {
 		};
 
 		fetchData();
-	}, [dispatch]);
+	}, [dispatch, unreadOnly, location.pathname]);
 
 	useEffect(() => {
 		const feedScrollPosition = localStorage['feedScrollPosition'];
@@ -135,7 +141,7 @@ const FeedPanel = () => {
 										<CustomIcon isOpen={folderState} src={folder.icon} />
 									</Holdable>
 									<div className="title">{folder.name}</div>
-									<Total title={t('Feed count') + ': '} value={feeds.length} />
+									<Total title={t('Article count') + ': '} value={folder.totalPostCount || 0} />
 									<div className="action">
 										<MoreIcon
 											onClick={(anchorRef, skipClick) =>

@@ -21,7 +21,7 @@
   padding-top: 0.375rem;
   align-items: center;
   justify-content: center;
-
+ 
   .icon {
     cursor: pointer;
     width: 3.125rem;
@@ -29,7 +29,7 @@
     padding: 0;
     border: none;
     background-color: transparent;
-
+ 
     @media (hover: hover) {
       &:hover {
         svg {
@@ -37,11 +37,25 @@
         }
       }
     }
-
+ 
     svg {
       fill: var(--primary);
       width: 3.125rem;
       height: 3.125rem;
+    }
+ 
+    &.unread-toggle {
+
+      svg {
+        stroke: var(--bg);
+        opacity: 0.5
+      }
+
+      &.active {
+        svg {
+          opacity: 1
+        }
+      }
     }
   }
 }

@@ -1,0 +1,26 @@
+.search-results {
+	@extend .sources;
+
+	.filters {
+		.search {
+			width: 70%;
+			margin-bottom: 0;
+			margin-right: 0.625rem;
+		}
+
+		.select {
+			width: 30%;
+		}
+	}
+
+	.loading {
+		padding: 1.25rem 0;
+	}
+
+	.search-results-content {
+		.no-content {
+			padding: 1.25rem 0;
+			text-align: center;
+		}
+	}
+}

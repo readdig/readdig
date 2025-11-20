@@ -25,6 +25,8 @@ exports.list = async (req, res) => {
 	const endOfArticleIds = query.endOfArticleIds;
 	const endOfCreatedAt = query.endOfCreatedAt;
 
+	const queryText = query.q;
+
 	if (queryType === 'stars' || (queryType === 'stars' && tagId)) {
 		if (tagId && tagId !== 'untag' && !isUUID(tagId)) {
 			return res.status(400).json(`Tag Id (${tagId}) is an invalid UUId.`);
@@ -35,6 +37,7 @@ exports.list = async (req, res) => {
 			limit,
 			endOfArticleIds,
 			endOfCreatedAt,
+			queryText,
 		);
 		return res.json(starArticles);
 	}
@@ -45,6 +48,7 @@ exports.list = async (req, res) => {
 			limit,
 			endOfArticleIds,
 			endOfCreatedAt,
+			queryText,
 		);
 		return res.json(readArticles);
 	}
@@ -55,6 +59,7 @@ exports.list = async (req, res) => {
 			limit,
 			endOfArticleIds,
 			endOfCreatedAt,
+			queryText,
 		);
 		return res.json(playedArticles);
 	}

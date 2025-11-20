@@ -12,6 +12,9 @@ import { ReactComponent as NewsIcon } from '../../images/icons/newspaper-variant
 import { ReactComponent as CircleIcon } from '../../images/icons/record-circle-outline.svg';
 import { ReactComponent as PlayCircleIcon } from '../../images/icons/play-circle-outline.svg';
 import { ReactComponent as RSSIcon } from '../../images/icons/rss-box.svg';
+import { ReactComponent as SearchIcon } from '../../images/icons/magnify.svg';
+
+
 
 const SmartFeeds = () => {
 	const { t } = useTranslation();
@@ -78,6 +81,18 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Recent Played')}</div>
 					<Total value={totals.recentPlayed} />
+				</Link>
+			</li>
+			<li
+				className={classNames({
+					active: location.pathname === '/search',
+				})}
+			>
+				<Link to="/search" title={t('Search')}>
+					<div className="icon">
+						<SearchIcon />
+					</div>
+					<div className="title">{t('Search')}</div>
 				</Link>
 			</li>
 			<li

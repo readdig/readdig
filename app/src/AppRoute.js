@@ -19,6 +19,7 @@ import Settings from './views/Settings';
 import Manages from './views/Manages';
 import Share from './views/Share';
 import Welcome from './views/Welcome';
+import Search from './views/Search';
 
 const AppRoute = () => {
 	const dispatch = useDispatch();
@@ -47,6 +48,7 @@ const AppRoute = () => {
 		<div className={classNames('app')}>
 			<Switch>
 				<AuthedRoute component={Dashboard} exact path="/" />
+				<AuthedRoute component={Dashboard} exact path="/search" />
 				<AuthedRoute component={Dashboard} view={true} path="/library/:libraryId" />
 				<AuthedRoute component={Dashboard} exact path="/library" />
 				<AuthedRoute component={Dashboard} view={true} path="/article/:articleId" />

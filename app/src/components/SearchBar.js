@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { sort } from 'fast-sort';
 import { useHistory } from 'react-router-dom';
@@ -9,12 +9,14 @@ import classNames from 'classnames';
 import Image from './Image';
 import SearchInput from './SearchInput';
 import CustomIcon from './Folders/CustomIcon';
+import { search } from '../api/search';
 
 import { ReactComponent as StarIcon } from '../images/icons/star-outline.svg';
 import { ReactComponent as NewsIcon } from '../images/icons/newspaper-variant-outline.svg';
 import { ReactComponent as CircleIcon } from '../images/icons/record-circle-outline.svg';
 import { ReactComponent as PlayCircleIcon } from '../images/icons/play-circle-outline.svg';
 import { ReactComponent as RSSIcon } from '../images/icons/rss-box.svg';
+import { ReactComponent as SearchIcon } from '../images/icons/magnify.svg';
 
 const SearchBar = () => {
 	const history = useHistory();
@@ -23,6 +25,7 @@ const SearchBar = () => {
 	const [query, setQuery] = useState('');
 	const [displayResults, setDisplayResults] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [apiResults, setApiResults] = useState([]);
 	const follows = useSelector((state) =>
 		sort(Object.values(state.follows || {})).asc('title'),
 	);
@@ -43,7 +46,7 @@ const SearchBar = () => {
 			},
 			{ type: 'menu', icon: RSSIcon, url: '/library', title: t('Library') },
 		];
-		return [
+		const filtered = [
 			...menu,
 			...folders.map((folder) => ({
 				type: 'folder',
@@ -58,7 +61,80 @@ const SearchBar = () => {
 				title: follow.title,
 			})),
 		].filter((f) => new RegExp(query, 'i').test(f.title));
-	}, [t, query, folders, follows]);
+
+		if (filtered.length === 0 && query && apiResults.length > 0) {
+			return [
+				...apiResults,
+				{
+					type: 'search',
+					icon: '/images/favicon.png',
+					url: `/search?q=${encodeURIComponent(query)}`,
+					title: `${t('Search')} "${query}"`,
+				},
+			];
+		}
+
+		if (query) {
+			return [
+				...filtered,
+				{
+					type: 'search',
+					icon: '/images/favicon.png', // Or a search icon
+					url: `/search?q=${encodeURIComponent(query)}`,
+					title: `${t('Search')} "${query}"`,
+				},
+			];
+		}
+		return filtered;
+	}, [t, query, folders, follows, apiResults]);
+
+	useEffect(() => {
+		const doSearch = async () => {
+			if (!query.trim()) {
+				setApiResults([]);
+				return;
+			}
+
+			// Check if we have local results
+			const localMatches = [
+				...Object.values(follows),
+				...Object.values(folders),
+			].some((f) => new RegExp(query, 'i').test(f.title || f.name));
+
+			if (localMatches) {
+				setApiResults([]);
+				return;
+			}
+
+			try {
+				const res = await search(query);
+				const { feeds, articles } = res.data;
+				const formattedResults = [
+					...feeds.map((f) => ({
+						type: 'feed',
+						icon: `/images/feed/${f.id}?w=60&h=60`,
+						url: `/feed/${f.id}`,
+						title: f.title,
+					})),
+					...articles.map((a) => ({
+						type: 'article',
+						icon: `/images/article/${a.id}?w=60&h=60`,
+						url: `/feed/${a.feedId}/article/${a.id}`,
+						title: a.title,
+					})),
+				];
+				setApiResults(formattedResults);
+			} catch (err) {
+				console.error(err);
+			}
+		};
+
+		const timer = setTimeout(() => {
+			doSearch();
+		}, 500);
+
+		return () => clearTimeout(timer);
+	}, [query, follows, folders]);
 
 	useHotkeys('/', () => {
 		if (!displayResults) {
@@ -127,7 +203,13 @@ const SearchBar = () => {
 	const handleFormSubmit = (e) => {
 		e.preventDefault();
 
-		if (!results.length) return;
+		if (!results.length) {
+			if (query) {
+				clearSearchResults();
+				history.push(`/search?q=${encodeURIComponent(query)}`);
+			}
+			return;
+		}
 		const result = results[selectedIndex];
 
 		if (!result) return;
@@ -182,6 +264,10 @@ const SearchBar = () => {
 										{item.type === 'menu' && <item.icon src={item.icon} />}
 										{item.type === 'folder' && <CustomIcon src={item.icon} />}
 										{item.type === 'feed' && (
+											<Image relative={true} src={item.icon} alt={item.title} />
+										)}
+										{item.type === 'search' && <SearchIcon />}
+										{item.type === 'article' && (
 											<Image relative={true} src={item.icon} alt={item.title} />
 										)}
 									</div>

@@ -1,6 +1,6 @@
 import strip from 'strip';
 import moment from 'moment';
-import { eq, and, desc, sql, inArray } from 'drizzle-orm';
+import { eq, and, desc, sql, inArray, ilike, or } from 'drizzle-orm';
 
 import { db } from '../db';
 import {
@@ -192,8 +192,16 @@ export const getStarArticles = async (
 	limit = 30,
 	endOfArticleIds,
 	endOfCreatedAt,
+	queryText,
 ) => {
 	let starWhereConditions = [eq(stars.userId, userId)];
+
+	if (queryText) {
+		const searchPattern = `%${queryText}%`;
+		starWhereConditions.push(
+			or(ilike(articles.title, searchPattern), ilike(articles.content, searchPattern)),
+		);
+	}
 
 	if (tagId === 'untag') {
 		starWhereConditions.push(sql`jsonb_array_length(${stars.tagIds}) = 0`);
@@ -254,8 +262,16 @@ export const getReadArticles = async (
 	limit = 30,
 	endOfArticleIds,
 	endOfCreatedAt,
+	queryText,
 ) => {
 	let readWhereConditions = [eq(reads.userId, userId), eq(reads.view, true)];
+
+	if (queryText) {
+		const searchPattern = `%${queryText}%`;
+		readWhereConditions.push(
+			or(ilike(articles.title, searchPattern), ilike(articles.content, searchPattern)),
+		);
+	}
 
 	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
 		const endIds = endOfArticleIds.split(',').filter((a) => a);
@@ -311,8 +327,16 @@ export const getPlayedArtilces = async (
 	limit = 30,
 	endOfArticleIds,
 	endOfCreatedAt,
+	queryText,
 ) => {
 	let listenWhereConditions = [eq(listens.userId, userId)];
+
+	if (queryText) {
+		const searchPattern = `%${queryText}%`;
+		listenWhereConditions.push(
+			or(ilike(articles.title, searchPattern), ilike(articles.content, searchPattern)),
+		);
+	}
 
 	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
 		const endIds = endOfArticleIds.split(',').filter((a) => a);

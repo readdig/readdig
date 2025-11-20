@@ -9,6 +9,7 @@ import Sidebar from '../components/Sidebar';
 import ArticlePanel from '../components/Feeds/ArticlePanel';
 import FeedList from '../components/Feeds/FeedList';
 import FeedDetail from '../components/Feeds/FeedDetail';
+import Search from '../views/Search';
 import useFontSize from '../hooks/useFontSize';
 import useWindowScroll from '../hooks/useWindowScroll';
 import useSubscriptionExpired from '../hooks/useSubscriptionExpired';
@@ -38,6 +39,7 @@ const Dashboard = () => {
 				<Switch>
 					<Route component={FeedDetail} path="/library/:libraryId" />
 					<Route component={FeedList} path="/library" />
+					<Route component={Search} path="/search" />
 					<Route
 						component={ArticlePanel}
 						path="/folder/:folderId/feed/:feedId/article/:articleId"

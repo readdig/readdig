@@ -293,5 +293,10 @@
   "Clear unread": "Clear unread",
   "Cleaning unread articles, please wait.": "Cleaning unread articles, please wait.",
   "Unread articles have been cleared.": "Unread articles have been cleared.",
-  "An error occurred, please try again.": "An error occurred, please try again."
+  "An error occurred, please try again.": "An error occurred, please try again.",
+  "Search": "Search",
+  "Search feeds and articles...": "Search feeds and articles...",
+  "No results found": "No results found",
+  "Feeds": "Feeds",
+  "Articles": "Articles"
 }

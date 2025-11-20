@@ -293,5 +293,10 @@
   "Clear unread": "清理未读",
   "Cleaning unread articles, please wait.": "正在清理未读文章，请稍候。",
   "Unread articles have been cleared.": "未读文章已清理。",
-  "An error occurred, please try again.": "发生错误，请重试。"
+  "An error occurred, please try again.": "发生错误，请重试。",
+  "Search": "搜索",
+  "Search feeds and articles...": "搜索订阅和文章...",
+  "No results found": "未找到结果",
+  "Feeds": "订阅",
+  "Articles": "文章"
 }

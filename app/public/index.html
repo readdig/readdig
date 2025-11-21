@@ -28,6 +28,19 @@
       Paddle.Setup({ vendor: parseInt(vendorId, 10) });
     }
   </script>
+  <script>
+    (function() {
+      var umamiUrl = '%REACT_APP_UMAMI_URL%';
+      var umamiWebsiteId = '%REACT_APP_UMAMI_WEBSITE_ID%';
+      if (umamiUrl && umamiUrl.indexOf('%') === -1 && umamiWebsiteId && umamiWebsiteId.indexOf('%') === -1) {
+        var script = document.createElement('script');
+        script.defer = true;
+        script.src = umamiUrl;
+        script.setAttribute('data-website-id', umamiWebsiteId);
+        document.head.appendChild(script);
+      }
+    })();
+  </script>
 </head>
 
 <body>

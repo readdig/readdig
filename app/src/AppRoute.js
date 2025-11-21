@@ -19,7 +19,6 @@ import Settings from './views/Settings';
 import Manages from './views/Manages';
 import Share from './views/Share';
 import Welcome from './views/Welcome';
-import Search from './views/Search';
 
 const AppRoute = () => {
 	const dispatch = useDispatch();

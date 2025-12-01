@@ -26,7 +26,7 @@ exports.plans = async (req, res) => {
 		}
 	} catch (err) {
 		logger.error(err);
-		return res.status(404).json('Get paddle subscription plans error.');
+		return res.json([]);
 	}
 };
 

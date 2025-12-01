@@ -3,6 +3,10 @@ import fetch from 'node-fetch';
 import { config } from '../config';
 
 export const getSubscriptionPlans = async () => {
+	if (!config.paddle.vendorId || !config.paddle.vendorAuthCode) {
+		throw new Error('Paddle vendor ID or auth code is missing.');
+	}
+
 	const params = new URLSearchParams();
 	params.append('vendor_id', config.paddle.vendorId);
 	params.append('vendor_auth_code', config.paddle.vendorAuthCode);
@@ -20,6 +24,10 @@ export const getSubscriptionPlans = async () => {
 };
 
 export const cancelSubscription = async (subscriptionId) => {
+	if (!config.paddle.vendorId || !config.paddle.vendorAuthCode) {
+		throw new Error('Paddle vendor ID or auth code is missing.');
+	}
+
 	const params = new URLSearchParams();
 	params.append('vendor_id', config.paddle.vendorId);
 	params.append('vendor_auth_code', config.paddle.vendorAuthCode);
@@ -38,6 +46,10 @@ export const cancelSubscription = async (subscriptionId) => {
 };
 
 export const getTransactions = async (checkoutId) => {
+	if (!config.paddle.vendorId || !config.paddle.vendorAuthCode) {
+		throw new Error('Paddle vendor ID or auth code is missing.');
+	}
+
 	const params = new URLSearchParams();
 	params.append('vendor_id', config.paddle.vendorId);
 	params.append('vendor_auth_code', config.paddle.vendorAuthCode);

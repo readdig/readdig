@@ -107,7 +107,7 @@ const Feeds = () => {
 					/>
 				</div>
 				<button
-					className="btn primary opml"
+					className="btn opml"
 					onClick={handleExport}
 					disabled={exporting}
 					type="button"

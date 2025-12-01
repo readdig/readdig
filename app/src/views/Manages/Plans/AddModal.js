@@ -68,7 +68,7 @@ const AddModal = ({ onEnd }) => {
 					</header>
 					<form onSubmit={handleSubmit(onSubmit)}>
 						<div className={classNames('form-group', { error: errors.productId })}>
-							<label>ID (Paddle plan)</label>
+							<label>ID (Paddle ID)</label>
 							<PlanSelect control={control} name="productId" />
 						</div>
 						<div

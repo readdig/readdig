@@ -19,8 +19,7 @@ exports.get = async (req, res) => {
 				id: feeds.id,
 				title: feeds.title,
 				description: feeds.description,
-				images: feeds.images,
-				lastScraped: feeds.lastScraped,
+				type: feeds.type,
 			})
 			.from(feeds)
 			.innerJoin(follows, eq(feeds.id, follows.feedId))
@@ -39,10 +38,14 @@ exports.get = async (req, res) => {
 				title: articles.title,
 				description: articles.description,
 				content: articles.content,
-				datePublished: articles.datePublished,
-				feedId: articles.feedId,
-				feedTitle: feeds.title,
-				feedIcon: feeds.images,
+				attachments: articles.attachments,
+				type: articles.type,
+				createdAt: articles.createdAt,
+				feed: {
+					id: feeds.id,
+					title: feeds.title,
+					type: feeds.type,
+				},
 			})
 			.from(articles)
 			.innerJoin(feeds, eq(articles.feedId, feeds.id))
@@ -59,23 +62,9 @@ exports.get = async (req, res) => {
 			.orderBy(desc(articles.datePublished))
 			.limit(20);
 
-		// Format articles to match expected structure if needed, 
-        // but for now returning flat structure with feed info is good.
-        // We might want to structure it like the article object in other endpoints
-        // but let's keep it simple for the search view first.
-        
-        const formattedArticles = matchedArticles.map(article => ({
-            ...article,
-            feed: {
-                id: article.feedId,
-                title: article.feedTitle,
-                images: article.feedIcon
-            }
-        }));
-
 		res.json({
 			feeds: matchedFeeds,
-			articles: formattedArticles,
+			articles: matchedArticles,
 		});
 	} catch (err) {
 		console.error(err);

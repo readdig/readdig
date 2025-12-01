@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { Link, useLocation } from 'react-router-dom';
@@ -89,74 +88,62 @@ const Search = () => {
 						onChange={(val) => setQuery(val)}
 					/>
 				</div>
-					<div className="select">
-						<Select
-							className="select-container"
-							classNamePrefix="select"
-							placeholder={t('Type')}
-							isClearable={false}
-							options={filterOptions}
-							value={filterOptions.find((o) => o.value === filterType)}
-							onChange={(val) => setFilterType(val ? val.value : 'all')}
-						/>
-					</div>
+				<div className="select">
+					<Select
+						className="select-container"
+						classNamePrefix="select"
+						placeholder={t('Type')}
+						isClearable={false}
+						options={filterOptions}
+						value={filterOptions.find((o) => o.value === filterType)}
+						onChange={(val) => setFilterType(val ? val.value : 'all')}
+					/>
+				</div>
 			</div>
 
-				{loading && (
-					<div className="loading">
-						<Loader />
-					</div>
-				)}
+			{loading && (
+				<div className="loading">
+					<Loader />
+				</div>
+			)}
 
-				{!loading && searched && (
-					<div className="search-results-content">
-						{results.feeds.length === 0 && results.articles.length === 0 && (
-							<div className="no-content">
-								{t('No results found')}
-							</div>
-						)}
+			{!loading && searched && (
+				<div className="search-results-content">
+					{results.feeds.length === 0 && results.articles.length === 0 && (
+						<div className="no-content">{t('No results found')}</div>
+					)}
 
-							{[
-								...results.feeds.map((f) => ({ ...f, _type: 'feed' })),
-								...results.articles.map((a) => ({ ...a, _type: 'article' })),
-							].map((item) => {
-								if (item._type === 'feed') {
-									const desc = cleanHTML(item.description);
-									return (
-										<Link
-											className="article-item"
-											key={item.id}
-											to={`/feed/${item.id}`}
-										>
-											<div className="left">
-												<div className="icon">
-													<Image
-														relative={true}
-														src={`/images/feed/${item.id}?w=120&h=120`}
-													/>
-												</div>
-											</div>
-											<div className="right">
-												<h4 title={item.title}>{item.title}</h4>
-												{desc && <div className="desc">{desc}</div>}
-												<div className="meta">
-													<span className="feed">{t('Feed')}</span>
-												</div>
-											</div>
-										</Link>
-									);
-								} else {
-									return (
-										<ArticleItem
-											key={item.id}
-											article={item}
-											to={`/feed/${item.feedId}/article/${item.id}`}
-										/>
-									);
-								}
-							})}
-					</div>
-				)}
+					{[...results.feeds, ...results.articles].map((item) => {
+						if (item.type === 'rss' || item.type === 'podcast') {
+							const desc = cleanHTML(item.description);
+							return (
+								<Link className="article-item" key={item.id} to={`/feed/${item.id}`}>
+									<div className="left">
+										<div className="icon">
+											<Image
+												relative={true}
+												src={`/images/feed/${item.id}?w=120&h=120`}
+											/>
+										</div>
+									</div>
+									<div className="right">
+										<h4 title={item.title}>{item.title}</h4>
+										{desc && <div className="desc">{desc}</div>}
+									</div>
+								</Link>
+							);
+						} else {
+							return (
+								<ArticleItem
+									key={item.id}
+									article={item}
+									to={`/feed/${item.feed.id}/article/${item.id}`}
+								/>
+							);
+						}
+					})}
+				</div>
+			)}
 		</div>
 	);
 };

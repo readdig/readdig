@@ -235,22 +235,25 @@ const ACTION_HANDLERS = {
 		const feedIds = action.feedIds ? [...action.feedIds] : [];
 		const folderIds = action.folderIds || [];
 
-		if (user.settings.unreadOnly) {
-			const feeds = Object.values(follows).filter((follow) =>
-				folderIds.includes(follow.folderId),
-			);
+		const feeds = Object.values(follows).filter((follow) =>
+			folderIds.includes(follow.folderId),
+		);
 
-			const uniqueFeedIds = new Set(feedIds);
-			feeds.forEach((feed) => {
-				uniqueFeedIds.add(feed.id);
-			});
+		const uniqueFeedIds = new Set(feedIds);
+		feeds.forEach((feed) => {
+			uniqueFeedIds.add(feed.id);
+		});
 
-			const mergedFeedIds = [...uniqueFeedIds];
+		const mergedFeedIds = [...uniqueFeedIds];
 
-			for (const articleId of Object.keys(articles)) {
-				const article = articles[articleId];
-				if (mergedFeedIds.includes(article.feed.id)) {
+		for (const articleId of Object.keys(articles)) {
+			const article = articles[articleId];
+
+			if (mergedFeedIds.includes(article.feed.id)) {
+				if (user.settings.unreadOnly) {
 					delete articles[articleId];
+				} else {
+					articles[articleId].unread = false;
 				}
 			}
 		}

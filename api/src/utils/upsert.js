@@ -48,6 +48,7 @@ export const upsertManyPosts = async (publicationId, newPosts) => {
 	// step 2: separate posts into insert and update operations
 	const insertOperations = [];
 	const updateOperations = [];
+	const now = Date.now();
 
 	for (let i = usePosts.length - 1; i >= 0; i--) {
 		const post = usePosts[i];
@@ -72,12 +73,13 @@ export const upsertManyPosts = async (publicationId, newPosts) => {
 				data: data,
 			});
 		} else {
+			// Increment timestamp by 1ms to ensure unique createdAt
+			data.createdAt = new Date(now + insertOperations.length);
 			insertOperations.push(data);
 		}
 	}
 
 	// step 3: execute operations
-
 	if (insertOperations.length > 0) {
 		await db.insert(articles).values(insertOperations);
 	}

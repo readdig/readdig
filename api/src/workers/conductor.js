@@ -80,7 +80,7 @@ async function getPublications(limit) {
 async function conduct() {
 	const total = await db.$count(feeds);
 	// never schedule more than 1/10 per minute interval
-	const maxToSchedule = Math.max(1, Math.floor(total / 10 / 4));
+	const maxToSchedule = Math.max(200, Math.floor(total / 10 / 4));
 	logger.info(
 		`Conductor will schedule at most ${maxToSchedule} of feed ` +
 			`to scrape per ${conductorInterval} seconds`,

@@ -43,3 +43,11 @@ export const mergeFeed = (lFeedId, rFeedId) => {
 export const exportOPML = () => {
 	return fetch('GET', '/feeds/opml');
 };
+
+export const likeFeed = (feedId) => {
+	return fetch('POST', `/like/feed/${feedId}`);
+};
+
+export const unlikeFeed = (feedId) => {
+	return fetch('DELETE', `/like/feed/${feedId}`);
+};

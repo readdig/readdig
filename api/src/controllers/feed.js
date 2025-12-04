@@ -1,4 +1,16 @@
-import { eq, like, desc, asc, and, sql, or, ne, isNull, inArray } from 'drizzle-orm';
+import {
+	eq,
+	like,
+	desc,
+	asc,
+	and,
+	sql,
+	or,
+	ne,
+	isNull,
+	inArray,
+	getTableColumns,
+} from 'drizzle-orm';
 import moment from 'moment';
 import opmlGenerator from 'opml-generator';
 import { sort } from 'fast-sort';
@@ -6,7 +18,7 @@ import { sort } from 'fast-sort';
 import { config } from '../config';
 import { db } from '../db';
 import { lower } from '../db/lower';
-import { feeds, articles } from '../db/schema';
+import { feeds, articles, likes } from '../db/schema';
 import { isURL, isUUID } from '../utils/validation';
 import { normalizeUrl } from '../utils/urls';
 import { isBlockedFeedURL } from '../utils/blocklist';
@@ -99,14 +111,25 @@ exports.list = async (req, res) => {
 
 exports.get = async (req, res) => {
 	const feedId = req.params.feedId;
+	const userId = req.user.sub;
 
 	if (!isUUID(feedId)) {
 		return res.status(400).json(`Feed ID (${feedId}) is an invalid ObjectId.`);
 	}
 
-	const feed = await db.query.feeds.findFirst({
-		where: eq(feeds.id, feedId),
-	});
+	const liked = userId
+		? and(eq(likes.feedId, feeds.id), eq(likes.userId, userId))
+		: sql`false`;
+
+	const [feed] = await db
+		.select({
+			...getTableColumns(feeds),
+			liked: sql`${likes.id} is not null`.mapWith(Boolean),
+		})
+		.from(feeds)
+		.leftJoin(likes, liked)
+		.where(eq(feeds.id, feedId))
+		.limit(1);
 
 	if (!feed) {
 		return res.status(404).json(`Feed does not exist.`);

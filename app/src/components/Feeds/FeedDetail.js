@@ -14,6 +14,7 @@ import TimeAgo from '../TimeAgo';
 import PageTitle from '../PageTitle';
 import PlayOrPause from './PlayOrPause';
 import FollowPopover from './FollowPopover';
+import FeedLike from './FeedLike';
 
 import { cleanHTML } from '../../utils/sanitize';
 import { getFeed } from '../../api/feed';
@@ -109,26 +110,30 @@ const FeedDetail = () => {
 					<>
 						<PageTitle title={feed.title} />
 						<div className="source-info">
-							<div className="left">
-								<h1 className="title">{feed.title}</h1>
+							<div className="icon">
+								<Image relative={true} src={`/images/feed/${feed.id}?w=120&h=120`} />
 							</div>
-							<div className="right">
-								<MenuButton
-									onClick={(anchorRef, skipClick) =>
-										openMenu(anchorRef, skipClick, follows[feed.id])
-									}
-								>
-									{follows && !follows[feed.id] ? (
-										<button className="btn primary" disabled={submitting}>
-											{t('Subscribe')}
-										</button>
-									) : (
-										<button className="btn">{t('Subscribed')}</button>
-									)}
-								</MenuButton>
+							<div className="content">
+								<h1 className="title">{feed.title}</h1>
+								<div className="desc">{cleanHTML(feed.description)}</div>
+								<div className="actions">
+									<MenuButton
+										onClick={(anchorRef, skipClick) =>
+											openMenu(anchorRef, skipClick, follows[feed.id])
+										}
+									>
+										{follows && !follows[feed.id] ? (
+											<button className="btn primary" disabled={submitting}>
+												{t('Subscribe')}
+											</button>
+										) : (
+											<button className="btn">{t('Subscribed')}</button>
+										)}
+									</MenuButton>
+									<FeedLike feed={feed} />
+								</div>
 							</div>
 						</div>
-						<div className="source-desc">{cleanHTML(feed.description)}</div>
 						<div className="source-articles">
 							{articles.length === 0 && (
 								<div className="no-content">{t('No articles found')}</div>
@@ -154,11 +159,7 @@ const FeedDetail = () => {
 										</div>
 										<div className="right">
 											<h4 title={article.title}>{article.title}</h4>
-											{desc && (
-												<div className="desc" title={desc}>
-													{desc}
-												</div>
-											)}
+											{desc && <div className="desc">{desc}</div>}
 											<div className="meta">
 												<TimeAgo className="time" value={article.createdAt} />
 												<span className="feed" title={feed.title}>

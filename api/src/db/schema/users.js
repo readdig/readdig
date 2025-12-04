@@ -18,6 +18,7 @@ import { reads } from './reads';
 import { stars } from './stars';
 import { listens } from './listens';
 import { payments } from './payments';
+import { likes } from './likes';
 
 export const users = pgTable(
 	'users',
@@ -65,4 +66,5 @@ export const usersRelations = relations(users, ({ many }) => ({
 	stars: many(stars),
 	listens: many(listens),
 	payments: many(payments),
+	likes: many(likes),
 }));

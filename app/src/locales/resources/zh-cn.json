@@ -298,5 +298,7 @@
   "Search feeds and articles...": "搜索订阅和文章...",
   "No results found": "未找到结果",
   "Feeds": "订阅",
-  "Articles": "文章"
+  "Articles": "文章",
+  "Like": "喜欢",
+  "Unlike": "取消喜欢"
 }

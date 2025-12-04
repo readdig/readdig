@@ -12,6 +12,7 @@ import {
 	listens,
 	tags,
 	contents,
+	likes,
 } from '../db/schema';
 import { filterArticle, filterArticles } from '../utils/filters';
 import { ParseContent } from '../parsers/content';
@@ -76,8 +77,6 @@ export const getUserArticles = async (
 			description: articles.description,
 			attachments: articles.attachments,
 			type: articles.type,
-			likes: articles.likes,
-			views: articles.views,
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
@@ -150,8 +149,6 @@ export const getPrimaryArticles = async (
 			description: articles.description,
 			attachments: articles.attachments,
 			type: articles.type,
-			likes: articles.likes,
-			views: articles.views,
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
@@ -220,8 +217,6 @@ export const getStarArticles = async (
 			description: articles.description,
 			attachments: articles.attachments,
 			type: articles.type,
-			likes: articles.likes,
-			views: articles.views,
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
@@ -282,8 +277,6 @@ export const getReadArticles = async (
 			description: articles.description,
 			attachments: articles.attachments,
 			type: articles.type,
-			likes: articles.likes,
-			views: articles.views,
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
@@ -345,8 +338,6 @@ export const getPlayedArtilces = async (
 			description: articles.description,
 			attachments: articles.attachments,
 			type: articles.type,
-			likes: articles.likes,
-			views: articles.views,
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
@@ -394,6 +385,7 @@ export const getArticleById = async (userId, articleId) => {
 			},
 			stared: sql`CASE WHEN stars.id IS NOT NULL THEN true ELSE false END`,
 			played: sql`CASE WHEN listens.id IS NOT NULL THEN true ELSE false END`,
+			liked: sql`CASE WHEN likes.id IS NOT NULL THEN true ELSE false END`,
 			unread: unreadFilter(userId, articles.id),
 			stars: sql`COALESCE(${stars.tagIds}, '[]'::jsonb)`,
 		})
@@ -404,6 +396,7 @@ export const getArticleById = async (userId, articleId) => {
 			listens,
 			and(eq(listens.articleId, articles.id), eq(listens.userId, userId)),
 		)
+		.leftJoin(likes, and(eq(likes.articleId, articles.id), eq(likes.userId, userId)))
 		.where(eq(articles.id, articleId))
 		.limit(1);
 

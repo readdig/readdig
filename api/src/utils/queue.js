@@ -25,7 +25,15 @@ function queueTracking(queueName) {
 	});
 
 	queue.on('error', function (err) {
-		logger.warn(`Queue ${queue.name} encountered an unexpected error: ${err.message}`);
+		logger.warn(`Queue ${queue.name} error: ${err.message}`);
+	});
+
+	queue.client.on('reconnecting', function () {
+		logger.info(`Queue ${queue.name} reconnecting to Redis...`);
+	});
+
+	queue.client.on('ready', function () {
+		logger.info(`Queue ${queue.name} connected to Redis`);
 	});
 
 	queue.on('failed', function (job, err) {

@@ -64,12 +64,39 @@
           overflow: hidden;
           text-overflow: ellipsis;
           display: -webkit-box;
+          line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
         }
 
         .action {
           margin-top: rem(8px);
+          display: flex;
+          align-items: center;
+          gap: rem(8px);
+
+          .like {
+            padding: 0;
+            width: rem(32px);
+            height: rem(32px);
+            border-radius: 50%;
+            background-color: var(--bg-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:hover {
+              background-color: var(--bg-medium);
+            }
+
+            svg {
+              width: rem(18px);
+              height: rem(18px);
+              fill: var(--text-medium);
+            }
+          }
         }
       }
     }

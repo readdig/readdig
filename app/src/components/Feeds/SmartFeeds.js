@@ -14,8 +14,6 @@ import { ReactComponent as PlayCircleIcon } from '../../images/icons/play-circle
 import { ReactComponent as RSSIcon } from '../../images/icons/rss-box.svg';
 import { ReactComponent as SearchIcon } from '../../images/icons/magnify.svg';
 
-
-
 const SmartFeeds = () => {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();

@@ -12,3 +12,4 @@ export { stars, starsRelations } from './stars';
 export { articles, articlesRelations } from './articles';
 export { tags, tagsRelations } from './tags';
 export { folders, foldersRelations } from './folders';
+export { likes, likesRelations } from './likes';

@@ -96,10 +96,9 @@ const SearchBar = () => {
 			}
 
 			// Check if we have local results
-			const localMatches = [
-				...Object.values(follows),
-				...Object.values(folders),
-			].some((f) => new RegExp(query, 'i').test(f.title || f.name));
+			const localMatches = [...Object.values(follows), ...Object.values(folders)].some(
+				(f) => new RegExp(query, 'i').test(f.title || f.name),
+			);
 
 			if (localMatches) {
 				setApiResults([]);

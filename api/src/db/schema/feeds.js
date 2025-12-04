@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { articles } from './articles';
 import { follows } from './follows';
+import { likes } from './likes';
 
 export const feeds = pgTable(
 	'feeds',
@@ -72,4 +73,5 @@ export const feedsRelations = relations(feeds, ({ one, many }) => ({
 	duplicateOf: one(feeds, { fields: [feeds.duplicateOfId], references: [feeds.id] }),
 	articles: many(articles),
 	follows: many(follows),
+	likes: many(likes),
 }));

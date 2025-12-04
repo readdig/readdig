@@ -35,3 +35,11 @@ export const removeArticle = async (dispatch, type, articleId) => {
 export const clearArticles = (dispatch) => {
 	return dispatch({ type: 'CLEAR_ARTICLES' });
 };
+
+export const likeArticle = async (articleId) => {
+	return await fetch('POST', `/like/article/${articleId}`);
+};
+
+export const unlikeArticle = async (articleId) => {
+	return await fetch('DELETE', `/like/article/${articleId}`);
+};

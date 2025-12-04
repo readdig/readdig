@@ -13,6 +13,7 @@ import PageTitle from '../PageTitle';
 import FeedTypeSelect from './FeedTypeSelect';
 import SearchInput from '../SearchInput';
 import FollowPopover from './FollowPopover';
+import FeedLike from './FeedLike';
 
 import { cleanHTML } from '../../utils/sanitize';
 import { getFeatured } from '../../api/feed';
@@ -186,11 +187,7 @@ const FeedList = () => {
 									<h3 className="title" title={feed.title}>
 										<Link to={`/library/${feed.id}`}>{feed.title}</Link>
 									</h3>
-									{desc && (
-										<div className="desc" title={desc}>
-											{desc}
-										</div>
-									)}
+									{desc && <div className="desc">{desc}</div>}
 									<div className="action">
 										<MenuButton
 											onClick={(anchorRef, skipClick) =>
@@ -205,6 +202,7 @@ const FeedList = () => {
 												<button className="btn">{t('Subscribed')}</button>
 											)}
 										</MenuButton>
+										<FeedLike feed={feed} />
 									</div>
 								</div>
 							</div>

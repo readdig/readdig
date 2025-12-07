@@ -13,9 +13,9 @@ const ArticleHeader = ({ article = {} }) => {
 			<ArticleFeed feed={article.feed} />
 			<div className="action">
 				<ArticlePaging article={article} />
-				<ArticleFulltext article={article} />
 				<ArticleStar article={article} />
 				<ArticleLike article={article} />
+				<ArticleFulltext article={article} />
 				<ArticleShare article={article} />
 			</div>
 		</div>

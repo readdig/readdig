@@ -25,9 +25,13 @@ const ArticleLike = ({ article = {} }) => {
 	};
 
 	return (
-		<div className="like" onClick={handleLike} title={liked ? t('Unlike') : t('Like')}>
+		<span
+			className="like"
+			onClick={handleLike}
+			title={liked ? t('Unlike article') : t('Like article')}
+		>
 			{liked ? <HeartSolidIcon /> : <HeartRegularIcon />}
-		</div>
+		</span>
 	);
 };
 

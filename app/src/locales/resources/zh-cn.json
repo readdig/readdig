@@ -299,8 +299,10 @@
   "No results found": "未找到结果",
   "Feeds": "订阅",
   "Articles": "文章",
-  "Like": "喜欢",
-  "Unlike": "取消喜欢",
+  "Like article": "喜欢文章",
+  "Unlike article": "取消喜欢",
+  "Like feed": "喜欢订阅源",
+  "Unlike feed": "取消喜欢", 
   "Set as free": "设为免费",
   "Cancel free": "取消免费",
   "Free": "免费"

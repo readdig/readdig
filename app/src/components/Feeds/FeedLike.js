@@ -28,7 +28,7 @@ const FeedLike = ({ feed = {} }) => {
 		<button
 			className="btn like"
 			onClick={handleLike}
-			title={liked ? t('Unlike') : t('Like')}
+			title={liked ? t('Unlike feed') : t('Like feed')}
 		>
 			{liked ? <HeartSolidIcon /> : <HeartRegularIcon />}
 		</button>

@@ -8,6 +8,7 @@ import SearchBar from './SearchBar';
 import UserAvatar from './Avatar/UserAvatar';
 import ArticleFeed from './Feeds/ArticleFeed';
 import ArticleStar from './Feeds/ArticleStar';
+import ArticleLike from './Feeds/ArticleLike';
 import ArticleShare from './Feeds/ArticleShare';
 import ArticleFulltext from './Feeds/ArticleFulltext';
 import ArticlePaging from './Feeds/ArticlePaging';
@@ -75,8 +76,9 @@ const Header = ({ icon }) => {
 				{isTabletOrMobile && article ? (
 					<div className="action">
 						<ArticlePaging article={article} />
-						<ArticleFulltext article={article} />
 						<ArticleStar article={article} />
+						<ArticleLike article={article} />
+						<ArticleFulltext article={article} />
 						<ArticleShare article={article} />
 					</div>
 				) : (

@@ -299,8 +299,10 @@
   "No results found": "No results found",
   "Feeds": "Feeds",
   "Articles": "Articles",
-  "Like": "Like",
-  "Unlike": "Unlike",
+  "Like article": "Like article",
+  "Unlike article": "Unlike article",
+  "Like feed": "Like feed",
+  "Unlike feed": "Unlike feed",
   "Set as free": "Set as free",
   "Cancel free": "Cancel free",
   "Free": "Free"

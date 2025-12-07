@@ -15,7 +15,7 @@ exports.get = async (req, res) => {
 	const userId = req.params.userId;
 
 	const user = await db.query.users.findFirst({
-		where: and(eq(users.id, userId), eq(users.admin, true)),
+		where: and(eq(users.id, userId), eq(users.role, 'admin')),
 	});
 
 	if (!user) {
@@ -33,7 +33,7 @@ exports.post = async (req, res) => {
 	const userId = req.params.userId;
 
 	const user = await db.query.users.findFirst({
-		where: and(eq(users.id, userId), eq(users.admin, true)),
+		where: and(eq(users.id, userId), eq(users.role, 'admin')),
 	});
 
 	if (!user) {

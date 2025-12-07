@@ -63,7 +63,8 @@ exports.list = async (req, res) => {
 			username: users.username,
 			email: users.email,
 			avatar: users.avatar,
-			admin: users.admin,
+			avatar: users.avatar,
+			role: users.role,
 			suspended: users.suspended,
 			activeAt: users.activeAt,
 			createdAt: users.createdAt,
@@ -177,7 +178,10 @@ exports.list = async (req, res) => {
 		username: user.username,
 		email: user.email,
 		avatar: user.avatar || (user.email ? gravatarCache.get(user.email) : null),
-		admin: user.admin,
+		avatar: user.avatar || (user.email ? gravatarCache.get(user.email) : null),
+		role: user.role,
+		admin: user.role === 'admin',
+		free: user.role === 'free',
 		suspended: user.suspended,
 		activeAt: user.activeAt,
 		createdAt: user.createdAt,
@@ -328,30 +332,24 @@ exports.put = async (req, res) => {
 		data.password = cryptoPasswd;
 	}
 
-	if (data.admin !== undefined) {
+	if (data.role !== undefined) {
 		if (!req.User || !req.User.admin) {
 			return res.status(403).json('You must be an admin to perform this action.');
 		}
-		if (data.admin === false) {
-			const adminCount = await db.$count(users, eq(users.admin, true));
-			if (adminCount === 1) {
-				return res.status(400).json('Must retain an admin user.');
+
+		if (data.role === 'free') {
+			if (user.role === 'admin') {
+				return res.status(400).json('Cannot set admin user to free.');
+			}
+			const subscription = await userSubscription(userId);
+			if (subscription && !subscription.expired) {
+				return res.status(400).json('The user has an active subscription.');
 			}
 		}
-	}
 
-	if (data.suspended !== undefined) {
-		if (!req.User || !req.User.admin) {
-			return res.status(403).json('You must be an admin to perform this action.');
-		}
-		if (data.suspended === true) {
-			const adminCount = await db.$count(users, eq(users.admin, true));
-			if (adminCount === 1 && user.admin) {
-				return res.status(400).json('Must retain an admin user.');
-			}
-
-			const activeCount = await db.$count(users, eq(users.suspended, false));
-			if (activeCount === 1) {
+		if (data.role === 'user') {
+			const adminCount = await db.$count(users, eq(users.role, 'admin'));
+			if (adminCount === 1 && user.role === 'admin') {
 				return res.status(400).json('Must retain an admin user.');
 			}
 		}
@@ -377,8 +375,11 @@ exports.put = async (req, res) => {
 			'url',
 			'bio',
 			'password',
+			'url',
+			'bio',
+			'password',
 			'suspended',
-			'admin',
+			'role',
 			'settings',
 		].map(
 			(key) =>

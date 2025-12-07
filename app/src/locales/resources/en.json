@@ -300,5 +300,8 @@
   "Feeds": "Feeds",
   "Articles": "Articles",
   "Like": "Like",
-  "Unlike": "Unlike"
+  "Unlike": "Unlike",
+  "Set as free": "Set as free",
+  "Cancel free": "Cancel free",
+  "Free": "Free"
 }

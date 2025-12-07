@@ -30,13 +30,25 @@ const ActionPopover = ({
 			onClose={onClose}
 		>
 			{user.admin ? (
-				<MenuItem onClick={() => changeUser(user.id, { admin: false })}>
+				<MenuItem onClick={() => changeUser(user.id, { role: 'user' })}>
 					{t('Cancel admin')}
 				</MenuItem>
 			) : (
-				<MenuItem onClick={() => changeUser(user.id, { admin: true })}>
+				<MenuItem onClick={() => changeUser(user.id, { role: 'admin' })}>
 					{t('Set as admin')}
 				</MenuItem>
+			)}
+			{user.free ? (
+				<MenuItem onClick={() => changeUser(user.id, { role: 'user' })}>
+					{t('Cancel free')}
+				</MenuItem>
+			) : (
+				!user.admin &&
+				(!user.subscription || user.subscription.expired) && (
+					<MenuItem onClick={() => changeUser(user.id, { role: 'free' })}>
+						{t('Set as free')}
+					</MenuItem>
+				)
 			)}
 			{!user.suspended ? (
 				<MenuItem onClick={() => changeUser(user.id, { suspended: true })}>

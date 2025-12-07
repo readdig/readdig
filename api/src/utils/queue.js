@@ -102,3 +102,8 @@ export async function removeQueueStatus(queueName, value) {
 	const key = `queue-status:${queueName}`;
 	return await redis.zrem(key, value);
 }
+
+export async function clearQueueStatus(queueName) {
+	const key = `queue-status:${queueName}`;
+	return await redis.del(key);
+}

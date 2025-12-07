@@ -66,7 +66,7 @@ exports.signup = async (req, res) => {
 
 	const userCount = await db.$count(users);
 	const isFirstUser = userCount === 0;
-	data.admin = isFirstUser;
+	data.role = isFirstUser ? 'admin' : 'user';
 
 	const [user] = await db.insert(users).values(data).returning();
 

@@ -8,6 +8,7 @@ const useSubscriptionExpired = () => {
 	const url = location.pathname;
 	const user = useSelector((state) => state.user || {});
 	const isAdmin = user.admin;
+	const isFree = user.free;
 	const isSubscriptionExpired =
 		!user.subscription || (user.subscription && user.subscription.expired);
 
@@ -23,12 +24,13 @@ const useSubscriptionExpired = () => {
 		];
 		if (
 			!isAdmin &&
+			!isFree &&
 			isSubscriptionExpired &&
 			!ignoreUrls.some((pattern) => new RegExp(pattern).test(url))
 		) {
 			history.push('/settings/plans');
 		}
-	}, [history, isAdmin, isSubscriptionExpired, url]);
+	}, [history, isAdmin, isFree, isSubscriptionExpired, url]);
 };
 
 export default useSubscriptionExpired;

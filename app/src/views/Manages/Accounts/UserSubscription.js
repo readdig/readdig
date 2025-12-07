@@ -20,7 +20,7 @@ const UserSubscription = ({ user }) => {
 							{subscription.plan.basePrice === 0 || subscription.status === 'cancelled'
 								? t('Expires on') + ' '
 								: t('Renews on') + ' '}
-							<Time format="ll" value={subscription.nextBillDate} /> (in UTC)
+							<Time format="ll" value={subscription.nextBillDate} />
 						</>
 					)}
 				</span>

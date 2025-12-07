@@ -25,7 +25,7 @@ exports.plans = async (req, res) => {
 			return res.status(400).json(data.error.message);
 		}
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		return res.json([]);
 	}
 };
@@ -61,7 +61,7 @@ exports.cancel = async (req, res) => {
 			return res.status(400).json(data.error.message);
 		}
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(404).json('Paddle cancel subscription plan error.');
 	}
 };
@@ -138,7 +138,7 @@ exports.transaction = async (req, res) => {
 			return res.status(400).json(data.error.message);
 		}
 	} catch (err) {
-		logger.error(err);
+		logger.error(err.message);
 		return res.status(404).json('Paddle subscription transactions error.');
 	}
 };
@@ -177,7 +177,7 @@ exports.post = async (req, res) => {
 	const userId = req.user.sub;
 	const planId = req.params.planId;
 
-	if (req.User.admin) {
+	if (req.User.admin || req.User.free) {
 		return res.status(400).json('Your account does not need subscription plan.');
 	}
 

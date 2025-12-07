@@ -9,6 +9,7 @@ import { DiscoverFeed } from '../parsers/discovery';
 import { ogProcessor } from '../workers/og';
 import { feedProcessor } from '../workers/feed';
 import { isUUID } from '../utils/validation';
+import { queues, clearQueueStatus } from '../utils/queue';
 
 async function main() {
 	program
@@ -16,6 +17,7 @@ async function main() {
 		.option('--og <value>', 'Debug OG')
 		.option('--feed <value>', 'Debug RSS feeds')
 		.option('--discover <value>', 'Debug RSS discovery')
+		.option('--clean-queue', 'Clean Redis queues')
 		.parse(process.argv);
 
 	const options = program.opts();
@@ -49,6 +51,19 @@ async function main() {
 		} else {
 			console.error(`Discover arg invalid`);
 		}
+	}
+
+	if (options.cleanQueue) {
+		console.log('Cleaning queues...');
+		for (const queueName of ['feed', 'og']) {
+			const queue = queues[queueName];
+			await queue.empty();
+			await queue.clean(0, 'failed');
+			await queue.clean(0, 'completed');
+			await clearQueueStatus(queueName);
+			console.log(`Cleaned queue ${queueName}`);
+		}
+		console.log('All queues cleaned');
 	}
 }
 

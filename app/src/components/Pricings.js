@@ -14,8 +14,9 @@ const Pricing = ({ plan = {}, submitting, onClick, onCancel }) => {
 	const user = useSelector((state) => state.user || {});
 	const isLoggedin = user && user.id;
 	const isAdmin = user && user.admin;
-	const isFree = parseFloat(plan.basePrice) === 0;
-	const isFreeDisabled = isFree && user.subscription;
+	const isFree = user && user.free;
+	const isFreePlan = parseFloat(plan.basePrice) === 0;
+	const isFreeDisabled = isFreePlan && user.subscription;
 	const isSubscriptionActived = user.subscription && !user.subscription.expired;
 	const subscription =
 		user.subscription && user.subscription.planId === plan.id ? user.subscription : null;
@@ -41,8 +42,12 @@ const Pricing = ({ plan = {}, submitting, onClick, onCancel }) => {
 				{isLoggedin && (!subscription || (subscription && subscription.expired)) && (
 					<button
 						className="btn primary"
-						disabled={submitting || isAdmin || isFreeDisabled || isSubscriptionActived}
-						onClick={() => (isFree ? onClick('free', plan.id) : onClick('paid', plan.id))}
+						disabled={
+							submitting || isAdmin || isFree || isFreeDisabled || isSubscriptionActived
+						}
+						onClick={() =>
+							isFreePlan ? onClick('free', plan.id) : onClick('paid', plan.id)
+						}
 					>
 						Upgrade
 					</button>
@@ -52,7 +57,7 @@ const Pricing = ({ plan = {}, submitting, onClick, onCancel }) => {
 						{!subscription.expired && subscription.status === 'cancelled' && (
 							<div className="btn pe-none">Cancelled</div>
 						)}
-						{!isFree && !subscription.expired && (
+						{!isFreePlan && !subscription.expired && (
 							<>
 								{subscription.status === 'active' && (
 									<button
@@ -65,23 +70,23 @@ const Pricing = ({ plan = {}, submitting, onClick, onCancel }) => {
 								)}
 							</>
 						)}
-						{isFree && !subscription.expired && (
+						{isFreePlan && !subscription.expired && (
 							<div className="btn pe-none">Current</div>
 						)}
 					</>
 				)}
 			</div>
-			{isLoggedin && (
+			{isLoggedin && !isAdmin && !isFree && (
 				<div className="date">
 					{subscription && (
 						<>
 							{subscription.expired && 'Subscription has expired'}
 							{!subscription.expired && (
 								<>
-									{isFree || subscription.status === 'cancelled'
+									{isFreePlan || subscription.status === 'cancelled'
 										? 'Expires on '
 										: 'Renews on '}
-									<Time format="ll" value={subscription.nextBillDate} /> (in UTC)
+									<Time format="ll" value={subscription.nextBillDate} />
 								</>
 							)}
 						</>

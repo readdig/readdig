@@ -27,31 +27,30 @@ axios.interceptors.response.use(
 			if (error.response && error.response.status === 401) {
 				localStorage.clear();
 				window.location = '/';
-				return;
-			}
-			if (error.response && error.response.status === 403) {
+			} else if (error.response && error.response.status === 402) {
 				if (window.location.pathname !== '/settings/plans') {
 					window.location = '/settings/plans';
 				}
-				return;
+			} else {
+				let errorMessage = i18n.t('Network error, please try again.');
+				if (
+					error.response &&
+					error.response.status >= 400 &&
+					error.response.status < 500 &&
+					error.response.data
+				) {
+					errorMessage = error.response.data;
+				} else if (
+					error.response &&
+					error.response.status >= 500 &&
+					error.response.status < 600 &&
+					error.response.statusText
+				) {
+					errorMessage = error.response.statusText;
+				}
+				toast.error(errorMessage, { toastId: 'errResponse' });
 			}
-			let errorMessage = i18n.t('Network error, please try again.');
-			if (
-				error.response &&
-				error.response.status >= 400 &&
-				error.response.status < 500 &&
-				error.response.data
-			) {
-				errorMessage = error.response.data;
-			} else if (
-				error.response &&
-				error.response.status >= 500 &&
-				error.response.status < 600 &&
-				error.response.statusText
-			) {
-				errorMessage = error.response.statusText;
-			}
-			toast.error(errorMessage, { toastId: 'errResponse' });
+			return;
 		}
 		return Promise.reject(error);
 	},

@@ -33,7 +33,7 @@ export const users = pgTable(
 		url: text('url').default(''),
 		background: text('background').default(''),
 		recoveryCode: text('recovery_code').default(''),
-		admin: boolean('admin').default(false),
+		role: text('role').default('user').notNull(), // user, admin, free
 		suspended: boolean('suspended').default(false),
 		activeAt: timestamp('active_at').defaultNow(),
 		settings: jsonb('settings').default({
@@ -49,7 +49,7 @@ export const users = pgTable(
 	(table) => [
 		uniqueIndex('users_email_idx').on(lower(table.email)),
 		uniqueIndex('users_username_idx').on(table.username),
-		index('users_admin_idx').on(table.admin),
+		index('users_role_idx').on(table.role),
 		index('users_suspended_idx').on(table.suspended),
 		index('users_active_at_idx').on(table.activeAt),
 		index('users_created_at_idx').on(table.createdAt),

@@ -15,7 +15,7 @@ const asyncAuthorizer = async (email, password, cb) => {
 				eq(lower(users.email), email.trim().toLowerCase()),
 				eq(users.username, email.trim()),
 			),
-			eq(users.admin, true),
+			eq(users.role, 'admin'),
 		),
 	});
 	if (!user) return cb(null, false);

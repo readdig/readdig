@@ -74,6 +74,8 @@ api.use(async function addUser(req, res, next) {
 			if (user.suspended) {
 				return res.status(401).json('This account has been suspended.');
 			}
+			user.admin = user.role === 'admin';
+			user.free = user.role === 'free';
 			req.User = user;
 		} catch (err) {
 			next(err);

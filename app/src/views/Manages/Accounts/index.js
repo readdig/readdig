@@ -104,6 +104,7 @@ const Accounts = () => {
 												<span className="suspended">{t('Suspended')}</span>
 											)}
 											{user.admin && <span className="admin">{t('Admin')}</span>}
+											{user.free && <span className="admin">{t('Free')}</span>}
 										</div>
 										<div className="action">
 											<MoreIcon

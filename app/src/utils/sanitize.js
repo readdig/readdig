@@ -63,7 +63,7 @@ const options = {
 
 export const sanitizeHTML = (dirty) => {
 	if (dirty) {
-		const html = sanitizeHtml(dirty, options);
+		const html = sanitizeHtml(dirty.replace(/\r?\n/g, '<br>'), options);
 		return html;
 	}
 	return;

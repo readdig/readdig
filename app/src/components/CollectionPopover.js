@@ -46,17 +46,21 @@ const CollectionPopover = ({
 
 	const clear = async () => {
 		toast.dismiss();
-		await toast.promise(
-			async () => {
-				const feedIds = feeds.map((f) => f.id);
-				await clearUnread(dispatch, { feedIds: feedIds });
-			},
-			{
-				pending: t('Cleaning unread articles, please wait.'),
-				success: t('Unread articles have been cleared.'),
-				error: t('An error occurred, please try again.'),
-			},
-		);
+		try {
+			await toast.promise(
+				async () => {
+					const feedIds = feeds.map((f) => f.id);
+					await clearUnread(dispatch, { feedIds: feedIds });
+				},
+				{
+					pending: t('Cleaning unread articles, please wait.'),
+					success: t('Unread articles have been cleared.'),
+					error: t('An error occurred, please try again.'),
+				},
+			);
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	return (

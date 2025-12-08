@@ -134,8 +134,8 @@ exports.stats = async (req, res) => {
 				inactiveCount: usersInactive[0]?.count || 0,
 			},
 		});
-	} catch (error) {
-		logger.error('Stats query error:', error);
+	} catch (err) {
+		logger.error('Stats query error:', err);
 		res.status(500).json('Failed to fetch statistics');
 	}
 };
@@ -149,8 +149,8 @@ exports.monitoring = async (req, res) => {
 	try {
 		queueFeed = await queues.feed.getJobCounts();
 		queueOg = await queues.og.getJobCounts();
-	} catch (error) {
-		logger.error('Queues error:', error);
+	} catch (err) {
+		logger.error('Queues error:', err);
 	}
 
 	res.json({ queue: { feed: queueFeed, og: queueOg } });

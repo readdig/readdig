@@ -36,17 +36,10 @@ axios.interceptors.response.use(
 				if (
 					error.response &&
 					error.response.status >= 400 &&
-					error.response.status < 500 &&
+					error.response.status < 600 &&
 					error.response.data
 				) {
-					errorMessage = error.response.data;
-				} else if (
-					error.response &&
-					error.response.status >= 500 &&
-					error.response.status < 600 &&
-					error.response.statusText
-				) {
-					errorMessage = error.response.statusText;
+					errorMessage = i18n.t(error.response.data);
 				}
 				toast.error(errorMessage, { toastId: 'errResponse' });
 			}

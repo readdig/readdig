@@ -38,9 +38,9 @@ exports.status = async (req, res) => {
 			} else {
 				output.mostRecentArticle = -1;
 			}
-		} catch (error) {
+		} catch (err) {
 			output.code = 500;
-			output.error = 'Failed to query latest article: ' + error.message;
+			output.error = 'Failed to query latest article: ' + err.message;
 		}
 	} else {
 		output.code = 500;

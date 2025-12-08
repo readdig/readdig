@@ -19,7 +19,7 @@ const FeedLike = ({ feed = {} }) => {
 			} else {
 				await likeFeed(feed.id);
 			}
-		} catch (error) {
+		} catch (err) {
 			setLiked((prev) => !prev);
 		}
 	};

@@ -19,7 +19,7 @@ const ArticleLike = ({ article = {} }) => {
 			} else {
 				await likeArticle(article.id);
 			}
-		} catch (error) {
+		} catch (err) {
 			setLiked((prev) => !prev);
 		}
 	};

@@ -29,8 +29,12 @@ const AppRoute = () => {
 
 	useEffect(() => {
 		const fetchUser = async () => {
-			if (currentUserId) {
-				await getUser(dispatch, currentUserId);
+			try {
+				if (currentUserId) {
+					await getUser(dispatch, currentUserId);
+				}
+			} catch (err) {
+				console.error(err);
 			}
 		};
 

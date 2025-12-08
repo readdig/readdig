@@ -69,13 +69,17 @@ const Player = () => {
 	}, [episodeId, attachmentUrl]);
 
 	const updatePlayListen = (open) => {
-		playListen({
-			open,
-			played,
-			duration,
-			articleId: episode.id,
-			playing: episode.playing,
-		});
+		try {
+			playListen({
+				open,
+				played,
+				duration,
+				articleId: episode.id,
+				playing: episode.playing,
+			});
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	const pause = () => dispatch({ type: 'PAUSE_EPISODE' });

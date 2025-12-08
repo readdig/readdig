@@ -78,6 +78,7 @@ const Checkout = () => {
 				setLoading(false);
 				getCheckout(res.data);
 			} catch (err) {
+				console.error(err);
 				window.location.replace('/settings/plans');
 			}
 		};

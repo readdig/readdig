@@ -22,7 +22,11 @@ const SmartFeeds = () => {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			await getTotals(dispatch);
+			try {
+				await getTotals(dispatch);
+			} catch (err) {
+				console.error(err);
+			}
 		};
 		fetchData();
 	}, [dispatch]);

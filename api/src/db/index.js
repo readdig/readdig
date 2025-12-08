@@ -18,11 +18,11 @@ const checkDatabaseHealth = async () => {
 			status: 'healthy',
 			responseTime: `${responseTime}ms`,
 		};
-	} catch (error) {
+	} catch (err) {
 		return {
 			status: 'unhealthy',
-			error: error.message,
-			code: error.code,
+			error: err.message,
+			code: err.code,
 			timestamp: new Date().toISOString(),
 		};
 	}

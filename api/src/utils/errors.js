@@ -23,10 +23,8 @@ export const setupExpressErrorHandler = (app) => {
 			err.status_code ||
 			(err.output && err.output.statusCode) ||
 			500;
-		// skip anything not marked as an internal server error
-		if (status < 500) return next(err);
 		logger.error(err);
-		return next(err);
+		return res.status(status).json('Something went wrong, please try again later');
 	});
 };
 

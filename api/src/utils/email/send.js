@@ -3,6 +3,7 @@ import ejs from 'ejs';
 import sendgrid from '@sendgrid/mail';
 
 import { config } from '../../config';
+import { logger } from '../logger';
 import locales from './locales';
 
 const DummyEmailTransport = { emails: [] };
@@ -66,8 +67,14 @@ export const SendEmail = async (obj) => {
 			throw new Error('Could not send reset email, missing Sendgrid secret.');
 		}
 		sendgrid.setApiKey(config.email.sendgrid.secret);
-		let res = await sendgrid.send(obj);
-		return res;
+
+		try {
+			let res = await sendgrid.send(obj);
+			return res;
+		} catch (err) {
+			logger.error(err);
+			return null;
+		}
 	} else {
 		DummyEmailTransport.emails.unshift(obj);
 		return obj;

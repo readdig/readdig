@@ -1,30 +1,38 @@
 import strip from 'strip';
+import { Parser } from 'htmlparser2';
 
 import computeHash from '../utils/hash';
 import { extractHostname, normalizeUrl, resolveUrl, isRelativeUrl } from '../utils/urls';
 import { DetectLanguage } from './detect-language';
 
 function parseImage(html) {
-	const metaTagRe = /(<img[^>]*?src[^>]*?>)/gim;
-	const urlRe = /src=['"](.*?)['"]/i;
-
 	if (!html) {
 		return null;
 	}
-	if (!html.includes('<img')) {
-		return null;
+
+	// 1. Try BBCode [img]...[/img]
+	if (html.includes('[img]')) {
+		const bbcodeRe = /\[img\](.*?)\[\/img\]/im;
+		const matches = bbcodeRe.exec(html);
+		if (matches) {
+			return matches[1];
+		}
 	}
-	const matches = metaTagRe.exec(html);
-	if (!matches) {
-		return null;
-	}
-	const meta = matches[1];
-	const urlMatches = urlRe.exec(meta);
-	if (urlMatches) {
-		return urlMatches[1];
-	} else {
-		return null;
-	}
+
+	// 2. Try HTML <img> tag using htmlparser2
+	let imgSrc = null;
+	const parser = new Parser({
+		onopentag(name, attributes) {
+			if (!imgSrc && name === 'img' && attributes.src) {
+				imgSrc = attributes.src;
+				parser.reset();
+			}
+		},
+	});
+	parser.write(html);
+	parser.end();
+
+	return imgSrc;
 }
 
 export const FeedContentMakeUp = (posts, feedContent) => {

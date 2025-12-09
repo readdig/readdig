@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@3m1/service-worker-updater": "^2.0.3",
+    "@bbob/html": "^4.3.1",
+    "@bbob/preset-html5": "^4.3.1",
     "@sentry/react": "^6.4.1",
     "@sentry/tracing": "^6.4.1",
     "@szhsin/react-menu": "^3.1.0",

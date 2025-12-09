@@ -16,6 +16,7 @@ import Blocklist from './Blocklist';
 import Monitoring from './Monitoring';
 import Plans from './Plans';
 import Transaction from './Transaction';
+import Debug from './Debug';
 
 const Manages = () => {
 	useWindowScroll();
@@ -46,6 +47,7 @@ const Manages = () => {
 						<Route component={Monitoring} path="/manages/monitoring" />
 						<Route component={Plans} path="/manages/plans" />
 						<Route component={Transaction} path="/manages/transactions" />
+						<Route component={Debug} path="/manages/debug" />
 					</Switch>
 				</div>
 			</div>

@@ -2,6 +2,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 
 import { db } from '../db';
 import { articles } from '../db/schema';
+import { logger } from '../utils/logger';
 import computeHash from './hash';
 
 // upsertManyPosts at once at super speed
@@ -81,7 +82,19 @@ export const upsertManyPosts = async (publicationId, newPosts) => {
 
 	// step 3: execute operations
 	if (insertOperations.length > 0) {
-		await db.insert(articles).values(insertOperations);
+		const BATCH_SIZE = 50;
+		for (let i = 0; i < insertOperations.length; i += BATCH_SIZE) {
+			const chunk = insertOperations.slice(i, i + BATCH_SIZE);
+			try {
+				await db.insert(articles).values(chunk);
+			} catch (err) {
+				logger.error(
+					`Failed to batch insert posts (chunk ${i / BATCH_SIZE} - size ${
+						chunk.length
+					}): ${err.message}`,
+				);
+			}
+		}
 	}
 
 	for (const operation of updateOperations) {

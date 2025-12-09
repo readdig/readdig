@@ -1,4 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
+import bbobHTML from '@bbob/html';
+import presetHTML5 from '@bbob/preset-html5';
 
 const allowedTags = [
 	'h2',
@@ -61,9 +63,15 @@ const options = {
 	allowedSchemesAppliedToAttributes: ['style'],
 };
 
+// Convert BBCode to HTML using @bbob/html
+const convertBBCode = (text) => {
+	return bbobHTML(text, presetHTML5());
+};
+
 export const sanitizeHTML = (dirty) => {
 	if (dirty) {
-		const html = sanitizeHtml(dirty.replace(/\r?\n/g, '<br>'), options);
+		const converted = convertBBCode(dirty);
+		const html = sanitizeHtml(converted.replace(/\r?\n/g, '<br>'), options);
 		return html;
 	}
 	return;

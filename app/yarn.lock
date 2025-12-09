@@ -1341,6 +1341,61 @@
     "@babel/helper-validator-identifier" "^7.14.0"
     to-fast-properties "^2.0.0"
 
+"@bbob/core@*":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/core/-/core-4.3.1.tgz#15e098a247e6799af4449464d7c72fc0df4eae07"
+  integrity sha512-qNS5wNY2oJROV5CQ2e29e9dBz4ZuSO7JcciBXM2yDHvKFUYl+J4o8DxOsugce6z2cFpGz6F4J7vJN7X+6ujWiQ==
+  dependencies:
+    "@bbob/parser" "*"
+    "@bbob/plugin-helper" "*"
+    "@bbob/types" "*"
+
+"@bbob/html@^4.3.1":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/html/-/html-4.3.1.tgz#1c884ed8b643e2cc2aef128a666cf3ecaea3567a"
+  integrity sha512-W1qFvBZwhpGkZBNfeRpUFsoF492BlfNmgdh5iczg7B/PDULdOPH5lPLtT/6ZNpyx/xo6/DBssl9YtEO/bm15hw==
+  dependencies:
+    "@bbob/core" "*"
+    "@bbob/plugin-helper" "*"
+    "@bbob/types" "*"
+
+"@bbob/parser@*":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/parser/-/parser-4.3.1.tgz#694b4a378228163b20ee68682ac4cbbb9b64604e"
+  integrity sha512-BqDo8PDLcVLhFvOMdLmeaWk5qqD8E1bEdvzSJQuJC/U1XFs1tMC4lwZ4oPBFmZCeCLNsYFawqjP/S5MDdr7/Tg==
+  dependencies:
+    "@bbob/plugin-helper" "*"
+    "@bbob/types" "*"
+
+"@bbob/plugin-helper@*":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/plugin-helper/-/plugin-helper-4.3.1.tgz#13f75871f170e09f035548d6a188d23a5eb66248"
+  integrity sha512-0gyhW5sU270iCBvaRO1jYDTs1oGHu913yB9tqxPO9zT5OIDhu47PwensdJ7EuZwgYKEyQ4zZZ+1jvDzkubjdyQ==
+  dependencies:
+    "@bbob/types" "*"
+
+"@bbob/preset-html5@^4.3.1":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/preset-html5/-/preset-html5-4.3.1.tgz#1442d9343fad2c54352a42e4a9f9db679e0bf0f6"
+  integrity sha512-6Yn8kOrBWt/2u4ZUt7nSTzWP+xvTaH4TlAds6p+BcBRbs4Ov2f1zkRgCh1JlckMXwhH9q9CGF0wn6w8bkUYcFA==
+  dependencies:
+    "@bbob/plugin-helper" "*"
+    "@bbob/preset" "*"
+    "@bbob/types" "*"
+
+"@bbob/preset@*":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/preset/-/preset-4.3.1.tgz#aeb386387b5084a14fdf7d73b52fcc1873b5f0c1"
+  integrity sha512-we6ITgrwciNIdpZRRJl4y3OOEbXEEVA21895JUInvYXevZBrIgIAvO502qlEYQtqhJqQ1HxY5xyhDjZ9rEYQHg==
+  dependencies:
+    "@bbob/plugin-helper" "*"
+    "@bbob/types" "*"
+
+"@bbob/types@*":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@bbob/types/-/types-4.3.1.tgz#9c5dcb9a0d85e294a327892654f5c995997743e4"
+  integrity sha512-TXxFPfKvZVH/sR0mfn5I99bEFmbnAzIoqFBxG1htRiKyJUx7Yb/ZNS/OsQD1mIsR6+srDqXFDaWbDgVudTTjvQ==
+
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"

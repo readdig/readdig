@@ -115,6 +115,7 @@ const AppRoute = () => {
 				<AuthedRoute component={Manages} view={true} path="/manages/monitoring" />
 				<AuthedRoute component={Manages} view={true} path="/manages/plans" />
 				<AuthedRoute component={Manages} view={true} path="/manages/transactions" />
+				<AuthedRoute component={Manages} view={true} path="/manages/debug" />
 				<UnauthedRoute component={Welcome} exact path="/welcome" />
 				<UnauthedRoute component={Signin} exact path="/login" />
 				<UnauthedRoute component={Signup} exact path="/signup" />

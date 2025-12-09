@@ -80,6 +80,13 @@ const Menu = () => {
 				>
 					<Link to="/manages/blocklist">{t('Blocklist')}</Link>
 				</li>
+				<li
+					className={classNames({
+						active: pathname === '/manages/debug',
+					})}
+				>
+					<Link to="/manages/debug">{t('Debug')}</Link>
+				</li>
 			</ul>
 		</>
 	);

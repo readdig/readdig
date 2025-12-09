@@ -31,8 +31,7 @@ export const SendWelcomeEmail = async (data, lang = 'en') => {
 		html: msg,
 	};
 
-	let res = await SendEmail(obj);
-	return res;
+	return await SendEmail(obj);
 };
 
 export const SendPasswordResetEmail = async (data, lang = 'en') => {

@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
     image: api
-    ports:
-      - '8000:8000'
     volumes:
       - ../data/static:/usr/src/readdig/api/static
     depends_on:
@@ -27,7 +25,6 @@ services:
       DOCKER: 'true'
       NODE_ENV: production
       API_PORT: 8000
-      API_HOST: 0.0.0.0
       CACHE_URL: redis://cache:6379
       DATABASE_URL: postgresql://readdig:database_password@database:5432/readdig
     healthcheck:
@@ -39,8 +36,6 @@ services:
     image: redis:8-alpine
     container_name: cache
     restart: always
-    ports:
-      - '6379:6379'
     volumes:
       - ../data/redis:/data
     networks:
@@ -59,8 +54,6 @@ services:
     image: postgres:18-alpine
     container_name: database
     restart: always
-    ports:
-      - '5432:5432'
     volumes:
       - ../data/postgres:/var/lib/postgresql/data
     environment:

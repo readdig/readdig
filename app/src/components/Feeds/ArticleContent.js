@@ -66,7 +66,8 @@ const ArticleContent = ({ article = {} }) => {
 								attachment.mimeType &&
 								(attachment.mimeType.includes('audio') ||
 									attachment.mimeType.includes('video') ||
-									attachment.mimeType.includes('youtube'))
+									attachment.mimeType.includes('youtube') ||
+									attachment.mimeType.includes('tiktok'))
 							) {
 								return (
 									<Suspense

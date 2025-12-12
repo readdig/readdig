@@ -215,6 +215,22 @@ export const FeedArticleMakeUp = (post, article) => {
 		}
 	}
 
+	// fix youtube
+	if (post.link && /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/.test(post.link)) {
+		article.attachments.push({
+			url: post.link,
+			mimeType: 'youtube',
+		});
+	}
+
+	// fix tiktok
+	if (post.link && /tiktok\.com\/@[^/]+\/video\/\d+/.test(post.link)) {
+		article.attachments.push({
+			url: post.link,
+			mimeType: 'tiktok',
+		});
+	}
+
 	// fix attachments size_in_bytes
 	if (post.attachments) {
 		post.attachments.map((attachment) => {

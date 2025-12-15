@@ -6,15 +6,28 @@
   }
 
   .source-list {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+    padding: 0.625rem;
 
     .source-item {
       display: flex;
-      flex-basis: 50%;
-      flex-shrink: 0;
-      border-bottom: 1px solid var(--divider-light);
+      height: 100%;
+      min-height: 5rem;
+      min-width: 0;
+      align-items: flex-start;
+      border: 1px solid var(--divider-light);
+      border-radius: 0.5rem;
       padding: 0.625rem;
+      transition: background-color 0.2s, border-color 0.2s;
+
+      @media (hover: hover) {
+        &:hover {
+          background-color: var(--bg-light);
+          border-color: var(--divider-medium);
+        }
+      }
 
       .left {
         .icon {
@@ -36,11 +49,18 @@
 
       .right {
         flex-grow: 1;
+        min-width: 0;
         padding: rem(0 10px);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
 
         .title {
           font-weight: 600;
           margin: rem(0 0 2px 0);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .meta {
@@ -135,12 +155,7 @@
 @media (max-width: 1023px) {
   .sources {
     .source-list {
-      flex-wrap: nowrap;
-      flex-direction: column;
-
-      .source-item {
-        flex-basis: 100%;
-      }
+      grid-template-columns: 1fr;
     }
   }
 }

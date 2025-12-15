@@ -42,12 +42,9 @@ const Search = () => {
 			setLoading(true);
 			try {
 				let res;
-				if (filterType === 'all') {
-					res = await search(query);
+				if (filterType === 'all' || filterType === 'feeds' || filterType === 'articles') {
+					res = await search(query, filterType);
 					setResults(res.data);
-				} else if (filterType === 'feed') {
-					res = await search(query);
-					setResults({ feeds: res.data.feeds, articles: [] });
 				} else {
 					// stars, recent-read, recent-played
 					res = await fetch('GET', '/articles', null, { q: query, type: filterType });
@@ -70,7 +67,8 @@ const Search = () => {
 
 	const filterOptions = [
 		{ value: 'all', label: t('All') },
-		{ value: 'feed', label: t('Feeds') },
+		{ value: 'feeds', label: t('Feeds') },
+		{ value: 'articles', label: t('Articles') },
 		{ value: 'stars', label: t('Stars') },
 		{ value: 'recent-read', label: t('Recent Read') },
 		{ value: 'recent-played', label: t('Recent Played') },
@@ -79,25 +77,27 @@ const Search = () => {
 	return (
 		<div className="search-results">
 			<PageTitle title={t('Search')} />
-			<div className="filters">
+			<div className="filters col">
 				<div className="search">
 					<SearchInput
 						type="text"
-						placeholder={t('Search')}
+						placeholder={t('Search my feeds and articles')}
 						value={query}
 						onChange={(val) => setQuery(val)}
 					/>
 				</div>
-				<div className="select">
-					<Select
-						className="select-container"
-						classNamePrefix="select"
-						placeholder={t('Type')}
-						isClearable={false}
-						options={filterOptions}
-						value={filterOptions.find((o) => o.value === filterType)}
-						onChange={(val) => setFilterType(val ? val.value : 'all')}
-					/>
+				<div className="filter-field">
+					<div className="select">
+						<Select
+							className="select-container"
+							classNamePrefix="select"
+							placeholder={t('Type')}
+							isClearable={false}
+							options={filterOptions}
+							value={filterOptions.find((o) => o.value === filterType)}
+							onChange={(val) => setFilterType(val ? val.value : 'all')}
+						/>
+					</div>
 				</div>
 			</div>
 

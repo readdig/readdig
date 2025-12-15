@@ -1,5 +1,6 @@
 .article-item {
 	width: 100%;
+	min-width: 0;
 	display: flex;
 	justify-content: space-between;
 	text-decoration: none;
@@ -103,6 +104,7 @@
 	.right {
 		position: relative;
 		flex-grow: 1;
+		min-width: 0;
 		overflow: hidden;
 
 		h4 {

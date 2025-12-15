@@ -25,11 +25,11 @@
 			align-items: flex-start;
 			border: 1px solid var(--divider-light);
 			border-radius: 0.5rem;
-			transition: background-color 0.2s, border-color 0.2s;
+			transition: border-color 0.2s;
 
 			@media (hover: hover) {
 				&:hover {
-					background-color: var(--bg-light);
+					background-color: transparent;
 					border-color: var(--divider-medium);
 				}
 			}

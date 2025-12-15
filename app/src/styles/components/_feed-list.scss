@@ -20,11 +20,10 @@
       border: 1px solid var(--divider-light);
       border-radius: 0.5rem;
       padding: 0.625rem;
-      transition: background-color 0.2s, border-color 0.2s;
+      transition: border-color 0.2s;
 
       @media (hover: hover) {
         &:hover {
-          background-color: var(--bg-light);
           border-color: var(--divider-medium);
         }
       }

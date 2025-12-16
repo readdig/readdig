@@ -171,32 +171,45 @@ export const FeedArticleMakeUp = (post, article) => {
 				enclosure.title = post.image.title;
 			}
 
-			if (enclosure.url) {
-				article.attachments.push({
-					url: enclosure.url,
-					title: enclosure.title,
-					mimeType: enclosure.type,
-					sizeInBytes: enclosure.length ? parseInt(enclosure.length) : 0,
-					durationInSeconds: duration ? parseInt(duration) : 0,
-				});
+			if (enclosure.url && enclosure.url.trim()) {
+				const urlExists = article.attachments.some(a => a.url === enclosure.url);
+				if (!urlExists) {
+					article.attachments.push({
+						url: enclosure.url,
+						title: enclosure.title,
+						mimeType: enclosure.type,
+						sizeInBytes: enclosure.length ? parseInt(enclosure.length) : 0,
+						durationInSeconds: duration ? parseInt(duration) : 0,
+					});
+				}
 			}
 		});
 	}
 
 	// fix thumbnail
 	if (post['rss:thumbnail'] && post['rss:thumbnail']['#']) {
-		article.attachments.push({ url: post['rss:thumbnail']['#'] });
+		const thumbnailUrl = post['rss:thumbnail']['#'];
+		if (thumbnailUrl && thumbnailUrl.trim()) {
+			const urlExists = article.attachments.some(a => a.url === thumbnailUrl);
+			if (!urlExists) {
+				article.attachments.push({ url: thumbnailUrl });
+			}
+		}
 	}
 
 	// fix youtube
 	if (post['yt:videoid']) {
 		const youtubeId = post['yt:videoid']['#'];
-		if (youtubeId) {
-			article.attachments.push({
-				mimeType: 'youtube',
-				title: post['media:group']['media:title']['#'],
-				url: `https://www.youtube.com/watch?v=${youtubeId}`,
-			});
+		if (youtubeId && youtubeId.trim()) {
+			const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeId}`;
+			const urlExists = article.attachments.some(a => a.url === youtubeUrl);
+			if (!urlExists) {
+				article.attachments.push({
+					mimeType: 'youtube',
+					title: post['media:group']['media:title']['#'],
+					url: youtubeUrl,
+				});
+			}
 		}
 		if (post['media:group'] && !article.summary) {
 			const description = post['media:group']['media:description']['#'];
@@ -218,26 +231,40 @@ export const FeedArticleMakeUp = (post, article) => {
 	// fix youtube
 	if (
 		post.link &&
+		post.link.trim() &&
 		!post['yt:videoid'] &&
 		/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/.test(post.link)
 	) {
-		article.attachments.push({
-			url: post.link,
-			mimeType: 'youtube',
-		});
+		const urlExists = article.attachments.some(a => a.url === post.link);
+		if (!urlExists) {
+			article.attachments.push({
+				url: post.link,
+				mimeType: 'youtube',
+			});
+		}
 	}
 
 	// fix tiktok
-	if (post.link && /tiktok\.com\/@[^/]+\/video\/\d+/.test(post.link)) {
-		article.attachments.push({
-			url: post.link,
-			mimeType: 'tiktok',
-		});
+	if (post.link && post.link.trim() && /tiktok\.com\/@[^/]+\/video\/\d+/.test(post.link)) {
+		const urlExists = article.attachments.some(a => a.url === post.link);
+		if (!urlExists) {
+			article.attachments.push({
+				url: post.link,
+				mimeType: 'tiktok',
+			});
+		}
 	}
 
 	// fix attachments size_in_bytes
 	if (post.attachments) {
 		post.attachments.map((attachment) => {
+			if (!attachment.url || !attachment.url.trim()) {
+				return;
+			}
+			const urlExists = article.attachments.some(a => a.url === attachment.url);
+			if (urlExists) {
+				return;
+			}
 			let sizeInBytes = attachment.size_in_bytes;
 			if (sizeInBytes && sizeInBytes['0']) {
 				sizeInBytes = sizeInBytes['0'];

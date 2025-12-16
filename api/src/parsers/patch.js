@@ -216,7 +216,11 @@ export const FeedArticleMakeUp = (post, article) => {
 	}
 
 	// fix youtube
-	if (post.link && /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/.test(post.link)) {
+	if (
+		post.link &&
+		!post['yt:videoid'] &&
+		/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/.test(post.link)
+	) {
 		article.attachments.push({
 			url: post.link,
 			mimeType: 'youtube',

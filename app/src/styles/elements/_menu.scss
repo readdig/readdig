@@ -35,7 +35,27 @@
     margin-right: 0.5rem;
     width: 1.5rem;
     height: 1.5rem;
+    transition: transform 0.3s ease, stroke 0.3s ease;
+
+    &.lucide {
+      width: rem(20px);
+      height: rem(20px);
+    }
   }
+
+    @media (hover: hover) {
+      &:hover {
+        svg {
+          fill: var(--primary-dark);
+          transform: scale(1.1);
+
+          &.lucide {
+            fill: transparent;
+            stroke: var(--primary-dark);
+          }
+        }
+      }
+    }
 
   span {
     height: 1.25rem;

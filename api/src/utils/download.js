@@ -62,7 +62,7 @@ const download = async (url, prefix, hash, dir, folder) => {
 			return;
 		}
 
-		imageBuffer = await res.buffer();
+		imageBuffer = Buffer.from(await res.arrayBuffer());
 		const imageSize = imageBuffer.length;
 		if (!imageSize) {
 			return;

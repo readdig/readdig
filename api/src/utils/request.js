@@ -1,7 +1,4 @@
-import http from 'http';
-import https from 'https';
-import fetch from 'node-fetch';
-import AbortController from 'abort-controller';
+import { fetch, Agent } from 'undici';
 
 import { config } from '../config';
 import { logger } from './logger';
@@ -14,26 +11,18 @@ async function readURL(url, options = {}) {
 		controller.abort();
 	}, requestTTL);
 
-	const httpAgent = new http.Agent({
-		keepAlive: true,
-	});
-	const httpsAgent = new https.Agent({
-		rejectUnauthorized: false,
-		keepAlive: true,
+	const dispatcher = new Agent({
+		connect: {
+			rejectUnauthorized: false,
+		},
+		allowH2: true, // Optional: enable HTTP/2 if needed
 	});
 
 	try {
 		return await fetch(url, {
 			method: 'GET',
-			compress: false,
 			signal: controller.signal,
-			agent: function (_parsedURL) {
-				if (_parsedURL.protocol == 'http:') {
-					return httpAgent;
-				} else {
-					return httpsAgent;
-				}
-			},
+			dispatcher,
 			...options,
 			headers: {
 				'User-Agent': config.useragent,

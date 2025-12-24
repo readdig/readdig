@@ -1,9 +1,9 @@
+import { Readable } from 'stream';
 import strip from 'strip';
 import moment from 'moment';
 import FeedParser from 'feedparser';
 import iconv from 'iconv-lite';
 import { decodeHTML } from 'entities';
-import ReadableStreamClone from 'readable-stream-clone';
 
 import { logger } from '../utils/logger';
 import request from '../utils/request';
@@ -170,15 +170,16 @@ export function ReadFeedResponse(response) {
 				});
 
 				try {
-					let responseStream = new ReadableStreamClone(response.body);
-					const responseText = await response.text();
+					const responseForText = response.clone();
+					const responseStream = Readable.fromWeb(response.body);
+					const responseText = await responseForText.text();
 
-					responseStream = await normalizeEncoding(
+					const finalStream = await normalizeEncoding(
 						responseStream,
 						responseText,
 						contentType,
 					);
-					responseStream.pipe(feedparser);
+					finalStream.pipe(feedparser);
 				} catch (err) {
 					reject(err);
 				}

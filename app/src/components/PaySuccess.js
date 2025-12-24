@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactModal from 'react-modal';
 import { useTranslation } from 'react-i18next';
-
-import { ReactComponent as CheckIcon } from '../images/icons/check-circle.svg';
+import { IconCircleCheck } from '@tabler/icons-react';
 
 const PaySuccess = ({ isOpen = false, closeModal }) => {
 	const { t } = useTranslation();
@@ -18,7 +17,7 @@ const PaySuccess = ({ isOpen = false, closeModal }) => {
 			>
 				<section className="success">
 					<div className="icon">
-						<CheckIcon />
+						<IconCircleCheck />
 					</div>
 					<div className="text">{t('Payment Success!')}</div>
 					<div className="small-text">{t('Thank you for subscribing to the plan.')}</div>

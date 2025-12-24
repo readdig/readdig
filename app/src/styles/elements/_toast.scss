@@ -4,7 +4,7 @@
   .Toastify__toast--info {
     .Toastify__toast-icon {
       svg {
-        fill: var(--toastify-icon-color-info);
+        color: var(--toastify-icon-color-info);
       }
     }
   }
@@ -12,7 +12,7 @@
   .Toastify__toast--success {
     .Toastify__toast-icon {
       svg {
-        fill: var(--toastify-icon-color-success);
+        color: var(--toastify-icon-color-success);
       }
     }
   }
@@ -20,7 +20,7 @@
   .Toastify__toast--warning {
     .Toastify__toast-icon {
       svg {
-        fill: var(--toastify-icon-color-warning);
+        color: var(--toastify-icon-color-warning);
       }
     }
   }
@@ -28,7 +28,7 @@
   .Toastify__toast--error {
     .Toastify__toast-icon {
       svg {
-        fill: var(--toastify-icon-color-error);
+        color: var(--toastify-icon-color-error);
       }
     }
   }

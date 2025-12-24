@@ -24,6 +24,7 @@
     "@sentry/react": "^6.4.1",
     "@sentry/tracing": "^6.4.1",
     "@szhsin/react-menu": "^3.1.0",
+    "@tabler/icons-react": "^3.36.0",
     "axios": "^0.21.1",
     "classnames": "^2.3.1",
     "dayjs": "^1.10.4",

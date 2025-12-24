@@ -4,11 +4,10 @@ import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import FeedSelect from '../Feeds/FeedSelect';
 import { followFolder } from '../../api/follow';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const AddFeedModal = ({ isOpen = false, folder = {}, closeModal }) => {
 	const { t } = useTranslation();
@@ -50,7 +49,7 @@ const AddFeedModal = ({ isOpen = false, folder = {}, closeModal }) => {
 				<header>
 					<h1>{t('Add feed to folder')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 

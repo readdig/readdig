@@ -4,32 +4,18 @@
 	height: 100%;
 	
 	svg {
-		fill: var(--primary);
-		display: block;
-		height: rem(36px);
-		width: rem(36px);
+		color: var(--primary);
+		height: rem(30px);
+		width: rem(30px);
+		animation: spin 1.8s linear infinite;
 	}
 }
 
-@keyframes lds-dual-ring {
-	0% {
+@keyframes spin {
+	from {
 		transform: rotate(0deg);
 	}
-
-	100% {
+	to {
 		transform: rotate(360deg);
 	}
-}
-
-.loader-roll {
-	animation: lds-dual-ring 1.2s linear infinite;
-	border: 2px solid var(--primary);
-	border-bottom-color: transparent;
-	border-radius: $border-radius-circle;
-	display: inline-block;
-	flex-grow: 0 !important;
-	height: rem(28px);
-	min-width: unset !important;
-	width: rem(28px);
-	margin: auto;
 }

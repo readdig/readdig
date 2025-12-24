@@ -96,7 +96,7 @@ textarea {
 				padding: rem(6px 2px);
 				&.select__dropdown-indicator {
 					svg {
-						fill: var(--svg-medium);
+						color: var(--svg-medium);
 					}
 				}
 			}
@@ -170,13 +170,13 @@ textarea {
 		padding-right: 1.75rem;
 	}
 	svg {
-		fill: var(--svg-medium);
+		color: var(--svg-medium);
 		position: absolute;
 		right: rem(6px);
 		top: 50%;
 		transform: translate(0, -50%);
 		&.clickable {
-			fill: var(--svg);
+			color: var(--svg);
 		}
 	}
 }
@@ -284,7 +284,7 @@ textarea {
 		}
 		svg {
 			position: absolute;
-			fill: var(--svg-medium);
+			color: var(--svg-medium);
 			right: rem(5px);
 			top: 50%;
 			transform: translate(0%, -50%);

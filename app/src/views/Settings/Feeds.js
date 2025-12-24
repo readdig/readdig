@@ -8,7 +8,7 @@ import Loader from '../../components/Loader';
 import Image from '../../components/Image';
 import Holdable from '../../components/Holdable';
 import PageTitle from '../../components/PageTitle';
-import MoreIcon from '../../components/MoreIcon';
+import MoreButton from '../../components/MoreButton';
 import SearchInput from '../../components/SearchInput';
 import CustomIcon from '../../components/Folders/CustomIcon';
 import FolderSelect from '../../components/Folders/FolderSelect';
@@ -20,8 +20,7 @@ import FeedStatusSelect from '../../components/Feeds/FeedStatusSelect';
 
 import { getCollections } from '../../api/collection';
 
-import { ReactComponent as FeedIcon } from '../../images/icons/rss.svg';
-import { ReactComponent as PodcastIcon } from '../../images/icons/podcast.svg';
+import { IconRss, IconBroadcast } from '@tabler/icons-react';
 
 const Feeds = () => {
 	const { t } = useTranslation();
@@ -183,7 +182,7 @@ const Feeds = () => {
 								/>
 							</div>
 							<div className="action">
-								<MoreIcon
+								<MoreButton
 									onClick={(anchorRef, skipClick) =>
 										openCollectionPopover(anchorRef, skipClick)
 									}
@@ -227,7 +226,7 @@ const Feeds = () => {
 											{folder.name}
 										</div>
 										<div className="action">
-											<MoreIcon
+											<MoreButton
 												onClick={(anchorRef, skipClick) =>
 													openPopover(
 														anchorRef,
@@ -276,18 +275,18 @@ const Feeds = () => {
 													<>
 														{feed.type === 'rss' && (
 															<div className="type" title={t('RSS')}>
-																<FeedIcon />
+																<IconRss />
 															</div>
 														)}
 														{feed.type === 'podcast' && (
 															<div className="type" title={t('Podcast')}>
-																<PodcastIcon />
+																<IconBroadcast />
 															</div>
 														)}
 													</>
 												)}
 												<div className="action">
-													<MoreIcon
+													<MoreButton
 														onClick={(anchorRef, skipClick) =>
 															openPopover(
 																anchorRef,
@@ -338,18 +337,18 @@ const Feeds = () => {
 										<>
 											{feed.type === 'rss' && (
 												<div className="type" title={t('RSS')}>
-													<FeedIcon />
+													<IconRss />
 												</div>
 											)}
 											{feed.type === 'podcast' && (
 												<div className="type" title={t('Podcast')}>
-													<PodcastIcon />
+													<IconBroadcast />
 												</div>
 											)}
 										</>
 									)}
 									<div className="action">
-										<MoreIcon
+										<MoreButton
 											onClick={(anchorRef, skipClick) =>
 												openPopover(anchorRef, skipClick, 'feed', feed.id, feed)
 											}

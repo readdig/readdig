@@ -2,8 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-
-import { ReactComponent as WebIcon } from '../../images/icons/web.svg';
+import { IconDashboard } from '@tabler/icons-react';
 
 const Menu = () => {
 	const { t } = useTranslation();
@@ -13,7 +12,7 @@ const Menu = () => {
 	return (
 		<>
 			<h3>
-				<WebIcon />
+				<IconDashboard />
 				<span>{t('Management')}</span>
 			</h3>
 			<ul>

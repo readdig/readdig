@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import {
+	IconPlus,
+	IconPencil,
+	IconX,
+	IconStar,
+	IconStarFilled,
+} from '@tabler/icons-react';
 
 import { Menu, MenuButton, MenuItem, MenuDivider, FocusableItem } from '../Menu';
 import Loader from '../Loader';
@@ -10,12 +17,6 @@ import RenameModal from '../Tags/RenameModal';
 import DeleteModal from '../Tags/DeleteModal';
 import { starArticle, unstarArticle, updateStar } from '../../api/star';
 import { getTags, addTag } from '../../api/tag';
-
-import { ReactComponent as PlusIcon } from '../../images/icons/plus.svg';
-import { ReactComponent as EditIcon } from '../../images/icons/pencil-outline.svg';
-import { ReactComponent as CloseIcon } from '../../images/icons/close.svg';
-import { ReactComponent as StaredIcon } from '../../images/icons/star.svg';
-import { ReactComponent as StarIcon } from '../../images/icons/star-outline.svg';
 
 const ArticleStar = ({ article = {} }) => {
 	const dispatch = useDispatch();
@@ -120,11 +121,11 @@ const ArticleStar = ({ article = {} }) => {
 			<MenuButton onClick={!loading && openMenu}>
 				{!article.stared ? (
 					<span className="star" title={t('Star article')}>
-						{loading ? <Loader /> : <StarIcon />}
+						{loading ? <Loader /> : <IconStar />}
 					</span>
 				) : (
 					<span className="star" title={t('Unstar article')}>
-						{loading ? <Loader /> : <StaredIcon />}
+						{loading ? <Loader /> : <IconStarFilled />}
 					</span>
 				)}
 			</MenuButton>
@@ -171,7 +172,7 @@ const ArticleStar = ({ article = {} }) => {
 									submitting
 								}
 							>
-								<PlusIcon />
+								<IconPlus />
 							</button>
 						</form>
 					)}
@@ -200,14 +201,14 @@ const ArticleStar = ({ article = {} }) => {
 										title={t('Rename')}
 										onClick={(e) => openModal(e, 'rename', item)}
 									>
-										<EditIcon />
+										<IconPencil />
 									</i>
 									<i
 										className="icon"
 										title={t('Delete')}
 										onClick={(e) => openModal(e, 'delete', item)}
 									>
-										<CloseIcon />
+										<IconX />
 									</i>
 								</div>
 							</MenuItem>

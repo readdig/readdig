@@ -2,14 +2,14 @@ import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { components } from 'react-select';
 import { useTranslation } from 'react-i18next';
+import { IconSearch } from '@tabler/icons-react';
 
 import { getFolders } from '../../api/folder';
-import { ReactComponent as SearchIcon } from '../../images/icons/magnify.svg';
 
 const DropdownIndicator = (props) => {
 	return (
 		<components.DropdownIndicator {...props}>
-			<SearchIcon />
+			<IconSearch />
 		</components.DropdownIndicator>
 	);
 };

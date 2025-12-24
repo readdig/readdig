@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { mergeFeed } from '../../../api/feed';
 import FeedSelect from './FeedSelect';
 
-import { ReactComponent as ExitIcon } from '../../../images/icons/close.svg';
+import { IconX } from '@tabler/icons-react';
 
 const MergeModal = ({ isOpen = false, feed = {}, closeModal }) => {
 	const { t } = useTranslation();
@@ -50,7 +50,7 @@ const MergeModal = ({ isOpen = false, feed = {}, closeModal }) => {
 				<header>
 					<h1>{t('Merge to {{feedName}}', { feedName: feed.title })}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

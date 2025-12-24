@@ -5,11 +5,10 @@ import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import FolderSelect from '../../components/Folders/FolderSelect';
 import { opmlUpload } from '../../api/opml';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const AddOPMLModal = ({ isOpen = false, closeModal }) => {
 	const dispatch = useDispatch();
@@ -64,7 +63,7 @@ const AddOPMLModal = ({ isOpen = false, closeModal }) => {
 				<header>
 					<h1>{t('Import OPML file')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconHeart, IconHeartFilled } from '@tabler/icons-react';
 
 import { likeArticle, unlikeArticle } from '../../api/article';
-import { ReactComponent as HeartRegularIcon } from '../../images/icons/heart-regular-full.svg';
-import { ReactComponent as HeartSolidIcon } from '../../images/icons/heart-solid-full.svg';
 
 const ArticleLike = ({ article = {} }) => {
 	const { t } = useTranslation();
@@ -30,7 +29,7 @@ const ArticleLike = ({ article = {} }) => {
 			onClick={handleLike}
 			title={liked ? t('Unlike article') : t('Like article')}
 		>
-			{liked ? <HeartSolidIcon /> : <HeartRegularIcon />}
+			{liked ? <IconHeartFilled /> : <IconHeart />}
 		</span>
 	);
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ReactComponent as CheckIcon } from '../../images/icons/check-circle.svg';
+import { IconCircleCheck } from '@tabler/icons-react';
 
 const PaySuccess = () => {
 	const { t } = useTranslation();
@@ -9,7 +9,7 @@ const PaySuccess = () => {
 	return (
 		<section className="payment success">
 			<div className="icon">
-				<CheckIcon />
+				<IconCircleCheck />
 			</div>
 			<div className="text">{t('Payment Success!')}</div>
 			<div className="small-text">{t('Thank you for subscribing to the plan.')}</div>

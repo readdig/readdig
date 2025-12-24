@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { Range, getTrackBackground } from 'react-range';
-
-import { ReactComponent as VolumeIcon } from '../../images/player/volume.svg';
-import { ReactComponent as VolumeOffIcon } from '../../images/player/volume-off.svg';
+import { IconVolume, IconVolumeOff } from '@tabler/icons-react';
 
 const Volume = ({ value, onChange }) => {
 	const [values, setValues] = useState([value || 0.3]);
 
 	return (
 		<>
-			{value === 0 ? <VolumeOffIcon /> : <VolumeIcon />}
+			{value === 0 ? <IconVolumeOff /> : <IconVolume />}
 			<Range
 				min={0}
 				max={1}

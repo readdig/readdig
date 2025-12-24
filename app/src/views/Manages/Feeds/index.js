@@ -12,14 +12,13 @@ import Image from '../../../components/Image';
 import PageTitle from '../../../components/PageTitle';
 import TimeAgo from '../../../components/TimeAgo';
 import SearchInput from '../../../components/SearchInput';
-import MoreIcon from '../../../components/MoreIcon';
+import MoreButton from '../../../components/MoreButton';
 import Paging from '../../../components/Paging';
 
 import config from '../../../config';
 import { getFeeds, exportOPML } from '../../../api/feed';
 
-import { ReactComponent as FeedIcon } from '../../../images/icons/rss.svg';
-import { ReactComponent as PodcastIcon } from '../../../images/icons/podcast.svg';
+import { IconRss, IconBroadcast } from '@tabler/icons-react';
 
 const Feeds = () => {
 	const { t } = useTranslation();
@@ -149,13 +148,13 @@ const Feeds = () => {
 										<div className="type">
 											{feed.valid && (
 												<>
-													{feed.type === 'rss' && <FeedIcon />}
-													{feed.type === 'podcast' && <PodcastIcon />}
+													{feed.type === 'rss' && <IconRss />}
+													{feed.type === 'podcast' && <IconBroadcast />}
 												</>
 											)}
 										</div>
 										<div className="action">
-											<MoreIcon
+											<MoreButton
 												onClick={(anchorRef, skipClick) => {
 													openPopover(anchorRef, skipClick, feed);
 												}}

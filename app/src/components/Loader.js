@@ -1,21 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconLoader } from '@tabler/icons-react';
 
-import { ReactComponent as LoaderIcon } from '../images/loaders/default.svg';
-
-const Loader = ({ defaultLoader = true, radius = 28 }) => {
+const Loader = () => {
 	const { t } = useTranslation();
 
-	return defaultLoader ? (
+	return (
 		<div className="loader" title={t('Loading')}>
-			<LoaderIcon />
+			<IconLoader />
 		</div>
-	) : (
-		<div
-			className="loader-roll"
-			style={{ width: radius, height: radius }}
-			title={t('Loading')}
-		/>
 	);
 };
 

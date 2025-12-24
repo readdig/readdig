@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import {
+	IconCircleChevronUp,
+	IconFileRss,
+	IconFileUpload,
+	IconFolderPlus,
+	IconEraser,
+} from '@tabler/icons-react';
 
 import AddFeedModal from './AddFeedModal';
 import AddOPMLModal from './AddOPMLModal';
 import NewFolderModal from '../Folders/NewFolderModal';
 import { Menu, MenuButton, MenuItem } from '../Menu';
 import { clearUnread } from '../../api/unread';
-
-import { ReactComponent as ListIcon } from '../../images/icons/list.svg';
-import { ReactComponent as RSSIcon } from '../../images/icons/rss-outline.svg';
-import { ReactComponent as OPMLIcon } from '../../images/icons/file-up.svg';
-import { ReactComponent as FolderIcon } from '../../images/icons/folder-plus.svg';
-import { ReactComponent as ClearIcon } from '../../images/icons/brush-cleaning.svg';
 
 const AddFeed = () => {
 	const dispatch = useDispatch();
@@ -70,29 +71,29 @@ const AddFeed = () => {
 					title={t('Add feed')}
 					onClick={() => setNewFeedModalIsOpen(true)}
 				>
-					<RSSIcon />
+					<IconFileRss />
 				</button>
 				<button
 					className="btn"
 					title={t('Import OPML')}
 					onClick={() => setAddOPMLModalIsOpen(true)}
 				>
-					<OPMLIcon />
+					<IconFileUpload />
 				</button>
 				<button
 					className="btn"
 					title={t('New folder')}
 					onClick={() => setNewFolderModalIsOpen(true)}
 				>
-					<FolderIcon />
+					<IconFolderPlus />
 				</button>
 				<button className="btn" title={t('Clear unread')} onClick={clear}>
-					<ClearIcon />
+					<IconEraser />
 				</button>
 			</div>
 			<MenuButton onClick={openMenu}>
 				<button className="btn-menu">
-					<ListIcon />
+					<IconCircleChevronUp />
 				</button>
 			</MenuButton>
 			<Menu
@@ -105,19 +106,19 @@ const AddFeed = () => {
 				onClose={closeMenu}
 			>
 				<MenuItem onClick={() => setNewFeedModalIsOpen(true)} title={t('Add feed')}>
-					<RSSIcon />
+					<IconFileRss />
 					<span>{t('Feed')}</span>
 				</MenuItem>
 				<MenuItem onClick={() => setAddOPMLModalIsOpen(true)} title={t('Import OPML')}>
-					<OPMLIcon />
+					<IconFileUpload />
 					<span>{t('OPML')}</span>
 				</MenuItem>
 				<MenuItem onClick={() => setNewFolderModalIsOpen(true)} title={t('New folder')}>
-					<FolderIcon />
+					<IconFolderPlus />
 					<span>{t('Folder')}</span>
 				</MenuItem>
 				<MenuItem onClick={clear} title={t('Clear unread')}>
-					<ClearIcon />
+					<IconEraser />
 					<span>{t('Clear unread')}</span>
 				</MenuItem>
 			</Menu>

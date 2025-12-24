@@ -1,16 +1,14 @@
 import React from 'react';
 import { components } from 'react-select';
 import { useTranslation } from 'react-i18next';
+import { IconRss, IconSearch } from '@tabler/icons-react';
 
 import Image from '../Image';
-
-import { ReactComponent as RSSIcon } from '../../images/icons/rss.svg';
-import { ReactComponent as SearchIcon } from '../../images/icons/magnify.svg';
 
 export const RSSIndicator = (props) => {
 	return (
 		<components.DropdownIndicator {...props}>
-			<RSSIcon />
+			<IconRss />
 		</components.DropdownIndicator>
 	);
 };
@@ -18,7 +16,7 @@ export const RSSIndicator = (props) => {
 export const SearchIndicator = (props) => {
 	return (
 		<components.DropdownIndicator {...props}>
-			<SearchIcon />
+			<IconSearch />
 		</components.DropdownIndicator>
 	);
 };

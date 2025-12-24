@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactLightbox from 'yet-another-react-lightbox';
 import { Zoom } from 'yet-another-react-lightbox/plugins';
-
-import { ReactComponent as CloseIcon } from '../images/icons/close.svg';
+import { IconX } from '@tabler/icons-react';
 
 const Lightbox = ({ isOpen = false, attribs = {}, closeModal }) => {
 	return (
@@ -19,7 +18,7 @@ const Lightbox = ({ isOpen = false, attribs = {}, closeModal }) => {
 				buttonNext: () => null,
 				buttonZoomIn: () => null,
 				buttonZoomOut: () => null,
-				iconClose: () => <CloseIcon className="yarl__icon" />,
+				iconClose: () => <IconX className="yarl__icon" />,
 			}}
 		/>
 	);

@@ -10,8 +10,7 @@ import PlanSelect from '../../../components/PlanSelect';
 import { billingTypeOptions } from '../../../utils/options';
 import { addPlan } from '../../../api/plan';
 
-import { ReactComponent as PlusIcon } from '../../../images/icons/plus.svg';
-import { ReactComponent as ExitIcon } from '../../../images/icons/close.svg';
+import { IconPlus, IconX } from '@tabler/icons-react';
 
 const AddModal = ({ onEnd }) => {
 	const { t } = useTranslation();
@@ -49,7 +48,7 @@ const AddModal = ({ onEnd }) => {
 	return (
 		<>
 			<div className="btn" onClick={openModal}>
-				<PlusIcon />
+				<IconPlus />
 			</div>
 			{modalIsOpen && (
 				<ReactModal
@@ -63,7 +62,7 @@ const AddModal = ({ onEnd }) => {
 					<header>
 						<h1>{t('New plan')}</h1>
 						<span className="exit" onClick={closeModal}>
-							<ExitIcon />
+							<IconX />
 						</span>
 					</header>
 					<form onSubmit={handleSubmit(onSubmit)}>

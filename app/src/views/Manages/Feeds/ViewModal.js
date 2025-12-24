@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import Time from '../../../components/Time';
 
-import { ReactComponent as ExitIcon } from '../../../images/icons/close.svg';
+import { IconX } from '@tabler/icons-react';
 
 const ViewModal = ({ isOpen = false, feed = {}, closeModal }) => {
 	const { t } = useTranslation();
@@ -22,7 +22,7 @@ const ViewModal = ({ isOpen = false, feed = {}, closeModal }) => {
 				<header>
 					<h1>{t('Feed details')}</h1>
 					<span className="exit" onClick={closeModal}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				{feed.duplicateOf && (

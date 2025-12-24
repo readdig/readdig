@@ -11,9 +11,8 @@ import Total from '../Total';
 import Holdable from '../Holdable';
 import FolderPopover from '../Folders/FolderPopover';
 import FeedPopover from './FeedPopover';
-import MoreIcon from '../MoreIcon';
+import MoreButton from '../MoreButton';
 import CustomIcon from '../Folders/CustomIcon';
-
 import { getCollections } from '../../api/collection';
 
 const FeedPanel = () => {
@@ -137,7 +136,7 @@ const FeedPanel = () => {
 									<div className="title">{folder.name}</div>
 									<Total title={t('Feed count') + ': '} value={feeds.length} />
 									<div className="action">
-										<MoreIcon
+										<MoreButton
 											onClick={(anchorRef, skipClick) =>
 												openPopover(anchorRef, skipClick, 'folder', undefined, folder)
 											}
@@ -172,7 +171,7 @@ const FeedPanel = () => {
 												<div className="title">{feed.title}</div>
 												<Total title={t('Article count') + ': '} value={feed.postCount} />
 												<div className="action">
-													<MoreIcon
+													<MoreButton
 														onClick={(anchorRef, skipClick) =>
 															openPopover(anchorRef, skipClick, 'feed', feed, folder)
 														}
@@ -205,7 +204,7 @@ const FeedPanel = () => {
 									<div className="title">{feed.title}</div>
 									<Total title={t('Article count') + ': '} value={feed.postCount} />
 									<div className="action">
-										<MoreIcon
+										<MoreButton
 											onClick={(anchorRef, skipClick) =>
 												openPopover(anchorRef, skipClick, 'feed', feed)
 											}

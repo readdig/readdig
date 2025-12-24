@@ -9,7 +9,7 @@ import { updateFeed } from '../../../api/feed';
 import { feedTypeOptions, scrapeIntervalOptions } from '../../../utils/options';
 import Select from '../../../components/Select';
 
-import { ReactComponent as ExitIcon } from '../../../images/icons/close.svg';
+import { IconX } from '@tabler/icons-react';
 
 const UpdateModal = ({ isOpen = false, feed = {}, closeModal, onEnd }) => {
 	const { t } = useTranslation();
@@ -83,7 +83,7 @@ const UpdateModal = ({ isOpen = false, feed = {}, closeModal, onEnd }) => {
 				<header>
 					<h1>{t('Edit feed')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

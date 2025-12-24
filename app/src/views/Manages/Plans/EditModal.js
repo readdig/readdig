@@ -10,7 +10,7 @@ import PlanSelect from '../../../components/PlanSelect';
 import { billingTypeOptions } from '../../../utils/options';
 import { updatePlan } from '../../../api/plan';
 
-import { ReactComponent as ExitIcon } from '../../../images/icons/close.svg';
+import { IconX } from '@tabler/icons-react';
 
 const EditModal = ({ isOpen = false, plan = {}, closeModal, onEnd }) => {
 	const { t } = useTranslation();
@@ -60,7 +60,7 @@ const EditModal = ({ isOpen = false, plan = {}, closeModal, onEnd }) => {
 				<header>
 					<h1>{t('Edit {{planName}} plan', { planName: plan.name })}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

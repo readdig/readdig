@@ -33,7 +33,6 @@ textarea {
 }
 
 input {
-
 	&[type='url'],
 	&[type='text'],
 	&[type='email'],
@@ -56,16 +55,9 @@ a {
 }
 
 svg {
-	fill: var(--svg);
-	width: 1.25rem;
-	height: 1.25rem;
-
-	&.lucide {
-		fill: transparent;
-		stroke: var(--svg);
-		width: rem(20px);
-		height: rem(20px);
-	}
+	color: var(--svg);
+	width: rem(22px);
+	height: rem(22px);
 }
 
 pre,

@@ -113,9 +113,9 @@
 		height: 2.5rem;
 		width: 2.5rem;
 		svg {
-			fill: var(--svg-light);
-			width: 1.833rem;
-			height: 1.833rem;
+			color: var(--svg-light);
+			width: rem(26px);
+			height: rem(26px);
 		}
 	}
 

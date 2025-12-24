@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import FilterIcon from '../../../components/FilterIcon';
+import FilterButton from '../../../components/FilterButton';
 import { Menu, MenuItem } from '../../../components/Menu';
 
 const FilterPopover = ({ sortBy, onChange }) => {
@@ -23,7 +23,7 @@ const FilterPopover = ({ sortBy, onChange }) => {
 
 	return (
 		<>
-			<FilterIcon onClick={(anchorRef, skipClick) => openMenu(anchorRef, skipClick)} />
+			<FilterButton onClick={(anchorRef, skipClick) => openMenu(anchorRef, skipClick)} />
 			<Menu
 				align="end"
 				direction="bottom"

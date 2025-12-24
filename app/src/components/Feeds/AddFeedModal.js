@@ -6,13 +6,12 @@ import { useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import FolderSelect from '../Folders/FolderSelect';
+import FeedAutocomplete from './FeedAutocomplete';
 import { addFeed } from '../../api/feed';
 import { followFeed } from '../../api/follow';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
-import FeedAutocomplete from './FeedAutocomplete';
 
 const AddFeedModal = ({ isOpen = false, isRedirect = true, closeModal }) => {
 	const dispatch = useDispatch();
@@ -74,7 +73,7 @@ const AddFeedModal = ({ isOpen = false, isRedirect = true, closeModal }) => {
 				<header>
 					<h1>{t('Add feed')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

@@ -31,28 +31,18 @@
   padding: 0.5rem 1rem;
   background-color: var(--bg);
 
-  svg {
+  >svg,
+  >a >svg {
     margin-right: 0.5rem;
-    width: 1.5rem;
-    height: 1.5rem;
-    transition: transform 0.3s ease, stroke 0.3s ease;
-
-    &.lucide {
-      width: rem(20px);
-      height: rem(20px);
-    }
+    transition: transform 0.3s ease, color 0.3s ease;
   }
 
     @media (hover: hover) {
       &:hover {
-        svg {
-          fill: var(--primary-dark);
+        >svg,
+        >a >svg {
+          color: var(--primary-dark);
           transform: scale(1.1);
-
-          &.lucide {
-            fill: transparent;
-            stroke: var(--primary-dark);
-          }
         }
       }
     }
@@ -105,7 +95,7 @@
   }
 
   svg {
-    fill: var(--svg-light);
+    color: var(--svg-light);
   }
 
   &.link {
@@ -239,7 +229,7 @@
         @media (hover: hover) {
           &:hover {
             svg {
-              fill: var(--svg-dark);
+              color: var(--svg-dark);
             }
           }
         }
@@ -272,7 +262,7 @@
             color: var(--text-dark);
 
             svg {
-              fill: var(--svg);
+              color: var(--svg);
             }
           }
 
@@ -282,13 +272,13 @@
 
             .icon {
               svg {
-                fill: var(--svg-light);
+                color: var(--svg-light);
               }
 
               @media (hover: hover) {
                 &:hover {
                   svg {
-                    fill: var(--primary-light);
+                    color: var(--primary-light);
                   }
                 }
               }

@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import {
+	IconLogout,
+	IconSettings,
+	IconUser,
+	IconAdjustments,
+	IconRss,
+	IconDashboard,
+} from '@tabler/icons-react';
 
 import Avatar from './index';
 import { Menu, MenuButton, MenuItem } from '../Menu';
-
-import { ReactComponent as LogoutIcon } from '../../images/icons/logout-variant.svg';
-import { ReactComponent as SettingsIcon } from '../../images/icons/settings-outline.svg';
-import { ReactComponent as AccountIcon } from '../../images/icons/account-outline.svg';
-import { ReactComponent as TuneIcon } from '../../images/icons/tune-variant.svg';
-import { ReactComponent as FeedIcon } from '../../images/icons/rss.svg';
-import { ReactComponent as WebIcon } from '../../images/icons/web.svg';
 
 const UserAvatar = () => {
 	const { t } = useTranslation();
@@ -49,32 +50,32 @@ const UserAvatar = () => {
 				{user.admin && (
 					<MenuItem className="link">
 						<Link to="/manages">
-							<WebIcon />
+							<IconDashboard />
 							<span>{t('Dashboard')}</span>
 						</Link>
 					</MenuItem>
 				)}
 				<MenuItem className="link">
 					<a href="/settings/feeds">
-						<FeedIcon />
+						<IconRss />
 						<span>{t('My Feeds')}</span>
 					</a>
 				</MenuItem>
 				<MenuItem className="link">
 					<a href="/settings/profile">
-						<AccountIcon />
+						<IconUser />
 						<span>{t('Profile')}</span>
 					</a>
 				</MenuItem>
 				<MenuItem className="link">
 					<Link to="/settings/preferences">
-						<TuneIcon />
+						<IconAdjustments />
 						<span>{t('Preferences')}</span>
 					</Link>
 				</MenuItem>
 				<MenuItem className="link">
 					<Link to="/settings">
-						<SettingsIcon />
+						<IconSettings />
 						<span>{t('More...')}</span>
 					</Link>
 				</MenuItem>
@@ -84,7 +85,7 @@ const UserAvatar = () => {
 						window.location = '/';
 					}}
 				>
-					<LogoutIcon />
+					<IconLogout />
 					<span>{t('Logout')}</span>
 				</MenuItem>
 			</Menu>

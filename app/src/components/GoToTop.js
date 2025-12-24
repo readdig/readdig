@@ -2,8 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
-
-import { ReactComponent as UpIcon } from '../images/icons/arrow-up.svg';
+import { IconArrowUp } from '@tabler/icons-react';
 
 const GoToTop = ({ hidden, onClick }) => {
 	const { t } = useTranslation();
@@ -16,7 +15,7 @@ const GoToTop = ({ hidden, onClick }) => {
 				onClick={onClick}
 				title={t('Go to Top')}
 			>
-				<UpIcon />
+				<IconArrowUp />
 			</div>
 		)
 	);

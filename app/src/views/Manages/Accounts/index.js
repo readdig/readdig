@@ -7,7 +7,7 @@ import Image from '../../../components/Image';
 import PageTitle from '../../../components/PageTitle';
 import TimeAgo from '../../../components/TimeAgo';
 import SearchInput from '../../../components/SearchInput';
-import MoreIcon from '../../../components/MoreIcon';
+import MoreButton from '../../../components/MoreButton';
 import Paging from '../../../components/Paging';
 import ActionPopover from './ActionPopover';
 import FilterPopover from './FilterPopover';
@@ -107,7 +107,7 @@ const Accounts = () => {
 											{user.free && <span className="admin">{t('Free')}</span>}
 										</div>
 										<div className="action">
-											<MoreIcon
+											<MoreButton
 												onClick={(anchorRef, skipClick) => {
 													openPopover(anchorRef, skipClick, user);
 												}}

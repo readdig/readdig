@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-
-import { ReactComponent as SearchIcon } from '../images/icons/magnify.svg';
-import { ReactComponent as CloseIcon } from '../images/icons/close.svg';
+import { IconSearch, IconX } from '@tabler/icons-react';
 
 const SearchInput = ({ value, delay = 400, inputRef, onChange, onBlur, ...rest }) => {
 	const [text, setText] = useState(value || '');
@@ -32,7 +30,7 @@ const SearchInput = ({ value, delay = 400, inputRef, onChange, onBlur, ...rest }
 				}}
 			/>
 			{text ? (
-				<CloseIcon
+				<IconX
 					className="clickable"
 					onClick={() => {
 						setText('');
@@ -40,7 +38,7 @@ const SearchInput = ({ value, delay = 400, inputRef, onChange, onBlur, ...rest }
 					}}
 				/>
 			) : (
-				<SearchIcon />
+				<IconSearch />
 			)}
 		</div>
 	);

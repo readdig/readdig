@@ -13,14 +13,11 @@
 		h3 {
 			display: flex;
 			align-items: center;
-			padding: 0.5rem 0.625rem;
+			padding: 0.5rem 0.775rem;
 			margin-bottom: 0.3125rem;
 
 			svg {
-				margin-right: rem(5px);
-				margin-top: rem(1px);
-				width: 1.5rem;
-				height: 1.5rem;
+				margin-right: rem(6px);
 			}
 		}
 
@@ -53,7 +50,7 @@
 					}
 
 					svg {
-						fill: var(--svg-light) !important;
+						color: var(--svg-light) !important;
 					}
 				}
 
@@ -123,6 +120,7 @@
 
 			.item {
 				display: flex;
+				align-content: center;
 				justify-content: space-between;
 				padding: 0.625rem;
 				text-decoration: none;
@@ -282,7 +280,7 @@
 					margin: rem(0 10px);
 
 					svg {
-						fill: var(--svg-medium);
+						color: var(--svg-medium);
 					}
 				}
 
@@ -295,7 +293,7 @@
 					svg {
 						@media (hover: hover) {
 							&:hover {
-								fill: var(--primary);
+								color: var(--primary);
 							}
 						}
 					}
@@ -364,7 +362,7 @@
 							svg {
 								@media (hover: hover) {
 									&:hover {
-										fill: var(--primary);
+										color: var(--primary);
 									}
 								}
 							}
@@ -484,7 +482,7 @@
 			&.success {
 				.icon {
 					svg {
-						fill: var(--primary);
+						color: var(--primary);
 					}
 				}
 			}
@@ -492,7 +490,7 @@
 			&.failed {
 				.icon {
 					svg {
-						fill: var(--danger);
+						color: var(--danger);
 					}
 				}
 			}

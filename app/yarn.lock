@@ -2299,6 +2299,18 @@
     prop-types "^15.7.2"
     react-transition-state "^1.1.4"
 
+"@tabler/icons-react@^3.36.0":
+  version "3.36.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons-react/-/icons-react-3.36.0.tgz#161a13d03ca8f2643b64b6788664ed06ae23298b"
+  integrity sha512-sSZ00bEjTdTTskVFykq294RJq+9cFatwy4uYa78HcYBCXU1kSD1DIp5yoFsQXmybkIOKCjp18OnhAYk553UIfQ==
+  dependencies:
+    "@tabler/icons" "3.36.0"
+
+"@tabler/icons@3.36.0":
+  version "3.36.0"
+  resolved "https://registry.yarnpkg.com/@tabler/icons/-/icons-3.36.0.tgz#7fea08f312e8662d455e29b9894ca50f09283296"
+  integrity sha512-z9OfTEG6QbaQWM9KBOxxUdpgvMUn0atageXyiaSc2gmYm51ORO8Ua7eUcjlks+Dc0YMK4rrodAFdK9SfjJ4ZcA==
+
 "@tootallnate/once@1":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"

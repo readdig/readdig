@@ -104,16 +104,18 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background-color 0.2s;
 
-            &:hover {
-              background-color: var(--bg-medium);
+            @media (hover: hover) {
+              &:hover {
+                svg {
+                  color: var(--primary-dark);
+                  transform: scale(1.1);
+                }
+              }
             }
 
             svg {
-              width: rem(18px);
-              height: rem(18px);
-              fill: var(--text-medium);
+              transition: transform 0.3s ease, color 0.3s ease;
             }
           }
         }

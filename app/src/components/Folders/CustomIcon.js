@@ -1,7 +1,5 @@
 import React from 'react';
-
-import { ReactComponent as FolderIcon } from '../../images/icons/folder-outline.svg';
-import { ReactComponent as OpenFolderIcon } from '../../images/icons/folder-open-outline.svg';
+import { IconFolder, IconFolderOpen } from '@tabler/icons-react';
 
 const ImageDownIcon = ({ src }) => {
 	return (
@@ -27,9 +25,9 @@ const CustomIcon = ({ isOpen = false, src }) => {
 			<ImageRightIcon src={src} />
 		)
 	) : isOpen ? (
-		<OpenFolderIcon />
+		<IconFolderOpen />
 	) : (
-		<FolderIcon />
+		<IconFolder />
 	);
 };
 

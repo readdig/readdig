@@ -3,11 +3,11 @@
     .feeds {
       .loader {
         justify-content: left;
-        padding-left: 0.75rem;
+        padding-left: 0.775rem;
 
         svg {
-          width: 1.25rem;
-          height: 1.25rem;
+          width: rem(22px);
+          height: rem(22px);
         }
       }
 
@@ -16,10 +16,11 @@
           padding: 0;
 
           .icon {
-            height: 2rem;
+            height: rem(34px);
             width: 100%;
             justify-content: left;
             padding-left: 0.775rem;
+            margin-right: rem(6px);
           }
         }
 
@@ -45,7 +46,7 @@
   flex: 1;
 
   .loader {
-    padding: rem(5px 0);
+    padding: rem(12px 0);
   }
 
   .no-content {
@@ -75,7 +76,7 @@
           }
 
           svg {
-            fill: var(--svg-light);
+            stroke: var(--svg-light);
           }
 
           .count {
@@ -100,28 +101,28 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 1.25rem;
-          height: 1.25rem;
-          margin-right: rem(5px);
+          width: rem(22px);
+          height: rem(22px);
+          margin-right: rem(6px);
 
           img {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: rem(22px);
+            height: rem(22px);
             border-radius: $border-radius-sm;
             text-indent: -9999px;
           }
 
           .placeholder {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: rem(22px);
+            height: rem(22px);
             border-radius: $border-radius-sm;
             background-color: var(--bg-medium);
           }
         }
 
         .title {
-          height: 1.25rem;
-          line-height: 1.25rem;
+          height: rem(22px);
+          line-height: rem(22px);
           flex-grow: 1;
           flex-shrink: 1;
           flex-basis: 0;
@@ -138,7 +139,7 @@
           align-items: center;
           justify-content: flex-end;
           width: 2.375rem;
-          height: 1.25rem;
+          height: rem(22px);
           color: var(--text-medium);
           text-align: right;
         }
@@ -150,8 +151,8 @@
             margin-right: rem(-2px);
 
             @media (hover: hover) {
-              &:hover {
-                fill: var(--primary-light);
+            &:hover {
+                stroke: var(--primary-light);
               }
             }
           }
@@ -178,8 +179,8 @@
         .icon {
           .custom-icon {
             position: relative;
-            width: 1.25rem;
-            height: 1.25rem;
+            width: rem(22px);
+            height: rem(22px);
 
             &.arrow-down,
             &.arrow-right {
@@ -230,7 +231,7 @@
           }
 
           svg {
-            fill: var(--svg-light);
+            stroke: var(--svg-light);
           }
 
           .icon {
@@ -291,8 +292,8 @@
           padding-left: 0;
 
           svg {
-            width: rem(36px);
-            height: rem(36px);
+            width: rem(30px);
+            height: rem(30px);
           }
         }
 
@@ -323,11 +324,11 @@
   .feeds {
     .loader {
       justify-content: left;
-      padding-left: 0.75rem;
+      padding-left: 0.775rem;
 
       svg {
-        width: 1.25rem;
-        height: 1.25rem;
+        width: rem(22px);
+        height: rem(22px);
       }
     }
 
@@ -336,7 +337,7 @@
         padding: 0 !important;
 
         .icon {
-          height: 2rem;
+          height: rem(34px);
           width: 100%;
           justify-content: left;
           padding-left: 0.775rem;

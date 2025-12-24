@@ -5,9 +5,9 @@ import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import { updateFolder } from '../../api/folder';
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const RenameModal = ({ isOpen = false, folder = {}, closeModal }) => {
 	const dispatch = useDispatch();
@@ -53,7 +53,7 @@ const RenameModal = ({ isOpen = false, folder = {}, closeModal }) => {
 				<header>
 					<h1>{t('Rename folder')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 

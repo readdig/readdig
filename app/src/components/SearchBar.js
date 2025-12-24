@@ -11,12 +11,14 @@ import SearchInput from './SearchInput';
 import CustomIcon from './Folders/CustomIcon';
 import { search } from '../api/search';
 
-import { ReactComponent as StarIcon } from '../images/icons/star-outline.svg';
-import { ReactComponent as NewsIcon } from '../images/icons/newspaper-variant-outline.svg';
-import { ReactComponent as CircleIcon } from '../images/icons/record-circle-outline.svg';
-import { ReactComponent as PlayCircleIcon } from '../images/icons/play-circle-outline.svg';
-import { ReactComponent as RSSIcon } from '../images/icons/rss-box.svg';
-import { ReactComponent as SearchIcon } from '../images/icons/magnify.svg';
+import {
+	IconStar,
+	IconNews,
+	IconCircleDot,
+	IconPlayerPlay,
+	IconRss,
+	IconSearch,
+} from '@tabler/icons-react';
 
 const SearchBar = () => {
 	const history = useHistory();
@@ -35,16 +37,16 @@ const SearchBar = () => {
 
 	const results = useMemo(() => {
 		const menu = [
-			{ type: 'menu', icon: NewsIcon, url: '/', title: t('Primary') },
-			{ type: 'menu', icon: StarIcon, url: '/stars', title: t('Stars') },
-			{ type: 'menu', icon: CircleIcon, url: '/recent-read', title: t('Recent Read') },
+			{ type: 'menu', icon: IconNews, url: '/', title: t('Primary') },
+			{ type: 'menu', icon: IconStar, url: '/stars', title: t('Stars') },
+			{ type: 'menu', icon: IconCircleDot, url: '/recent-read', title: t('Recent Read') },
 			{
 				type: 'menu',
-				icon: PlayCircleIcon,
+				icon: IconPlayerPlay,
 				url: '/recent-played',
 				title: t('Recent Played'),
 			},
-			{ type: 'menu', icon: RSSIcon, url: '/library', title: t('Library') },
+			{ type: 'menu', icon: IconRss, url: '/library', title: t('Library') },
 		];
 		const filtered = [
 			...menu,
@@ -265,7 +267,7 @@ const SearchBar = () => {
 										{item.type === 'feed' && (
 											<Image relative={true} src={item.icon} alt={item.title} />
 										)}
-										{item.type === 'search' && <SearchIcon />}
+										{item.type === 'search' && <IconSearch />}
 										{item.type === 'article' && (
 											<Image relative={true} src={item.icon} alt={item.title} />
 										)}

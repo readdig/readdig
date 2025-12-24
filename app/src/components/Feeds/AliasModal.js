@@ -5,10 +5,9 @@ import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import { renameFeed } from '../../api/follow';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const AliasModal = ({ isOpen = false, feed = {}, closeModal }) => {
 	const dispatch = useDispatch();
@@ -54,7 +53,7 @@ const AliasModal = ({ isOpen = false, feed = {}, closeModal }) => {
 				<header>
 					<h1>{t('Rename feed')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

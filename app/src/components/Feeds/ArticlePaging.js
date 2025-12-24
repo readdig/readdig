@@ -4,9 +4,7 @@ import { sort } from 'fast-sort';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
-import { ReactComponent as UpIcon } from '../../images/icons/chevron-up.svg';
-import { ReactComponent as DownIcon } from '../../images/icons/chevron-down.svg';
+import { IconChevronUp, IconChevronDown } from '@tabler/icons-react';
 
 const ArticlePaging = ({ article = {} }) => {
 	const history = useHistory();
@@ -67,14 +65,14 @@ const ArticlePaging = ({ article = {} }) => {
 				className={classNames('prev', { disabled: prevDisabled })}
 				onClick={!prevDisabled ? prev : undefined}
 			>
-				<UpIcon />
+				<IconChevronUp />
 			</span>
 			<span
 				title={t('Next article')}
 				className={classNames('next', { disabled: nextDisabled })}
 				onClick={!nextDisabled ? next : undefined}
 			>
-				<DownIcon />
+				<IconChevronDown />
 			</span>
 		</>
 	);

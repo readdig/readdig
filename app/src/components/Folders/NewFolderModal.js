@@ -6,12 +6,11 @@ import { useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import FeedSelect from '../Feeds/FeedSelect';
 import { newFolder } from '../../api/folder';
 import { getCollections } from '../../api/collection';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const NewFolderModal = ({ isOpen = false, isRedirect = true, closeModal }) => {
 	const dispatch = useDispatch();
@@ -55,7 +54,7 @@ const NewFolderModal = ({ isOpen = false, isRedirect = true, closeModal }) => {
 				<header>
 					<h1>{t('New folder')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 

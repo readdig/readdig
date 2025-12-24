@@ -3,12 +3,11 @@ import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { decodeHTML } from 'entities';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import Image from '../Image';
 import TimeAgo from '../TimeAgo';
 import PlayOrPause from './PlayOrPause';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const ArticleItem = ({
 	to,
@@ -49,7 +48,7 @@ const ArticleItem = ({
 				</div>
 				{removed && (
 					<div className="remove" onClick={onRemove} title={t('Remove')}>
-						<ExitIcon />
+						<IconX />
 					</div>
 				)}
 			</div>

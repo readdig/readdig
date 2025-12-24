@@ -3,16 +3,17 @@ import classNames from 'classnames';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import {
+	IconListDetails,
+	IconStar,
+	IconPlaylist,
+	IconHistory,
+	IconSearch,
+	IconRss,
+} from '@tabler/icons-react';
 
 import Total from '../Total';
 import { getTotals } from '../../api/total';
-
-import { ReactComponent as StarIcon } from '../../images/icons/star-outline.svg';
-import { ReactComponent as NewsIcon } from '../../images/icons/newspaper-variant-outline.svg';
-import { ReactComponent as CircleIcon } from '../../images/icons/record-circle-outline.svg';
-import { ReactComponent as PlayCircleIcon } from '../../images/icons/play-circle-outline.svg';
-import { ReactComponent as RSSIcon } from '../../images/icons/rss-box.svg';
-import { ReactComponent as SearchIcon } from '../../images/icons/magnify.svg';
 
 const SmartFeeds = () => {
 	const { t } = useTranslation();
@@ -40,7 +41,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/" title={t('Primary')}>
 					<div className="icon">
-						<NewsIcon />
+						<IconListDetails />
 					</div>
 					<div className="title">{t('Primary')}</div>
 					<Total value={totals.primary} />
@@ -53,7 +54,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/stars" title={t('Stars')}>
 					<div className="icon">
-						<StarIcon />
+						<IconStar />
 					</div>
 					<div className="title">{t('Stars')}</div>
 					<Total value={totals.star} />
@@ -66,7 +67,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/recent-read" title={t('Recent Read')}>
 					<div className="icon">
-						<CircleIcon />
+						<IconHistory />
 					</div>
 					<div className="title">{t('Recent Read')}</div>
 					<Total value={totals.recentRead} />
@@ -79,7 +80,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/recent-played" title={t('Recent Played')}>
 					<div className="icon">
-						<PlayCircleIcon />
+						<IconPlaylist />
 					</div>
 					<div className="title">{t('Recent Played')}</div>
 					<Total value={totals.recentPlayed} />
@@ -92,7 +93,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/search" title={t('Search')}>
 					<div className="icon">
-						<SearchIcon />
+						<IconSearch />
 					</div>
 					<div className="title">{t('Search')}</div>
 				</Link>
@@ -104,7 +105,7 @@ const SmartFeeds = () => {
 			>
 				<Link to="/library" title={t('Library')}>
 					<div className="icon">
-						<RSSIcon />
+						<IconRss />
 					</div>
 					<div className="title">{t('Library')}</div>
 					<Total value={totals.feed} />

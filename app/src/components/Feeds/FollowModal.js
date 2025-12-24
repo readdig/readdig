@@ -4,11 +4,10 @@ import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import FolderSelect from '../../components/Folders/FolderSelect';
 import { followFeed } from '../../api/follow';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const FollowModal = ({ isOpen = false, feed = {}, closeModal }) => {
 	const dispatch = useDispatch();
@@ -50,7 +49,7 @@ const FollowModal = ({ isOpen = false, feed = {}, closeModal }) => {
 						{t('Subscribe')} {feed.title && `${feed.title}`}
 					</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

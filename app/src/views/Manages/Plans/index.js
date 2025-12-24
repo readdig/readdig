@@ -6,7 +6,7 @@ import Loader from '../../../components/Loader';
 import PageTitle from '../../../components/PageTitle';
 import TimeAgo from '../../../components/TimeAgo';
 import SearchInput from '../../../components/SearchInput';
-import MoreIcon from '../../../components/MoreIcon';
+import MoreButton from '../../../components/MoreButton';
 import Paging from '../../../components/Paging';
 import AddModal from './AddModal';
 import FilterPopover from './FilterPopover';
@@ -97,7 +97,7 @@ const Plans = () => {
 											<span>{item.name}</span>
 										</div>
 										<div className="action">
-											<MoreIcon
+											<MoreButton
 												onClick={(anchorRef, skipClick) => {
 													openPopover(anchorRef, skipClick, item);
 												}}

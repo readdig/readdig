@@ -3,6 +3,7 @@ import { Link, useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
+import { IconHome, IconArrowLeft, IconLayoutSidebar } from '@tabler/icons-react';
 
 import SearchBar from './SearchBar';
 import UserAvatar from './Avatar/UserAvatar';
@@ -12,10 +13,6 @@ import ArticleLike from './Feeds/ArticleLike';
 import ArticleShare from './Feeds/ArticleShare';
 import ArticleFulltext from './Feeds/ArticleFulltext';
 import ArticlePaging from './Feeds/ArticlePaging';
-
-import { ReactComponent as HomeIcon } from '../images/icons/home-outline.svg';
-import { ReactComponent as BackIcon } from '../images/icons/arrow-left.svg';
-import { ReactComponent as MenuIcon } from '../images/icons/view-headline.svg';
 
 const Header = ({ icon }) => {
 	const { t } = useTranslation();
@@ -41,12 +38,12 @@ const Header = ({ icon }) => {
 			<div className="left">
 				{(!icon || icon === 'menu') && (
 					<button className="icon menu" onClick={toggleMenu} title={t('Expand/Collapse')}>
-						<MenuIcon />
+						<IconLayoutSidebar size={20} />
 					</button>
 				)}
 				{icon === 'home' && (
 					<Link className="icon home" to="/" title={t('Home')}>
-						<HomeIcon />
+						<IconHome size={20} />
 					</Link>
 				)}
 				{isTabletOrMobile && (
@@ -57,7 +54,7 @@ const Header = ({ icon }) => {
 							history.goBack();
 						}}
 					>
-						<BackIcon />
+						<IconArrowLeft size={20} />
 					</button>
 				)}
 			</div>

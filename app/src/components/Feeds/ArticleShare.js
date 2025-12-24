@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconShare } from '@tabler/icons-react';
 
 import config from '../../config';
 import ShareModal from './ShareModal';
-
-import { ReactComponent as ShareIcon } from '../../images/icons/share-variant-outline.svg';
 
 const ArticleStared = ({ article = {} }) => {
 	const { t } = useTranslation();
@@ -33,7 +32,7 @@ const ArticleStared = ({ article = {} }) => {
 	return (
 		<>
 			<span className="sharing" title={t('Share article')} onClick={onShare}>
-				<ShareIcon />
+				<IconShare />
 			</span>
 			<ShareModal isOpen={modalIsOpen} shareId={article.id} closeModal={closeModal} />
 		</>

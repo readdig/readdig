@@ -2,19 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconPlus, IconPencil, IconX } from '@tabler/icons-react';
 
 import { Menu, MenuItem, MenuDivider, FocusableItem } from '../Menu';
 import SearchInput from '../SearchInput';
 import RenameModal from '../Folders/RenameModal';
 import DeleteModal from '../Folders/DeleteModal';
-
 import { followFolder, unfollowFeed } from '../../api/follow';
 import { getFolders, newFolder } from '../../api/folder';
 import { getCollections } from '../../api/collection';
-
-import { ReactComponent as PlusIcon } from '../../images/icons/plus.svg';
-import { ReactComponent as EditIcon } from '../../images/icons/pencil-outline.svg';
-import { ReactComponent as CloseIcon } from '../../images/icons/close.svg';
 
 const FollowPopover = ({
 	isOpen = false,
@@ -139,7 +135,7 @@ const FollowPopover = ({
 									submitting
 								}
 							>
-								<PlusIcon />
+								<IconPlus />
 							</button>
 						</form>
 					)}
@@ -162,14 +158,14 @@ const FollowPopover = ({
 										title={t('Rename')}
 										onClick={(e) => openModal(e, 'rename', item)}
 									>
-										<EditIcon />
+										<IconPencil />
 									</i>
 									<i
 										className="icon"
 										title={t('Delete')}
 										onClick={(e) => openModal(e, 'delete', item)}
 									>
-										<CloseIcon />
+										<IconX />
 									</i>
 								</div>
 							</MenuItem>

@@ -5,6 +5,16 @@ import { sort } from 'fast-sort';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+	IconPlayerSkipBack,
+	IconPlayerSkipForward,
+	IconPlayerPause,
+	IconPlayerPlay,
+	IconX,
+	IconRepeat,
+	IconRepeatOff,
+	IconBroadcast,
+} from '@tabler/icons-react';
 
 import Volume from './Volume';
 import Duration from './Duration';
@@ -12,15 +22,6 @@ import Time from '../Time';
 import Image from '../Image';
 import { updateMetadata, updateActionHandlers } from '../../utils/metadata';
 import { playListen } from '../../api/listen';
-
-import { ReactComponent as RewindIcon } from '../../images/player/rewind.svg';
-import { ReactComponent as ForwardIcon } from '../../images/player/forward.svg';
-import { ReactComponent as PauseIcon } from '../../images/player/pause.svg';
-import { ReactComponent as PlayIcon } from '../../images/player/play.svg';
-import { ReactComponent as CloseIcon } from '../../images/player/close.svg';
-import { ReactComponent as RepeatIcon } from '../../images/player/repeat.svg';
-import { ReactComponent as RepeatOffIcon } from '../../images/player/repeat-off.svg';
-import { ReactComponent as PodcastIcon } from '../../images/icons/podcast.svg';
 
 const Player = () => {
 	const { t } = useTranslation();
@@ -218,22 +219,22 @@ const Player = () => {
 					<div className="left">
 						<Image relative={true} src={`/images/article/${episode.id}?w=120&h=120`} />
 						<div className="loop" onClick={toggleLoop}>
-							{loop ? <RepeatIcon /> : <RepeatOffIcon />}
+							{loop ? <IconRepeat size={20} /> : <IconRepeatOff size={20} />}
 						</div>
 						<div className="rewind" onClick={skipRewind}>
-							<RewindIcon />
+							<IconPlayerSkipBack size={24} />
 						</div>
 						{episode.playing ? (
 							<div className="pause" onClick={togglePlayPause}>
-								<PauseIcon />
+								<IconPlayerPause size={24} />
 							</div>
 						) : (
 							<div className="play" onClick={togglePlayPause}>
-								<PlayIcon />
+								<IconPlayerPlay size={24} />
 							</div>
 						)}
 						<div className="forward" onClick={skipForward}>
-							<ForwardIcon />
+							<IconPlayerSkipForward size={24} />
 						</div>
 						<div className="speed" onClick={setPlaybackSpeed}>
 							{playbackRate}x
@@ -264,10 +265,10 @@ const Player = () => {
 							title={episode.feed.title}
 							to={`/feed/${episode.feed.id}`}
 						>
-							<PodcastIcon />
+							<IconBroadcast size={20} />
 						</Link>
 						<div className="click" title={t('Close player')} onClick={playClose}>
-							<CloseIcon />
+							<IconX size={20} />
 						</div>
 					</div>
 					<ReactPlayer

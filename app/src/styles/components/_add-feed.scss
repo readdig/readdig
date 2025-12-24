@@ -32,13 +32,13 @@
       padding: rem(5px) rem(10px);
 
       svg {
-        transition: transform 0.3s ease, stroke 0.3s ease;
+        transition: transform 0.3s ease, color 0.3s ease;
       }
 
       @media (hover: hover) {
         &:hover {
           svg {
-            stroke: var(--primary-dark);
+            color: var(--primary-dark);
             transform: scale(1.1);
           }
         }
@@ -59,7 +59,7 @@
     @media (hover: hover) {
       &:hover {
         svg {
-          stroke: var(--primary-dark);
+          color: var(--primary-dark);
           transform: scale(1.1);
         }
       }

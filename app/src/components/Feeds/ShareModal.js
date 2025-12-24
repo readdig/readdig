@@ -2,11 +2,9 @@ import React, { useState, useRef } from 'react';
 import ReactModal from 'react-modal';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { useTranslation } from 'react-i18next';
+import { IconX, IconCopy } from '@tabler/icons-react';
 
 import config from '../../config';
-
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
-import { ReactComponent as CopyIcon } from '../../images/icons/content-copy.svg';
 
 const ShareModal = ({ isOpen = false, shareId, closeModal }) => {
 	const textInput = useRef();
@@ -30,7 +28,7 @@ const ShareModal = ({ isOpen = false, shareId, closeModal }) => {
 				<header>
 					<h1>{t('Share article link')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<section>
@@ -46,7 +44,7 @@ const ShareModal = ({ isOpen = false, shareId, closeModal }) => {
 								text={`${config.product.url}/share/${shareId}`}
 								onCopy={() => setCopied(true)}
 							>
-								<CopyIcon className="clickable" />
+								<IconCopy className="clickable" />
 							</CopyToClipboard>
 						</div>
 						{copied && <div className="note">{t('Copied')}</div>}

@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { IconFileText, IconFileTextFilled } from '@tabler/icons-react';
 
 import Loader from '../Loader';
 import { getArticleById } from '../../api/article';
-
-import { ReactComponent as TextBoxIcon } from '../../images/icons/text-box.svg';
-import { ReactComponent as TextBoxOutlineIcon } from '../../images/icons/text-box-outline.svg';
-import { ReactComponent as TextBoxCheckIcon } from '../../images/icons/text-box-check.svg';
 
 const ArticleFulltext = ({ article = {} }) => {
 	const dispatch = useDispatch();
@@ -27,7 +24,9 @@ const ArticleFulltext = ({ article = {} }) => {
 	};
 
 	return loading ? (
-		<Loader />
+		<span className="fulltext">
+			<Loader />
+		</span>
 	) : (
 		<>
 			{!article.feed.fullText || (article.feed.fullText && !article.fullText) ? (
@@ -36,11 +35,11 @@ const ArticleFulltext = ({ article = {} }) => {
 					title={!fulltext ? t('Get full text') : t('Cancel full text')}
 					onClick={onClick}
 				>
-					{!fulltext ? <TextBoxOutlineIcon /> : <TextBoxIcon />}
+					{!fulltext ? <IconFileText /> : <IconFileTextFilled />}
 				</span>
 			) : (
 				<span className="fulltext" title={t('Auto full text')}>
-					<TextBoxCheckIcon />
+					<IconFileTextFilled />
 				</span>
 			)}
 		</>

@@ -1,16 +1,16 @@
 import React from 'react';
+import { IconFilter } from '@tabler/icons-react';
 
 import { MenuButton } from './Menu';
-import { ReactComponent as Icon } from '../images/icons/filter.svg';
 
-const FilterIcon = ({ onClick }) => {
+const FilterButton = ({ onClick }) => {
 	return (
 		<MenuButton onClick={onClick}>
 			<div className="btn last">
-				<Icon />
+				<IconFilter />
 			</div>
 		</MenuButton>
 	);
 };
 
-export default FilterIcon;
+export default FilterButton;

@@ -1,8 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { ReactComponent as PauseIcon } from '../../images/player/pause.svg';
-import { ReactComponent as PlayIcon } from '../../images/player/play.svg';
+import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
 
 const PlayOrPause = ({ article = {} }) => {
 	const dispatch = useDispatch();
@@ -25,7 +23,7 @@ const PlayOrPause = ({ article = {} }) => {
 
 	return (
 		<div className={inPlayer ? 'pause' : 'play'} onClick={playOrPauseEpisode}>
-			{inPlayer && isPlaying ? <PauseIcon /> : <PlayIcon />}
+			{inPlayer && isPlaying ? <IconPlayerPause /> : <IconPlayerPlay />}
 		</div>
 	);
 };

@@ -4,9 +4,9 @@ import ReactModal from 'react-modal';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { useTranslation } from 'react-i18next';
+import { IconX } from '@tabler/icons-react';
 
 import { renameTag } from '../../api/tag';
-import { ReactComponent as ExitIcon } from '../../images/icons/close.svg';
 
 const RenameModal = ({ tag = {}, isOpen = false, closeModal }) => {
 	const { t } = useTranslation();
@@ -51,7 +51,7 @@ const RenameModal = ({ tag = {}, isOpen = false, closeModal }) => {
 				<header>
 					<h1>{t('Rename tag')}</h1>
 					<span className="exit" onClick={onClose}>
-						<ExitIcon />
+						<IconX />
 					</span>
 				</header>
 				<form onSubmit={handleSubmit(onSubmit)}>

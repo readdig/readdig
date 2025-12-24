@@ -33,13 +33,13 @@
 
 		.remove {
 			svg {
-				fill: var(--svg-light) !important;
+				color: var(--svg-light) !important;
 			}
 
 			@media (hover: hover) {
 				&:hover {
 					svg {
-						fill: var(--svg-medium) !important;
+						color: var(--svg-medium) !important;
 					}
 				}
 			}
@@ -93,9 +93,7 @@
 				border-radius: $border-radius-circle;
 
 				svg {
-					fill: var(--svg-light);
-					width: 1.25rem;
-					height: 1.25rem;
+					color: var(--svg-light);
 				}
 			}
 		}
@@ -168,7 +166,7 @@
 			padding: rem(2px);
 
 			svg {
-				fill: var(--svg);
+				color: var(--svg);
 				width: 0.875rem;
 				height: 0.875rem;
 			}
@@ -176,7 +174,7 @@
 			@media (hover: hover) {
 				&:hover {
 					svg {
-						fill: var(--svg-dark);
+						color: var(--svg-dark);
 					}
 				}
 			}

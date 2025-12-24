@@ -4,9 +4,7 @@ import { HashLink } from 'react-router-hash-link';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { ReactComponent as SettingsIcon } from '../../images/icons/settings-outline.svg';
-import { ReactComponent as AccountIcon } from '../../images/icons/account-outline.svg';
-import { ReactComponent as HelpIcon } from '../../images/icons/help-circle-outline.svg';
+import { IconSettings, IconUser, IconHelpCircle } from '@tabler/icons-react';
 
 const Menu = () => {
 	const { t, i18n } = useTranslation();
@@ -17,7 +15,7 @@ const Menu = () => {
 	return (
 		<>
 			<h3>
-				<SettingsIcon />
+				<IconSettings />
 				<span>{t('General')}</span>
 			</h3>
 			<ul>
@@ -44,7 +42,7 @@ const Menu = () => {
 				</li>
 			</ul>
 			<h3>
-				<AccountIcon />
+				<IconUser />
 				<span>{t('Accounts')}</span>
 			</h3>
 			<ul>
@@ -101,7 +99,7 @@ const Menu = () => {
 			{i18n.language === 'zh-cn' && (
 				<>
 					<h3>
-						<HelpIcon />
+						<IconHelpCircle />
 						<span>{t('Help')}</span>
 					</h3>
 					<ul>

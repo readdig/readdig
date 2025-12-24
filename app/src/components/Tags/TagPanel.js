@@ -3,19 +3,20 @@ import classNames from 'classnames';
 import { toast } from 'react-toastify';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import { useTranslation } from 'react-i18next';
+import {
+	IconPlus,
+	IconPencil,
+	IconX,
+	IconChevronLeft,
+	IconChevronRight,
+	IconChevronsDown,
+} from '@tabler/icons-react';
 
 import SearchInput from '../SearchInput';
 import RenameModal from './RenameModal';
 import DeleteModal from './DeleteModal';
 import { Menu, MenuButton, MenuItem, MenuDivider, FocusableItem } from '../Menu';
 import { getTags, addTag } from '../../api/tag';
-
-import { ReactComponent as PlusIcon } from '../../images/icons/plus.svg';
-import { ReactComponent as EditIcon } from '../../images/icons/pencil-outline.svg';
-import { ReactComponent as CloseIcon } from '../../images/icons/close.svg';
-import { ReactComponent as ArrowLeftIcon } from '../../images/icons/chevron-left.svg';
-import { ReactComponent as ArrowRightIcon } from '../../images/icons/chevron-right.svg';
-import { ReactComponent as ArrowDownIcon } from '../../images/icons/chevron-double-down.svg';
 
 function LeftArrow() {
 	const { isFirstItemVisible, scrollPrev, visibleItemsWithoutSeparators, initComplete } =
@@ -32,7 +33,7 @@ function LeftArrow() {
 
 	return (
 		<div className="arrow" onClick={() => !disabled && scrollPrev()}>
-			<ArrowLeftIcon />
+			<IconChevronLeft />
 		</div>
 	);
 }
@@ -52,7 +53,7 @@ function RightArrow() {
 
 	return (
 		<div className="arrow" onClick={() => !disabled && scrollNext()}>
-			<ArrowRightIcon />
+			<IconChevronRight />
 		</div>
 	);
 }
@@ -212,7 +213,7 @@ const TagPanel = ({ onChange }) => {
 				</ScrollMenu>
 				<MenuButton onClick={openMenu}>
 					<div className="open" title={t('More tags')}>
-						<ArrowDownIcon />
+						<IconChevronsDown />
 					</div>
 				</MenuButton>
 				<Menu
@@ -249,7 +250,7 @@ const TagPanel = ({ onChange }) => {
 										submitting
 									}
 								>
-									<PlusIcon />
+									<IconPlus />
 								</button>
 							</form>
 						)}
@@ -282,14 +283,14 @@ const TagPanel = ({ onChange }) => {
 												title={t('Rename')}
 												onClick={(e) => openModal(e, 'rename', item)}
 											>
-												<EditIcon />
+												<IconPencil />
 											</i>
 											<i
 												className="icon"
 												title={t('Delete')}
 												onClick={(e) => openModal(e, 'delete', item)}
 											>
-												<CloseIcon />
+												<IconX />
 											</i>
 										</div>
 									</MenuItem>

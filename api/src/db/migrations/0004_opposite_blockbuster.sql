@@ -1,0 +1,1 @@
+CREATE INDEX "follows_user_folder_idx" ON "follows" USING btree ("user_id","folder_id");

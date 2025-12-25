@@ -44,7 +44,9 @@ const SmartFeeds = () => {
 						<IconListDetails />
 					</div>
 					<div className="title">{t('Primary')}</div>
-					<Total value={totals.primary} />
+					<div className="count">
+						<Total value={totals.primary} />
+					</div>
 				</Link>
 			</li>
 			<li
@@ -57,7 +59,9 @@ const SmartFeeds = () => {
 						<IconStar />
 					</div>
 					<div className="title">{t('Stars')}</div>
-					<Total value={totals.star} />
+					<div className="count">
+						<Total value={totals.star} />
+					</div>
 				</Link>
 			</li>
 			<li
@@ -70,7 +74,9 @@ const SmartFeeds = () => {
 						<IconHistory />
 					</div>
 					<div className="title">{t('Recent Read')}</div>
-					<Total value={totals.recentRead} />
+					<div className="count">
+						<Total value={totals.recentRead} />
+					</div>
 				</Link>
 			</li>
 			<li
@@ -83,7 +89,9 @@ const SmartFeeds = () => {
 						<IconPlaylist />
 					</div>
 					<div className="title">{t('Recent Played')}</div>
-					<Total value={totals.recentPlayed} />
+					<div className="count">
+						<Total value={totals.recentPlayed} />
+					</div>
 				</Link>
 			</li>
 			<li
@@ -108,7 +116,9 @@ const SmartFeeds = () => {
 						<IconRss />
 					</div>
 					<div className="title">{t('Library')}</div>
-					<Total value={totals.feed} />
+					<div className="count">
+						<Total value={totals.feed} />
+					</div>
 				</Link>
 			</li>
 		</ul>

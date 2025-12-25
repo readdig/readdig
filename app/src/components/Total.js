@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Total = ({ value = 0, title = '', className = 'count', showTitle = true }) => {
+const Total = ({ value = 0, title = '', className, showTitle = true }) => {
 	const val = parseInt(value || 0);
 
 	const formatValue = () => {

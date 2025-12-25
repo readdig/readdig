@@ -3,7 +3,7 @@ import { Link, useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
-import { IconHome, IconArrowLeft, IconLayoutSidebar } from '@tabler/icons-react';
+import { IconHome, IconArrowLeft, IconMenu2 } from '@tabler/icons-react';
 
 import SearchBar from './SearchBar';
 import UserAvatar from './Avatar/UserAvatar';
@@ -38,12 +38,12 @@ const Header = ({ icon }) => {
 			<div className="left">
 				{(!icon || icon === 'menu') && (
 					<button className="icon menu" onClick={toggleMenu} title={t('Expand/Collapse')}>
-						<IconLayoutSidebar size={20} />
+						<IconMenu2 />
 					</button>
 				)}
 				{icon === 'home' && (
 					<Link className="icon home" to="/" title={t('Home')}>
-						<IconHome size={20} />
+						<IconHome />
 					</Link>
 				)}
 				{isTabletOrMobile && (
@@ -54,7 +54,7 @@ const Header = ({ icon }) => {
 							history.goBack();
 						}}
 					>
-						<IconArrowLeft size={20} />
+						<IconArrowLeft />
 					</button>
 				)}
 			</div>

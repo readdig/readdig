@@ -219,22 +219,22 @@ const Player = () => {
 					<div className="left">
 						<Image relative={true} src={`/images/article/${episode.id}?w=120&h=120`} />
 						<div className="loop" onClick={toggleLoop}>
-							{loop ? <IconRepeat size={20} /> : <IconRepeatOff size={20} />}
+							{loop ? <IconRepeat /> : <IconRepeatOff />}
 						</div>
 						<div className="rewind" onClick={skipRewind}>
-							<IconPlayerSkipBack size={24} />
+							<IconPlayerSkipBack />
 						</div>
 						{episode.playing ? (
 							<div className="pause" onClick={togglePlayPause}>
-								<IconPlayerPause size={24} />
+								<IconPlayerPause />
 							</div>
 						) : (
 							<div className="play" onClick={togglePlayPause}>
-								<IconPlayerPlay size={24} />
+								<IconPlayerPlay />
 							</div>
 						)}
 						<div className="forward" onClick={skipForward}>
-							<IconPlayerSkipForward size={24} />
+							<IconPlayerSkipForward />
 						</div>
 						<div className="speed" onClick={setPlaybackSpeed}>
 							{playbackRate}x
@@ -265,10 +265,10 @@ const Player = () => {
 							title={episode.feed.title}
 							to={`/feed/${episode.feed.id}`}
 						>
-							<IconBroadcast size={20} />
+							<IconBroadcast />
 						</Link>
 						<div className="click" title={t('Close player')} onClick={playClose}>
-							<IconX size={20} />
+							<IconX />
 						</div>
 					</div>
 					<ReactPlayer

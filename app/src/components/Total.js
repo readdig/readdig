@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Total = ({ value = 0, title = '', className, showTitle = true }) => {
+const Total = ({ value = 0, className }) => {
 	const val = parseInt(value || 0);
 
 	const formatValue = () => {
@@ -28,17 +28,10 @@ const Total = ({ value = 0, title = '', className, showTitle = true }) => {
 				</>
 			);
 		}
-		return val;
+		return val > 0 ? val : '';
 	};
 
-	return (
-		<span
-			className={className}
-			title={showTitle ? (title ? `${title}${val}` : `${val}`) : undefined}
-		>
-			{formatValue()}
-		</span>
-	);
+	return <span className={className}>{formatValue()}</span>;
 };
 
 export default Total;

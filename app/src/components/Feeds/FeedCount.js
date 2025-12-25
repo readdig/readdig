@@ -9,7 +9,7 @@ const FeedCount = ({ unreadCount = 0 }) => {
 
 	return (
 		<div className="count" title={`${t('Unread count')}: ${unread}`}>
-			{unread ? <Total value={unread} showTitle={false} /> : ''}
+			{<Total value={unread} />}
 		</div>
 	);
 };

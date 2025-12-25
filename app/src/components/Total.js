@@ -1,23 +1,37 @@
 import React from 'react';
-import { IconInfinity } from '@tabler/icons-react';
 
-const Total = ({ value = 0, title = '' }) => {
+const Total = ({ value = 0, title = '', className = 'count', showTitle = true }) => {
 	const val = parseInt(value || 0);
-	const limit = 10000;
 
-	if (val >= limit) {
-		return (
-			<div className="count" title={`${title}1w+`}>
-				<IconInfinity />
-			</div>
-		);
-	} else {
-		return (
-			<div className="count" title={`${title}${val}`}>
-				{val}
-			</div>
-		);
-	}
+	const formatValue = () => {
+		if (val >= 10000) {
+			const num = (val / 10000).toFixed(1).replace('.0', '');
+			return (
+				<>
+					{num}
+					<span className="unit">w+</span>
+				</>
+			);
+		} else if (val >= 1000) {
+			const num = (val / 1000).toFixed(1).replace('.0', '');
+			return (
+				<>
+					{num}
+					<span className="unit">k+</span>
+				</>
+			);
+		}
+		return val;
+	};
+
+	return (
+		<span
+			className={className}
+			title={showTitle ? (title ? `${title}${val}` : `${val}`) : undefined}
+		>
+			{formatValue()}
+		</span>
+	);
 };
 
 export default Total;

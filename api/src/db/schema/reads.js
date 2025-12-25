@@ -25,9 +25,8 @@ export const reads = pgTable(
 	(table) => [
 		index('reads_user_idx').on(table.userId),
 		index('reads_article_idx').on(table.articleId),
-		index('reads_view_idx').on(table.view),
 		uniqueIndex('reads_user_article_idx').on(table.userId, table.articleId),
-		index('reads_user_article_view_idx').on(table.userId, table.articleId, table.view),
+		index('reads_user_view_idx').on(table.userId, table.view),
 		index('reads_created_at_idx').on(table.createdAt),
 		index('reads_updated_at_idx').on(table.updatedAt),
 	],

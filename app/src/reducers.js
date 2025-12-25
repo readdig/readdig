@@ -235,16 +235,22 @@ const ACTION_HANDLERS = {
 		const feedIds = action.feedIds ? [...action.feedIds] : [];
 		const folderIds = action.folderIds || [];
 
-		const feeds = Object.values(follows).filter((follow) =>
+		const feedsInFolders = Object.values(follows).filter((follow) =>
 			folderIds.includes(follow.folderId),
 		);
 
 		const uniqueFeedIds = new Set(feedIds);
-		feeds.forEach((feed) => {
+		feedsInFolders.forEach((feed) => {
 			uniqueFeedIds.add(feed.id);
 		});
 
 		const mergedFeedIds = [...uniqueFeedIds];
+
+		for (const feedId of mergedFeedIds) {
+			if (follows[feedId]) {
+				follows[feedId] = { ...follows[feedId], unreadCount: 0 };
+			}
+		}
 
 		for (const articleId of Object.keys(articles)) {
 			const article = articles[articleId];
@@ -263,6 +269,7 @@ const ACTION_HANDLERS = {
 			reachedEndOfArticles:
 				Object.keys(articles).length === 0 ? true : previousState.reachedEndOfArticles,
 			articles,
+			follows,
 		};
 	},
 	DELETE_ARTICLE: (previousState, action) => {
@@ -306,10 +313,19 @@ const ACTION_HANDLERS = {
 		const article = action.article;
 		const articles = { ...previousState.articles };
 		const totals = { ...previousState.totals };
+		const follows = { ...previousState.follows };
 
 		if (articles[article.id] && articles[article.id].unread) {
 			articles[article.id].unread = false;
 			totals.recentRead = totals.recentRead + 1;
+
+			if (article.feed && article.feed.id && follows[article.feed.id]) {
+				const unreadCount = follows[article.feed.id].unreadCount || 0;
+				follows[article.feed.id] = {
+					...follows[article.feed.id],
+					unreadCount: Math.max(0, unreadCount - 1),
+				};
+			}
 		}
 
 		return {
@@ -317,6 +333,7 @@ const ACTION_HANDLERS = {
 			totals,
 			article,
 			articles,
+			follows,
 		};
 	},
 	STAR_ARTICLE: (previousState, action) => {

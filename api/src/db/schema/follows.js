@@ -34,7 +34,7 @@ export const follows = pgTable(
 		index('follows_feed_idx').on(table.feedId),
 		index('follows_folder_idx').on(table.folderId),
 		index('follows_alias_idx').on(table.alias),
-		index('follows_primary_idx').on(table.primary),
+		index('follows_user_primary_idx').on(table.userId, table.primary),
 		uniqueIndex('follows_user_feed_folder_idx').on(
 			table.userId,
 			table.feedId,

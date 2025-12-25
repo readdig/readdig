@@ -1,7 +1,7 @@
 import { eq, sql, count } from 'drizzle-orm';
 
 import { db } from '../db';
-import { follows, feeds, articles } from '../db/schema';
+import { follows, feeds, articles, reads } from '../db/schema';
 
 export const getFollowDetails = async (followId) => {
 	const [follow] = await db
@@ -15,13 +15,12 @@ export const getFollowDetails = async (followId) => {
 			type: feeds.type,
 			images: feeds.images,
 			valid: feeds.valid,
-			postCount: count(articles.id),
+			postCount: sql`(SELECT COUNT(*)::int FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`,
+			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${follows.userId}))`,
 		})
 		.from(follows)
 		.innerJoin(feeds, eq(follows.feedId, feeds.id))
-		.leftJoin(articles, eq(articles.feedId, feeds.id))
 		.where(eq(follows.id, followId))
-		.groupBy(follows.id, feeds.id)
 		.limit(1);
 
 	return follow;

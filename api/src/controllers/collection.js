@@ -1,8 +1,8 @@
-import { eq, like, asc, and, sql, or, count, isNotNull } from 'drizzle-orm';
+import { eq, like, asc, and, sql, or, isNotNull } from 'drizzle-orm';
 
 import { db } from '../db';
 import { lower } from '../db/lower';
-import { folders, follows, feeds, articles } from '../db/schema';
+import { folders, follows, feeds, articles, reads } from '../db/schema';
 import { isFeedType } from '../utils/feed';
 
 const buildConditions = ({ userId, folderId, searchText, type, status }) => {
@@ -83,25 +83,23 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount: count(articles.id).as('post_count'),
+				postCount:
+					sql`(SELECT COUNT(*) FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`.as(
+						'post_count',
+					),
+				unreadCount:
+					sql`(SELECT COUNT(*) FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`.as(
+						'unread_count',
+					),
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
 			.innerJoin(folders, eq(follows.folderId, folders.id))
-			.leftJoin(articles, eq(articles.feedId, feeds.id))
-			.where(and(...feedSubqueryConditions))
-			.groupBy(
-				feeds.id,
-				follows.folderId,
-				follows.primary,
-				follows.fullText,
-				follows.alias,
-				feeds.title,
-			),
+			.where(and(...feedSubqueryConditions)),
 	);
 
-	// Use CTE with json_agg for aggregation
-	const result = await db
+	// Query for feeds with folders
+	const foldersQueryPromise = db
 		.with(feedsWithCounts)
 		.select({
 			id: folders.id,
@@ -119,7 +117,8 @@ exports.list = async (req, res) => {
 						'url', ${feedsWithCounts.url},
 						'type', ${feedsWithCounts.type},
 						'valid', ${feedsWithCounts.valid},
-						'postCount', ${feedsWithCounts.postCount}
+						'postCount', ${feedsWithCounts.postCount},
+						'unreadCount', ${feedsWithCounts.unreadCount}
 					)
 					ORDER BY ${feedsWithCounts.title} ASC
 				) FILTER (WHERE ${feedsWithCounts.id} IS NOT NULL),
@@ -140,6 +139,8 @@ exports.list = async (req, res) => {
 		)
 		.orderBy(asc(folders.name));
 
+	// Query for feeds without folders (only when not filtering by folderId)
+	let noFolderQueryPromise = Promise.resolve([]);
 	if (!query.folderId) {
 		const noFolderWhereConditions = buildConditions({
 			userId,
@@ -149,7 +150,7 @@ exports.list = async (req, res) => {
 			status: query.status,
 		});
 
-		const noFolderFollows = await db
+		noFolderQueryPromise = db
 			.select({
 				id: feeds.id,
 				folderId: follows.folderId,
@@ -160,26 +161,32 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount: count(articles.id),
+				postCount: sql`(SELECT COUNT(*) FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`,
+				unreadCount: sql`(SELECT COUNT(*) FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
-			.leftJoin(articles, eq(articles.feedId, feeds.id))
 			.where(and(...noFolderWhereConditions))
-			.groupBy(follows.id, feeds.id)
 			.orderBy(
 				asc(
 					sql`CASE WHEN ${follows.alias} IS NOT NULL THEN ${follows.alias} ELSE ${feeds.title} END`,
 				),
 			);
+	}
 
-		if (noFolderFollows.length > 0) {
-			result.push({
-				id: '0',
-				name: 'UNGROUPED',
-				follows: noFolderFollows,
-			});
-		}
+	// Execute both queries in parallel
+	const [result, noFolderFollows] = await Promise.all([
+		foldersQueryPromise,
+		noFolderQueryPromise,
+	]);
+
+	// Append ungrouped feeds if any
+	if (noFolderFollows.length > 0) {
+		result.push({
+			id: '0',
+			name: 'UNGROUPED',
+			follows: noFolderFollows,
+		});
 	}
 
 	res.json(result);

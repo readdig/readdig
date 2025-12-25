@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 
 import Loader from '../Loader';
 import Image from '../Image';
-import Total from '../Total';
 import Holdable from '../Holdable';
 import FolderPopover from '../Folders/FolderPopover';
 import FeedPopover from './FeedPopover';
+import FeedCount from './FeedCount';
 import MoreButton from '../MoreButton';
 import CustomIcon from '../Folders/CustomIcon';
 import { getCollections } from '../../api/collection';
@@ -134,7 +134,10 @@ const FeedPanel = () => {
 										<CustomIcon isOpen={folderState} src={folder.icon} />
 									</Holdable>
 									<div className="title">{folder.name}</div>
-									<Total title={t('Feed count') + ': '} value={feeds.length} />
+									<FeedCount
+										unreadCount={feeds.reduce((sum, f) => sum + (f.unreadCount || 0), 0)}
+										postCount={feeds.reduce((sum, f) => sum + (f.postCount || 0), 0)}
+									/>
 									<div className="action">
 										<MoreButton
 											onClick={(anchorRef, skipClick) =>
@@ -169,7 +172,10 @@ const FeedPanel = () => {
 													/>
 												</div>
 												<div className="title">{feed.title}</div>
-												<Total title={t('Article count') + ': '} value={feed.postCount} />
+												<FeedCount
+													unreadCount={feed.unreadCount}
+													postCount={feed.postCount}
+												/>
 												<div className="action">
 													<MoreButton
 														onClick={(anchorRef, skipClick) =>
@@ -202,7 +208,7 @@ const FeedPanel = () => {
 										/>
 									</div>
 									<div className="title">{feed.title}</div>
-									<Total title={t('Article count') + ': '} value={feed.postCount} />
+									<FeedCount unreadCount={feed.unreadCount} postCount={feed.postCount} />
 									<div className="action">
 										<MoreButton
 											onClick={(anchorRef, skipClick) =>

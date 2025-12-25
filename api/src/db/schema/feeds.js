@@ -52,6 +52,7 @@ export const feeds = pgTable(
 	},
 	(table) => [
 		index('feeds_duplicate_of_idx').on(table.duplicateOfId),
+		index('feeds_duplicate_valid_idx').on(table.duplicateOfId, table.valid),
 		index('feeds_title_idx').on(table.title),
 		index('feeds_url_idx').on(table.url),
 		uniqueIndex('feeds_feed_url_idx').on(table.feedUrl),

@@ -318,7 +318,6 @@ exports.post = async (req, res) => {
 			url: feeds.url,
 			type: feeds.type,
 			valid: feeds.valid,
-			postCount: sql`(SELECT COUNT(*)::int FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`,
 			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
 		})
 		.from(follows)

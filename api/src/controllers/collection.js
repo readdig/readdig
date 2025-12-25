@@ -83,12 +83,8 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount:
-					sql`(SELECT COUNT(*) FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`.as(
-						'post_count',
-					),
 				unreadCount:
-					sql`(SELECT COUNT(*) FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`.as(
+					sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`.as(
 						'unread_count',
 					),
 			})
@@ -117,7 +113,6 @@ exports.list = async (req, res) => {
 						'url', ${feedsWithCounts.url},
 						'type', ${feedsWithCounts.type},
 						'valid', ${feedsWithCounts.valid},
-						'postCount', ${feedsWithCounts.postCount},
 						'unreadCount', ${feedsWithCounts.unreadCount}
 					)
 					ORDER BY ${feedsWithCounts.title} ASC
@@ -161,8 +156,7 @@ exports.list = async (req, res) => {
 				url: feeds.url,
 				type: feeds.type,
 				valid: feeds.valid,
-				postCount: sql`(SELECT COUNT(*) FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`,
-				unreadCount: sql`(SELECT COUNT(*) FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
+				unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))

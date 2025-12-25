@@ -1,4 +1,4 @@
-import { eq, sql, count } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { db } from '../db';
 import { follows, feeds, articles, reads } from '../db/schema';
@@ -15,7 +15,6 @@ export const getFollowDetails = async (followId) => {
 			type: feeds.type,
 			images: feeds.images,
 			valid: feeds.valid,
-			postCount: sql`(SELECT COUNT(*)::int FROM ${articles} WHERE ${articles.feedId} = ${feeds.id})`,
 			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${follows.userId}))`,
 		})
 		.from(follows)

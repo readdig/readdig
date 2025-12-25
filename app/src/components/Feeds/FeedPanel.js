@@ -136,7 +136,6 @@ const FeedPanel = () => {
 									<div className="title">{folder.name}</div>
 									<FeedCount
 										unreadCount={feeds.reduce((sum, f) => sum + (f.unreadCount || 0), 0)}
-										postCount={feeds.reduce((sum, f) => sum + (f.postCount || 0), 0)}
 									/>
 									<div className="action">
 										<MoreButton
@@ -172,10 +171,7 @@ const FeedPanel = () => {
 													/>
 												</div>
 												<div className="title">{feed.title}</div>
-												<FeedCount
-													unreadCount={feed.unreadCount}
-													postCount={feed.postCount}
-												/>
+												<FeedCount unreadCount={feed.unreadCount} />
 												<div className="action">
 													<MoreButton
 														onClick={(anchorRef, skipClick) =>
@@ -208,7 +204,7 @@ const FeedPanel = () => {
 										/>
 									</div>
 									<div className="title">{feed.title}</div>
-									<FeedCount unreadCount={feed.unreadCount} postCount={feed.postCount} />
+									<FeedCount unreadCount={feed.unreadCount} />
 									<div className="action">
 										<MoreButton
 											onClick={(anchorRef, skipClick) =>

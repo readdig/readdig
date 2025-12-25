@@ -45,7 +45,7 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Primary')}</div>
 					<div className="count">
-						<Total value={totals.primary} />
+						<Total value={totals.primary} showTitle={false} />
 					</div>
 				</Link>
 			</li>
@@ -60,7 +60,7 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Stars')}</div>
 					<div className="count">
-						<Total value={totals.star} />
+						<Total value={totals.star} showTitle={false} />
 					</div>
 				</Link>
 			</li>
@@ -75,7 +75,7 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Recent Read')}</div>
 					<div className="count">
-						<Total value={totals.recentRead} />
+						<Total value={totals.recentRead} showTitle={false} />
 					</div>
 				</Link>
 			</li>
@@ -90,7 +90,7 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Recent Played')}</div>
 					<div className="count">
-						<Total value={totals.recentPlayed} />
+						<Total value={totals.recentPlayed} showTitle={false} />
 					</div>
 				</Link>
 			</li>
@@ -117,7 +117,7 @@ const SmartFeeds = () => {
 					</div>
 					<div className="title">{t('Library')}</div>
 					<div className="count">
-						<Total value={totals.feed} />
+						<Total value={totals.feed} showTitle={false} />
 					</div>
 				</Link>
 			</li>

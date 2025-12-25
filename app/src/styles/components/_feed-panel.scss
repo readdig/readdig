@@ -137,23 +137,11 @@
           display: flex;
           align-items: center;
           justify-content: flex-end;
+          width: rem(38px);
           height: rem(22px);
           color: var(--text-medium);
           text-align: right;
           margin-left: rem(4px);
-
-          .unread {
-            color: var(--text-dark);
-          }
-
-          .separator {
-            margin: 0 rem(1px);
-            color: var(--text-light);
-          }
-
-          .total {
-            color: var(--text-medium);
-          }
 
           .unit {
             font-size: 0.8em;

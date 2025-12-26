@@ -16,6 +16,7 @@ export const folders = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => [
+		uniqueIndex('folders_user_id_idx').on(table.userId, table.id),
 		uniqueIndex('folders_user_name_idx').on(table.userId, table.name),
 		index('folders_user_idx').on(table.userId),
 		index('folders_created_at_idx').on(table.createdAt),

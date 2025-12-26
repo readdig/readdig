@@ -61,6 +61,7 @@ export const articles = pgTable(
 		index('articles_title_idx').on(table.title),
 		index('articles_type_idx').on(table.type),
 		index('articles_fingerprint_idx').on(table.fingerprint),
+		index('articles_feed_id_idx').on(table.feedId, table.id),
 		uniqueIndex('articles_feed_guid_idx').on(table.feedId, table.guid),
 		uniqueIndex('articles_feed_fingerprint_idx').on(table.feedId, table.fingerprint),
 		index('articles_feed_created_at_idx').on(table.feedId, table.createdAt),

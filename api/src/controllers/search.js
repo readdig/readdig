@@ -59,7 +59,10 @@ exports.get = async (req, res) => {
 			.where(
 				and(
 					eq(follows.userId, userId),
-					or(ilike(articles.title, searchPattern), ilike(articles.content, searchPattern)),
+					or(
+						ilike(articles.title, searchPattern),
+						ilike(articles.content, searchPattern),
+					),
 				),
 			)
 			.orderBy(desc(articles.datePublished))

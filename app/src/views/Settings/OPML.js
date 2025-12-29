@@ -35,7 +35,7 @@ const OPML = () => {
 			<h1>{t('Export OPML')}</h1>
 			<form className="settings-form">
 				<div className="form-group">{t('Export my feeds to an OPML file.')}</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button
 						className="btn primary"
 						onClick={download}

@@ -53,7 +53,7 @@ const Mail = () => {
 						{t('Enter a user id to send a test email for that admin user')}
 					</div>
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button
 						type="button"
 						className="btn primary"

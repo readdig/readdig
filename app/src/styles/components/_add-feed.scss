@@ -16,30 +16,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: rem(12px) 0;
-  gap: 5px;
+  padding: rem(8px) 0;
 
   .btn-actions {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
 
     .btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: rem(5px) rem(10px);
-
-      svg {
-        transition: transform 0.3s ease, color 0.3s ease;
-      }
+      padding: 0.25rem 0.625rem;
+      border-radius: 1.25rem;
 
       @media (hover: hover) {
         &:hover {
           svg {
             color: var(--primary-dark);
-            transform: scale(1.1);
           }
         }
       }

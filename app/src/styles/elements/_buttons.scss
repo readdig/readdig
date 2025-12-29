@@ -1,5 +1,7 @@
 .btn {
-	border: none;
+	display: flex;
+	align-items: center;
+	border: 1px solid var(--divider-light);
 	cursor: pointer;
 	font-size: rem(14px);
 	font-weight: 600;
@@ -10,55 +12,97 @@
 	padding: 0.375rem 1.125rem;
 	color: var(--text-dark);
 	text-decoration: none;
-	background-color: var(--bg-light);
+	background: linear-gradient(135deg, var(--bg) 0%, var(--bg-light) 80%);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	transition: all 0.25s ease;
 
 	@media (hover: hover) {
 		&:hover {
 			color: var(--text-dark);
 			text-decoration: none;
+			background: linear-gradient(135deg, var(--bg-light) 30%, var(--bg-medium) 100%);
+			border-color: var(--divider-medium);
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+			transform: translateY(-1px);
 		}
 	}
 
-	&:disabled {
+	&.active {
+		background: linear-gradient(135deg, var(--bg-light) 30%, var(--bg-medium) 100%);
+		border-color: var(--divider-medium);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	}
+
+	&:disabled,
+	&.disabled {
 		cursor: not-allowed;
-		background-color: var(--bg-light);
+		background: var(--bg-light);
 		color: var(--text-light);
+		box-shadow: none;
+		transform: none;
+
+		@media (hover: hover) {
+			&:hover {
+				background: var(--bg-light);
+				color: var(--text-light);
+				box-shadow: none;
+				transform: none;
+			}
+		}
 	}
 
 	&.primary {
-		background-color: var(--primary);
+		background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
 		color: var(--text);
 
 		@media (hover: hover) {
 			&:hover {
-				background-color: var(--primary-dark);
+				background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+				box-shadow: 0 2px 8px rgba(40, 180, 99, 0.4);
 			}
 		}
 
-		&:disabled {
-			background-color: var(--bg-light);
+		&:disabled,
+		&.disabled {
+			background: var(--bg-light);
 			color: var(--text-light);
+
+			@media (hover: hover) {
+				&:hover {
+					background: var(--bg-light);
+					box-shadow: none;
+				}
+			}
 		}
 	}
 
 	&.delete {
 		color: var(--text);
-		background-color: var(--danger);
+		background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
 
 		@media (hover: hover) {
 			&:hover {
-				background-color: var(--danger-dark);
+				background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
+				box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
 			}
 		}
 
-		&:disabled {
-			background-color: var(--bg-light);
+		&:disabled,
+		&.disabled {
+			background: var(--bg-light);
 			color: var(--text-light);
+
+			@media (hover: hover) {
+				&:hover {
+					background: var(--bg-light);
+					box-shadow: none;
+				}
+			}
 		}
 	}
 
 	&.link {
-		background-color: transparent;
+		background: transparent;
 		box-shadow: none;
 		color: var(--primary);
 
@@ -67,7 +111,7 @@
 
 			@media (hover: hover) {
 				&:hover {
-					background-color: var(--bg-light);
+					background: var(--bg-light);
 				}
 			}
 		}

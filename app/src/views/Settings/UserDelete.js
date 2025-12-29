@@ -41,7 +41,7 @@ const UserDelete = () => {
 				<div className="form-group">
 					{t('Once the account is deleted, it cannot be recovered, please be sure.')}
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button className="btn delete" onClick={openModal} type="button">
 						{t('Delete')}
 					</button>

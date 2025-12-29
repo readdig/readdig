@@ -40,17 +40,20 @@
 @import 'components/_smart-feeds.scss';
 @import 'components/_avatar-upload.scss';
 @import 'components/_search-bar.scss';
+@import 'components/_category-list.scss';
 @import 'components/_feed-list.scss';
 @import 'components/_feed-detail.scss';
 @import 'components/_font-size-range.scss';
 @import 'components/_plans.scss';
 @import 'components/_go-to-top.scss';
 @import 'components/_updater.scss';
+@import 'components/_icon-picker.scss';
 
 /* MODULES - Re-usable site elements.
 ========================================================================== */
 @import 'modules/_modal-form.scss';
 @import 'modules/_modal-confirm.scss';
+@import 'modules/_modal-feeds.scss';
 
 // views
 @import 'views/_404.scss';

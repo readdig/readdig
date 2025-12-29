@@ -110,7 +110,7 @@ const UserProfile = () => {
 						})}
 					/>
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button type="submit" className="btn primary" disabled={submitting}>
 						{t('Save')}
 					</button>

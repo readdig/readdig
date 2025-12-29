@@ -11,6 +11,7 @@ import Image from '../Image';
 import GoToTop from '../GoToTop';
 import PageTitle from '../PageTitle';
 import FeedTypeSelect from './FeedTypeSelect';
+import CategoryList from '../Categories/CategoryList';
 import SearchInput from '../SearchInput';
 import FollowPopover from './FollowPopover';
 import FeedLike from './FeedLike';
@@ -151,6 +152,19 @@ const FeedList = () => {
 					</div>
 				</div>
 			</div>
+			<CategoryList
+				value={filters.categoryId}
+				onChange={(value) => {
+					clearFeeds();
+					const params = {
+						...filters,
+						page: 1,
+						categoryId: value,
+					};
+					setFilters(params);
+					getFeeds(params);
+				}}
+			/>
 			<InfiniteScroll
 				key={scrollable.current}
 				scrollableTarget={scrollable.current}

@@ -1,0 +1,48 @@
+.category-list {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.625rem 0.625rem 0 0.625rem;
+  margin-bottom: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-item {
+    gap: 0.375rem;
+    padding: 0.3125rem 0.625rem 0.3125rem 0.25rem;
+    border-radius: 1.25rem;
+    white-space: nowrap;
+    font-weight: 500;
+    font-size: 0.8125rem;
+
+    .icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      flex-shrink: 0;
+
+      img {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
+    .name {
+      color: var(--text-dark);
+      transition: color 0.25s ease;
+    }
+  }
+}

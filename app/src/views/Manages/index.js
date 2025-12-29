@@ -8,6 +8,7 @@ import Header from '../../components/Header';
 import useWindowScroll from '../../hooks/useWindowScroll';
 import Menu from './Menu';
 import Feeds from './Feeds';
+import Categories from './Categories';
 import Articles from './Articles';
 import Accounts from './Accounts';
 import Mail from './Mail';
@@ -39,6 +40,7 @@ const Manages = () => {
 				<div className="settings-content">
 					<Switch>
 						<Route component={Feeds} path="/manages/feeds" />
+						<Route component={Categories} path="/manages/categories" />
 						<Route component={Articles} path="/manages/articles" />
 						<Route component={Accounts} path="/manages/accounts" />
 						<Route component={Mail} path="/manages/email" />

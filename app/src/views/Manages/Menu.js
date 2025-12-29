@@ -25,6 +25,13 @@ const Menu = () => {
 				</li>
 				<li
 					className={classNames({
+						active: pathname === '/manages/categories',
+					})}
+				>
+					<Link to="/manages/categories">{t('Manage categories')}</Link>
+				</li>
+				<li
+					className={classNames({
 						active: pathname === '/manages/articles',
 					})}
 				>

@@ -82,7 +82,7 @@ const History = () => {
 					</label>
 					<div className="note">{t('Clear played podcast history')}</div>
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button className="btn delete" type="submit">
 						{t('Clear')}
 					</button>

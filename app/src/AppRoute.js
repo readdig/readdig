@@ -107,6 +107,7 @@ const AppRoute = () => {
 				/>
 				<AuthedRoute component={Manages} exact path="/manages" />
 				<AuthedRoute component={Manages} view={true} path="/manages/feeds" />
+				<AuthedRoute component={Manages} view={true} path="/manages/categories" />
 				<AuthedRoute component={Manages} view={true} path="/manages/articles" />
 				<AuthedRoute component={Manages} view={true} path="/manages/accounts" />
 				<AuthedRoute component={Manages} view={true} path="/manages/email" />

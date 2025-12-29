@@ -2,7 +2,7 @@ import { eq, or, like, desc, asc, and, sql, count } from 'drizzle-orm';
 
 import { db } from '../db';
 import { lower } from '../db/lower';
-import { feeds, follows, likes } from '../db/schema';
+import { feeds, follows, likes, feedCategories } from '../db/schema';
 import { normalizeUrl } from '../utils/urls';
 import { isURL, isUUID } from '../utils/validation';
 import { escapeRegexp } from '../utils/escapeRegexp';
@@ -53,6 +53,16 @@ exports.list = async (req, res) => {
 	}
 	if (type) {
 		whereConditions.push(eq(feeds.type, type));
+	}
+	const categoryId = query.categoryId;
+	if (categoryId) {
+		whereConditions.push(
+			sql`EXISTS (
+				SELECT 1 FROM feed_categories
+				WHERE feed_categories.feed_id = ${feeds.id}
+				AND feed_categories.category_id = ${categoryId}
+			)`,
+		);
 	}
 	if (unsafeUrlsRegexp.length) {
 		const unsafeConditions = unsafeUrlsRegexp.map((url) =>

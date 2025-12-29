@@ -338,3 +338,9 @@ textarea {
 		}
 	}
 }
+
+.form-buttons {
+	display: flex;
+	align-items: center;
+	gap: rem(10px);
+}

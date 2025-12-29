@@ -96,7 +96,7 @@ const UserPassword = () => {
 						<div className="note">{errors.passwordConfirmation.message}</div>
 					)}
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button className="btn primary" disabled={submitting} type="submit">
 						{t('Save')}
 					</button>

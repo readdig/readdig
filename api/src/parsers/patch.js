@@ -172,7 +172,7 @@ export const FeedArticleMakeUp = (post, article) => {
 			}
 
 			if (enclosure.url && enclosure.url.trim()) {
-				const urlExists = article.attachments.some(a => a.url === enclosure.url);
+				const urlExists = article.attachments.some((a) => a.url === enclosure.url);
 				if (!urlExists) {
 					article.attachments.push({
 						url: enclosure.url,
@@ -190,7 +190,7 @@ export const FeedArticleMakeUp = (post, article) => {
 	if (post['rss:thumbnail'] && post['rss:thumbnail']['#']) {
 		const thumbnailUrl = post['rss:thumbnail']['#'];
 		if (thumbnailUrl && thumbnailUrl.trim()) {
-			const urlExists = article.attachments.some(a => a.url === thumbnailUrl);
+			const urlExists = article.attachments.some((a) => a.url === thumbnailUrl);
 			if (!urlExists) {
 				article.attachments.push({ url: thumbnailUrl });
 			}
@@ -202,7 +202,7 @@ export const FeedArticleMakeUp = (post, article) => {
 		const youtubeId = post['yt:videoid']['#'];
 		if (youtubeId && youtubeId.trim()) {
 			const youtubeUrl = `https://www.youtube.com/watch?v=${youtubeId}`;
-			const urlExists = article.attachments.some(a => a.url === youtubeUrl);
+			const urlExists = article.attachments.some((a) => a.url === youtubeUrl);
 			if (!urlExists) {
 				article.attachments.push({
 					mimeType: 'youtube',
@@ -235,7 +235,7 @@ export const FeedArticleMakeUp = (post, article) => {
 		!post['yt:videoid'] &&
 		/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/.test(post.link)
 	) {
-		const urlExists = article.attachments.some(a => a.url === post.link);
+		const urlExists = article.attachments.some((a) => a.url === post.link);
 		if (!urlExists) {
 			article.attachments.push({
 				url: post.link,
@@ -245,8 +245,12 @@ export const FeedArticleMakeUp = (post, article) => {
 	}
 
 	// fix tiktok
-	if (post.link && post.link.trim() && /tiktok\.com\/@[^/]+\/video\/\d+/.test(post.link)) {
-		const urlExists = article.attachments.some(a => a.url === post.link);
+	if (
+		post.link &&
+		post.link.trim() &&
+		/tiktok\.com\/@[^/]+\/video\/\d+/.test(post.link)
+	) {
+		const urlExists = article.attachments.some((a) => a.url === post.link);
 		if (!urlExists) {
 			article.attachments.push({
 				url: post.link,
@@ -261,7 +265,7 @@ export const FeedArticleMakeUp = (post, article) => {
 			if (!attachment.url || !attachment.url.trim()) {
 				return;
 			}
-			const urlExists = article.attachments.some(a => a.url === attachment.url);
+			const urlExists = article.attachments.some((a) => a.url === attachment.url);
 			if (urlExists) {
 				return;
 			}

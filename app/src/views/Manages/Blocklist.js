@@ -81,7 +81,7 @@ const Blocklist = () => {
 						{t('Image URL not allowed to be downloaded, multiple newlines.')}
 					</div>
 				</div>
-				<div className="form-group">
+				<div className="form-buttons">
 					<button className="btn primary" disabled={submitting} type="submit">
 						{t('Save')}
 					</button>

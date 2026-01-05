@@ -23,9 +23,9 @@ exports.list = async (req, res) => {
 			icon: categories.icon,
 			color: categories.color,
 			sort: categories.sort,
+			feedCount: sql`COALESCE(${count(feedCategories.id)}, 0)`.as('feedCount'),
 			createdAt: categories.createdAt,
 			updatedAt: categories.updatedAt,
-			feedCount: sql`COALESCE(${count(feedCategories.id)}, 0)`.as('feedCount'),
 		})
 		.from(categories)
 		.leftJoin(feedCategories, eq(feedCategories.categoryId, categories.id))
@@ -39,6 +39,10 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
+	if (!req.User || !req.User.admin) {
+		return res.status(403).json('You must be an admin to perform this action.');
+	}
+
 	const categoryId = req.params.id;
 
 	const category = await db.query.categories.findFirst({

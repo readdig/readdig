@@ -43,7 +43,7 @@ const options = {
 	allowedTags,
 	allowedAttributes: {
 		a: ['href', 'target', 'id'],
-		img: ['src', 'title', 'alt', 'width', 'height', 'height'],
+		img: ['src', 'title', 'alt', 'width', 'height', 'height', 'data-original'],
 		video: ['src', 'poster', 'type', 'controls', 'width', 'height'],
 		source: ['src', 'type'],
 		iframe: [

@@ -71,6 +71,17 @@ const Monitoring = () => {
 							<div>Failed: {data.queue.og.failed || 0}</div>
 						</div>
 					)}
+					{data.queue && data.queue.fulltext && (
+						<div className="settings-card">
+							<h3>Fulltext Queue</h3>
+							<div>Active: {data.queue.fulltext.active || 0}</div>
+							<div>Waiting: {data.queue.fulltext.waiting || 0}</div>
+							<div>Completed: {data.queue.fulltext.completed || 0}</div>
+							<div>Paused: {data.queue.fulltext.paused || 0}</div>
+							<div>Delayed: {data.queue.fulltext.delayed || 0}</div>
+							<div>Failed: {data.queue.fulltext.failed || 0}</div>
+						</div>
+					)}
 				</div>
 			)}
 		</>

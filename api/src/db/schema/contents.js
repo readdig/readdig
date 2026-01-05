@@ -14,7 +14,6 @@ export const contents = pgTable(
 		image: text('image'),
 		excerpt: text('excerpt').notNull(),
 		content: text('content').notNull(),
-		datePublished: timestamp('date_published').defaultNow(),
 		createdAt: timestamp('created_at').defaultNow(),
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},

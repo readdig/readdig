@@ -195,6 +195,17 @@ async function handleFeed(job) {
 			await addQueue('og', { feed: feedId });
 			logger.info(`OG queue add. feed with id ${feedId}`);
 		}
+
+		// Add to fulltext queue if feed has fullText enabled
+		if (feed.fullText) {
+			const fulltextFeeds = await getQueueStatus('fulltext');
+			const fulltextIds = fulltextFeeds.map((v) => v);
+			if (!fulltextIds.includes(feedId)) {
+				await addQueueStatus('fulltext', feedId);
+				await addQueue('fulltext', { feed: feedId });
+				logger.info(`Fulltext queue add. feed with id ${feedId}`);
+			}
+		}
 	}
 }
 

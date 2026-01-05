@@ -145,13 +145,14 @@ exports.monitoring = async (req, res) => {
 		return res.status(403).json('You must be an admin to perform this action.');
 	}
 
-	let queueFeed, queueOg;
+	let queueFeed, queueOg, queueFulltext;
 	try {
 		queueFeed = await queues.feed.getJobCounts();
 		queueOg = await queues.og.getJobCounts();
+		queueFulltext = await queues.fulltext.getJobCounts();
 	} catch (err) {
 		logger.error('Queues error:', err);
 	}
 
-	res.json({ queue: { feed: queueFeed, og: queueOg } });
+	res.json({ queue: { feed: queueFeed, og: queueOg, fulltext: queueFulltext } });
 };

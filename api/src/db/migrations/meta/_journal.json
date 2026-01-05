@@ -57,6 +57,13 @@
       "when": 1766967576403,
       "tag": "0007_aromatic_gabe_jones",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1767513657851,
+      "tag": "0008_lucky_reavers",
+      "breakpoints": true
     }
   ]
 }

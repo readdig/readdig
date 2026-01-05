@@ -25,8 +25,8 @@ async function readURL(url, options = {}) {
 			dispatcher,
 			...options,
 			headers: {
-				'User-Agent': config.useragent,
 				...options.headers,
+				'User-Agent': config.useragent,
 			},
 		});
 	} catch (err) {

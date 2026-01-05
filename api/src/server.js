@@ -92,7 +92,7 @@ api.use(
 			'/health',
 			'/status',
 			'/webhooks',
-			/\/plans(.*)\//,
+			/\/plans(.*)/,
 			/\/queues(.*)/,
 			/\/shares\/(.*)/,
 			/\/images\/(.*)/,

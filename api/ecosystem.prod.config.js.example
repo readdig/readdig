@@ -34,6 +34,14 @@ module.exports = {
       }
     },
     {
+      name: 'fulltext',
+      script: './dist/workers/fulltext.js',
+      instances: 1,
+      env: {
+        NODE_ENV: 'production'
+      }
+    },
+    {
       name: 'clean',
       script: './dist/workers/clean.js',
       instances: 1,

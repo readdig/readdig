@@ -50,6 +50,7 @@ function queueTracking(queueName) {
 export const queues = {
 	feed: queueTracking('feed'),
 	og: queueTracking('og'),
+	fulltext: queueTracking('fulltext'),
 };
 
 export function addQueue(queueName, ...arg) {

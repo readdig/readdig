@@ -11,3 +11,7 @@ export const debugFeed = (url) => {
 export const debugDiscover = (url) => {
 	return fetch('POST', '/debug/discover', { url });
 };
+
+export const debugFulltext = (url) => {
+	return fetch('POST', '/debug/fulltext', { url });
+};

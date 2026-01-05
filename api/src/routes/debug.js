@@ -5,4 +5,5 @@ module.exports = (api) => {
 	api.route('/debug/og').post(wrapAsync(Debug.og));
 	api.route('/debug/feed').post(wrapAsync(Debug.feed));
 	api.route('/debug/discover').post(wrapAsync(Debug.discover));
+	api.route('/debug/fulltext').post(wrapAsync(Debug.fulltext));
 };

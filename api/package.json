@@ -8,6 +8,7 @@
 		"conductor": "babel-node ./src/workers/conductor.js",
 		"feed": "babel-node ./src/workers/feed.js",
 		"og": "babel-node ./src/workers/og.js",
+		"fulltext": "babel-node ./src/workers/fulltext.js",
 		"clean": "babel-node ./src/workers/clean.js",
 		"dev": "pm2-dev ecosystem.dev.config.js",
 		"start": "cd dist && node server.js",
@@ -36,7 +37,7 @@
 		"node": ">=18.20.8"
 	},
 	"dependencies": {
-		"@mozilla/readability": "^0.5.0",
+		"@mozilla/readability": "^0.6.0",
 		"@sendgrid/mail": "^7.4.4",
 		"@sentry/node": "^6.4.1",
 		"bcrypt": "^6.0.0",

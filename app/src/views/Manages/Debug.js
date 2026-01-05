@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import PageTitle from '../../components/PageTitle';
 import Loader from '../../components/Loader';
-import { debugOG, debugFeed, debugDiscover } from '../../api/debug';
+import { debugOG, debugFeed, debugDiscover, debugFulltext } from '../../api/debug';
 
 const Debug = () => {
 	const { t } = useTranslation();
@@ -23,6 +23,8 @@ const Debug = () => {
 			res = await debugFeed(url);
 		} else if (debugType === 'discover') {
 			res = await debugDiscover(url);
+		} else if (debugType === 'fulltext') {
+			res = await debugFulltext(url);
 		}
 		if (res && res.data) {
 			setResult(res.data);
@@ -38,6 +40,8 @@ const Debug = () => {
 				return 'https://example.com/feed.xml';
 			case 'discover':
 				return 'https://example.com';
+			case 'fulltext':
+				return 'https://example.com/article';
 			default:
 				return 'https://example.com';
 		}
@@ -51,6 +55,8 @@ const Debug = () => {
 				return t('Debug Feed');
 			case 'discover':
 				return t('Debug Discover');
+			case 'fulltext':
+				return t('Debug Fulltext');
 			default:
 				return t('Debug');
 		}
@@ -74,6 +80,7 @@ const Debug = () => {
 							<option value="og">OG</option>
 							<option value="feed">Feed</option>
 							<option value="discover">Discover</option>
+							<option value="fulltext">Fulltext</option>
 						</select>
 						<input
 							type="text"

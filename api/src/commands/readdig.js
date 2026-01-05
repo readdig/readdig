@@ -6,6 +6,7 @@ import { isValidOGUrl, normalizeUrl } from '../utils/urls';
 import { ParseOG } from '../parsers/og';
 import { ParseFeed } from '../parsers/feed';
 import { DiscoverFeed } from '../parsers/discovery';
+import { ParseContent } from '../parsers/content';
 import { ogProcessor } from '../workers/og';
 import { feedProcessor } from '../workers/feed';
 import { isUUID } from '../utils/validation';
@@ -16,6 +17,7 @@ async function main() {
 		.version(config.version)
 		.option('--og <value>', 'Debug OG')
 		.option('--feed <value>', 'Debug RSS feeds')
+		.option('--fulltext <value>', 'Debug fulltext extraction')
 		.option('--discover <value>', 'Debug RSS discovery')
 		.option('--clean-queue', 'Clean Redis queues')
 		.parse(process.argv);
@@ -44,6 +46,15 @@ async function main() {
 		}
 	}
 
+	if (options.fulltext) {
+		if (isValidOGUrl(normalizeUrl(options.fulltext))) {
+			const content = await ParseContent(options.fulltext);
+			console.log(`Content info ${JSON.stringify(content)}`);
+		} else {
+			console.error(`Fulltext arg invalid`);
+		}
+	}
+
 	if (options.discover) {
 		if (normalizeUrl(options.discover)) {
 			const feedUrl = await DiscoverFeed(options.discover);
@@ -55,7 +66,7 @@ async function main() {
 
 	if (options.cleanQueue) {
 		console.log('Cleaning queues...');
-		for (const queueName of ['feed', 'og']) {
+		for (const queueName of ['feed', 'og', 'fulltext']) {
 			const queue = queues[queueName];
 			await queue.empty();
 			await queue.clean(0, 'failed');

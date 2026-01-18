@@ -103,6 +103,7 @@ exports.articles = async (req, res) => {
 		})
 		.from(articles)
 		.innerJoin(feeds, eq(articles.feedId, feeds.id))
+		.leftJoin(follows, eq(follows.feedId, feeds.id))
 		.where(
 			and(
 				eq(feeds.valid, true),
@@ -110,12 +111,11 @@ exports.articles = async (req, res) => {
 				sql`${articles.createdAt} > NOW() - INTERVAL '7 days'`,
 			),
 		)
+		.groupBy(articles.id, feeds.id)
 		.orderBy(
 			desc(sql`
 				(${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
-				(COALESCE((SELECT COUNT(*) FROM follows WHERE follows.feed_id = ${
-					feeds.id
-				}), 0) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
+				(COUNT(${follows.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
 				(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
 				(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})) /
 				POWER(GREATEST((EXTRACT(EPOCH FROM (NOW() - ${

@@ -108,7 +108,7 @@ exports.articles = async (req, res) => {
 			and(
 				eq(feeds.valid, true),
 				sql`${feeds.duplicateOfId} IS NULL`,
-				sql`${articles.createdAt} > NOW() - INTERVAL '30 days'`,
+				sql`${articles.createdAt} > NOW() - INTERVAL '7 days'`,
 			),
 		)
 		.groupBy(articles.id, feeds.id)

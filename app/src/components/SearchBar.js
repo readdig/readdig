@@ -188,11 +188,6 @@ const SearchBar = () => {
 						</button>
 					</div>
 					<div className="panel">
-						{results.length === 0 && (
-							<div className="panel-element no-content">
-								{t('No search results found')}
-							</div>
-						)}
 						{results.length > 0 &&
 							results.slice(0, query ? 9 : 10).map((item, i) => (
 								<div
@@ -222,11 +217,9 @@ const SearchBar = () => {
 						{query && (
 							<div
 								className={classNames('panel-element', {
-									selected: selectedIndex === Math.min(results.length - 1, 9),
+									selected: selectedIndex === Math.min(results.length, 9),
 								})}
-								onMouseEnter={() =>
-									handleResultMouseEnter(Math.min(results.length - 1, 9))
-								}
+								onMouseEnter={() => handleResultMouseEnter(Math.min(results.length, 9))}
 								onMouseDown={(e) => {
 									e.preventDefault();
 									handleResultClick(`/articles?q=${encodeURIComponent(query)}`);

@@ -7,9 +7,8 @@ import PageTitle from '../components/PageTitle';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import ArticlePanel from '../components/Feeds/ArticlePanel';
-import FeedList from '../components/Feeds/FeedList';
-import FeedDetail from '../components/Feeds/FeedDetail';
-import Search from '../views/Search';
+import Feeds from '../views/Feeds';
+import Articles from '../views/Articles';
 import useFontSize from '../hooks/useFontSize';
 import useWindowScroll from '../hooks/useWindowScroll';
 import useSubscriptionExpired from '../hooks/useSubscriptionExpired';
@@ -37,9 +36,8 @@ const Dashboard = () => {
 				<PageTitle />
 				<Sidebar />
 				<Switch>
-					<Route component={FeedDetail} path="/library/:libraryId" />
-					<Route component={FeedList} path="/library" />
-					<Route component={Search} path="/search" />
+					<Route component={Feeds} path="/feeds" />
+					<Route component={Articles} path="/articles" />
 					<Route
 						component={ArticlePanel}
 						path="/folder/:folderId/feed/:feedId/article/:articleId"

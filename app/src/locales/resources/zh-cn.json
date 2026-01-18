@@ -51,7 +51,6 @@
   "No feeds found": "未找到订阅",
   "No articles found": "还没有文章",
   "No content found": "未找到内容",
-  "Keywords and URL": "关键字和网址",
   "RSS": "RSS",
   "Podcast": "播客",
   "Subscribe": "订阅",
@@ -297,7 +296,6 @@
   "Search": "搜索",
   "Search feeds and articles...": "搜索订阅和文章...",
   "No results found": "未找到结果",
-  "Feeds": "订阅",
   "Articles": "文章",
   "Like article": "喜欢文章",
   "Unlike article": "取消喜欢",
@@ -307,8 +305,6 @@
   "Cancel free": "取消免费",
   "Free": "免费",
   "All": "全部",
-  "Recommended": "精选",
-  "Search my feeds and articles": "搜索我的订阅源和文章",
   "Category": "分类",
   "Manage categories": "分类管理",
   "Add category": "添加分类",
@@ -342,5 +338,10 @@
   "Search categories": "搜索分类",
   "Icon": "图标",
   "Icon URL or emoji": "图标 URL 或 emoji",
-  "Category description": "分类描述"
+  "Category description": "分类描述",
+  "Explore": "探索",
+  "Featured Feeds": "精选订阅源",
+  "Popular Articles": "热门文章",
+  "Enter keywords to search articles": "输入关键词搜索文章",
+  "Enter keywords or URL to search feeds": "输入关键词或 URL 搜索订阅源"
 }

@@ -51,9 +51,8 @@ const AppRoute = () => {
 		<div className={classNames('app')}>
 			<Switch>
 				<AuthedRoute component={Dashboard} exact path="/" />
-				<AuthedRoute component={Dashboard} exact path="/search" />
-				<AuthedRoute component={Dashboard} view={true} path="/library/:libraryId" />
-				<AuthedRoute component={Dashboard} exact path="/library" />
+				<AuthedRoute component={Dashboard} exact path="/feeds" />
+				<AuthedRoute component={Dashboard} exact path="/articles" />
 				<AuthedRoute component={Dashboard} view={true} path="/article/:articleId" />
 				<AuthedRoute component={Dashboard} exact path="/stars" />
 				<AuthedRoute component={Dashboard} view={true} path="/stars/article/:articleId" />

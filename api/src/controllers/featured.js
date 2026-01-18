@@ -1,22 +1,18 @@
-import { eq, or, like, desc, asc, and, sql, count } from 'drizzle-orm';
+import { eq, desc, asc, and, sql, count } from 'drizzle-orm';
 
 import { db } from '../db';
-import { lower } from '../db/lower';
-import { feeds, follows, likes } from '../db/schema';
+import { feeds, follows, likes, articles } from '../db/schema';
 import { normalizeUrl } from '../utils/urls';
-import { isURL, isUUID } from '../utils/validation';
 import { escapeRegexp } from '../utils/escapeRegexp';
 import { getUnsafeUrls } from '../utils/blocklist';
+import { FEED_WEIGHTS, ARTICLE_WEIGHTS } from '../utils/weights';
 
 exports.list = async (req, res) => {
 	const query = req.query || {};
 	const userId = req.user.sub;
 	const limit = parseInt(query.per_page || 20);
 	const offset = (parseInt(query.page || 1) - 1) * limit;
-	const featured = query.featured;
-	const type = query.type;
 	const categoryId = query.categoryId;
-	const searchText = decodeURIComponent(query.q || '').trim();
 	const unsafeUrls = await getUnsafeUrls();
 	const unsafeUrlsRegexp = unsafeUrls.map((url) =>
 		escapeRegexp(normalizeUrl(url, { stripProtocol: true }), 'i'),
@@ -24,37 +20,6 @@ exports.list = async (req, res) => {
 
 	let whereConditions = [sql`${feeds.duplicateOfId} IS NULL`, eq(feeds.valid, true)];
 
-	if (isURL(searchText)) {
-		const searchUrl = normalizeUrl(searchText, { stripProtocol: true });
-		whereConditions.push(
-			or(
-				like(lower(feeds.url), `%${searchUrl.toLowerCase()}%`),
-				like(lower(feeds.feedUrl), `%${searchUrl.toLowerCase()}%`),
-				sql`EXISTS (
-					SELECT 1 FROM jsonb_array_elements_text(${feeds.feedUrls}) AS feed_url
-					WHERE LOWER(feed_url) LIKE ${'%' + searchUrl.toLowerCase() + '%'}
-				)`,
-			),
-		);
-	} else if (isUUID(searchText)) {
-		whereConditions.push(eq(feeds.id, searchText));
-	} else if (searchText) {
-		const searchParts = searchText
-			.trim()
-			.split(' ')
-			.filter((s) => s)
-			.map((s) => like(lower(feeds.title), `%${s.trim().toLowerCase()}%`));
-		if (searchParts.length > 0) {
-			whereConditions.push(or(...searchParts));
-		}
-	}
-
-	if (featured === 'true') {
-		whereConditions.push(eq(feeds.featured, true));
-	}
-	if (type) {
-		whereConditions.push(eq(feeds.type, type));
-	}
 	if (categoryId) {
 		whereConditions.push(
 			sql`EXISTS (
@@ -97,12 +62,66 @@ exports.list = async (req, res) => {
 		.where(and(...whereConditions))
 		.groupBy(feeds.id)
 		.orderBy(
-			desc(feeds.featured),
-			desc(sql`follower_count`),
-			desc(feeds.likes),
-			asc(feeds.consecutiveScrapeFailures),
-			desc(feeds.createdAt),
+			desc(sql`
+				(CASE WHEN ${feeds.featured} THEN ${FEED_WEIGHTS.FEATURED} ELSE 0 END) +
+				(COUNT(${follows.id}) * ${FEED_WEIGHTS.FOLLOWER}) +
+				(${feeds.likes} * ${FEED_WEIGHTS.LIKE}) -
+				(${feeds.consecutiveScrapeFailures} * ${FEED_WEIGHTS.FAILURE_PENALTY}) +
+				(CASE WHEN ${feeds.fullText} THEN ${FEED_WEIGHTS.FULL_TEXT} ELSE 0 END) +
+				(CASE WHEN ${feeds.images}->>'featured' IS NOT NULL AND ${feeds.images}->>'featured' != '' THEN ${FEED_WEIGHTS.HAS_FEATURED_IMAGE} ELSE 0 END) +
+				(CASE WHEN ${feeds.images}->>'icon' IS NOT NULL AND ${feeds.images}->>'icon' != '' THEN ${FEED_WEIGHTS.HAS_ICON} ELSE 0 END) +
+				(CASE WHEN ${feeds.images}->>'og' IS NOT NULL AND ${feeds.images}->>'og' != '' THEN ${FEED_WEIGHTS.HAS_OG} ELSE 0 END)
+			`),
 			asc(feeds.id),
+		)
+		.limit(limit)
+		.offset(offset);
+
+	res.json(data);
+};
+
+exports.articles = async (req, res) => {
+	const query = req.query || {};
+	const limit = parseInt(query.per_page || 20);
+	const offset = (parseInt(query.page || 1) - 1) * limit;
+
+	const data = await db
+		.select({
+			id: articles.id,
+			title: articles.title,
+			description: articles.description,
+			attachments: articles.attachments,
+			type: articles.type,
+			likes: articles.likes,
+			views: articles.views,
+			createdAt: articles.createdAt,
+			feed: {
+				id: feeds.id,
+				title: feeds.title,
+				type: feeds.type,
+			},
+		})
+		.from(articles)
+		.innerJoin(feeds, eq(articles.feedId, feeds.id))
+		.leftJoin(follows, eq(follows.feedId, feeds.id))
+		.where(
+			and(
+				eq(feeds.valid, true),
+				sql`${feeds.duplicateOfId} IS NULL`,
+				sql`${articles.createdAt} > NOW() - INTERVAL '30 days'`,
+			),
+		)
+		.groupBy(articles.id, feeds.id)
+		.orderBy(
+			desc(sql`
+				(${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
+				(COUNT(${follows.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
+				(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
+				(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})) /
+				POWER(GREATEST((EXTRACT(EPOCH FROM (NOW() - ${
+					articles.createdAt
+				})) / 3600), 0) + 2, ${sql.raw(String(ARTICLE_WEIGHTS.GRAVITY))})
+			`),
 		)
 		.limit(limit)
 		.offset(offset);

@@ -8,8 +8,7 @@ import {
 	IconStar,
 	IconPlaylist,
 	IconHistory,
-	IconSearch,
-	IconRss,
+	IconCompass,
 } from '@tabler/icons-react';
 
 import Total from '../Total';
@@ -36,7 +35,7 @@ const SmartFeeds = () => {
 		<ul className="menu-list">
 			<li
 				className={classNames({
-					active: location.pathname === '/' || location.pathname.startsWith('/article'),
+					active: location.pathname === '/' || location.pathname.startsWith('/article/'),
 				})}
 			>
 				<Link to="/" title={t('Primary')}>
@@ -96,29 +95,16 @@ const SmartFeeds = () => {
 			</li>
 			<li
 				className={classNames({
-					active: location.pathname === '/search',
+					active:
+						location.pathname.startsWith('/feeds') ||
+						location.pathname.startsWith('/articles'),
 				})}
 			>
-				<Link to="/search" title={t('Search')}>
+				<Link to="/feeds" title={t('Explore')}>
 					<div className="icon">
-						<IconSearch />
+						<IconCompass />
 					</div>
-					<div className="title">{t('Search')}</div>
-				</Link>
-			</li>
-			<li
-				className={classNames({
-					active: location.pathname.startsWith('/library'),
-				})}
-			>
-				<Link to="/library" title={t('Library')}>
-					<div className="icon">
-						<IconRss />
-					</div>
-					<div className="title">{t('Library')}</div>
-					<div className="count">
-						<Total value={totals.feed} />
-					</div>
+					<div className="title">{t('Explore')}</div>
 				</Link>
 			</li>
 		</ul>

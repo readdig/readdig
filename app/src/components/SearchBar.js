@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { sort } from 'fast-sort';
 import { useHistory } from 'react-router-dom';
@@ -9,7 +9,6 @@ import classNames from 'classnames';
 import Image from './Image';
 import SearchInput from './SearchInput';
 import CustomIcon from './Folders/CustomIcon';
-import { search } from '../api/search';
 
 import {
 	IconStar,
@@ -27,7 +26,6 @@ const SearchBar = () => {
 	const [query, setQuery] = useState('');
 	const [displayResults, setDisplayResults] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [apiResults, setApiResults] = useState([]);
 	const follows = useSelector((state) =>
 		sort(Object.values(state.follows || {})).asc('title'),
 	);
@@ -36,20 +34,30 @@ const SearchBar = () => {
 	);
 
 	const results = useMemo(() => {
-		const menu = [
-			{ type: 'menu', icon: IconNews, url: '/', title: t('Primary') },
-			{ type: 'menu', icon: IconStar, url: '/stars', title: t('Stars') },
-			{ type: 'menu', icon: IconCircleDot, url: '/recent-read', title: t('Recent Read') },
-			{
-				type: 'menu',
-				icon: IconPlayerPlay,
-				url: '/recent-played',
-				title: t('Recent Played'),
-			},
-			{ type: 'menu', icon: IconRss, url: '/library', title: t('Library') },
-		];
-		const filtered = [
-			...menu,
+		if (!query) {
+			// No query, show default menu
+			const menu = [
+				{ type: 'menu', icon: IconNews, url: '/', title: t('Primary') },
+				{ type: 'menu', icon: IconStar, url: '/stars', title: t('Stars') },
+				{
+					type: 'menu',
+					icon: IconCircleDot,
+					url: '/recent-read',
+					title: t('Recent Read'),
+				},
+				{
+					type: 'menu',
+					icon: IconPlayerPlay,
+					url: '/recent-played',
+					title: t('Recent Played'),
+				},
+				{ type: 'menu', icon: IconRss, url: '/library', title: t('Library') },
+			];
+			return menu;
+		}
+
+		// Search local follows and folders
+		const localResults = [
 			...folders.map((folder) => ({
 				type: 'folder',
 				icon: folder.icon,
@@ -64,78 +72,8 @@ const SearchBar = () => {
 			})),
 		].filter((f) => new RegExp(query, 'i').test(f.title));
 
-		if (filtered.length === 0 && query && apiResults.length > 0) {
-			return [
-				...apiResults,
-				{
-					type: 'search',
-					icon: '/images/favicon.png',
-					url: `/search?q=${encodeURIComponent(query)}`,
-					title: `${t('Search')} "${query}"`,
-				},
-			];
-		}
-
-		if (query) {
-			return [
-				...filtered,
-				{
-					type: 'search',
-					icon: '/images/favicon.png', // Or a search icon
-					url: `/search?q=${encodeURIComponent(query)}`,
-					title: `${t('Search')} "${query}"`,
-				},
-			];
-		}
-		return filtered;
-	}, [t, query, folders, follows, apiResults]);
-
-	useEffect(() => {
-		const doSearch = async () => {
-			if (!query.trim()) {
-				setApiResults([]);
-				return;
-			}
-
-			// Check if we have local results
-			const localMatches = [...Object.values(follows), ...Object.values(folders)].some(
-				(f) => new RegExp(query, 'i').test(f.title || f.name),
-			);
-
-			if (localMatches) {
-				setApiResults([]);
-				return;
-			}
-
-			try {
-				const res = await search(query);
-				const { feeds, articles } = res.data;
-				const formattedResults = [
-					...feeds.map((f) => ({
-						type: 'feed',
-						icon: `/images/feed/${f.id}?w=60&h=60`,
-						url: `/feed/${f.id}`,
-						title: f.title,
-					})),
-					...articles.map((a) => ({
-						type: 'article',
-						icon: `/images/article/${a.id}?w=60&h=60`,
-						url: `/feed/${a.feedId}/article/${a.id}`,
-						title: a.title,
-					})),
-				];
-				setApiResults(formattedResults);
-			} catch (err) {
-				console.error(err);
-			}
-		};
-
-		const timer = setTimeout(() => {
-			doSearch();
-		}, 500);
-
-		return () => clearTimeout(timer);
-	}, [query, follows, folders]);
+		return localResults;
+	}, [t, query, folders, follows]);
 
 	useHotkeys('/', () => {
 		if (!displayResults) {
@@ -180,13 +118,15 @@ const SearchBar = () => {
 			e.preventDefault();
 			clearSearchResults();
 		}
-		if (results.length > 1) {
+		// Calculate total items: local results (max 9 when query exists) + search option (if query exists)
+		const totalItems = query ? Math.min(results.length, 9) + 1 : results.length;
+		if (totalItems > 1) {
 			if (e.keyCode === 40) {
 				// 40 is down
 				e.preventDefault();
 
 				let newPos = selectedIndex + 1;
-				if (newPos > 9) newPos = 0;
+				if (newPos >= Math.min(totalItems, 10)) newPos = 0;
 
 				setSelectedIndex(newPos);
 			} else if (e.keyCode === 38) {
@@ -194,7 +134,7 @@ const SearchBar = () => {
 				e.preventDefault();
 
 				let newPos = selectedIndex - 1;
-				if (newPos < 0) newPos = 0;
+				if (newPos < 0) newPos = Math.min(totalItems, 10) - 1;
 
 				setSelectedIndex(newPos);
 			}
@@ -204,15 +144,20 @@ const SearchBar = () => {
 	const handleFormSubmit = (e) => {
 		e.preventDefault();
 
-		if (!results.length) {
-			if (query) {
-				clearSearchResults();
-				history.push(`/search?q=${encodeURIComponent(query)}`);
-			}
+		const searchOptionIndex = query ? Math.min(results.length, 9) : -1;
+
+		// If search option is selected or no local results
+		if (query && (selectedIndex === searchOptionIndex || results.length === 0)) {
+			clearSearchResults();
+			history.push(`/articles?q=${encodeURIComponent(query)}`);
 			return;
 		}
-		const result = results[selectedIndex];
 
+		if (!results.length && !query) {
+			return;
+		}
+
+		const result = results[selectedIndex];
 		if (!result) return;
 		clearSearchResults();
 		history.push(result.url);
@@ -249,7 +194,7 @@ const SearchBar = () => {
 							</div>
 						)}
 						{results.length > 0 &&
-							results.slice(0, 10).map((item, i) => (
+							results.slice(0, query ? 9 : 10).map((item, i) => (
 								<div
 									key={item.url}
 									className={classNames('panel-element', {
@@ -267,7 +212,6 @@ const SearchBar = () => {
 										{item.type === 'feed' && (
 											<Image relative={true} src={item.icon} alt={item.title} />
 										)}
-										{item.type === 'search' && <IconSearch />}
 										{item.type === 'article' && (
 											<Image relative={true} src={item.icon} alt={item.title} />
 										)}
@@ -275,6 +219,25 @@ const SearchBar = () => {
 									<div className="title">{item.title}</div>
 								</div>
 							))}
+						{query && (
+							<div
+								className={classNames('panel-element', {
+									selected: selectedIndex === Math.min(results.length - 1, 9),
+								})}
+								onMouseEnter={() =>
+									handleResultMouseEnter(Math.min(results.length - 1, 9))
+								}
+								onMouseDown={(e) => {
+									e.preventDefault();
+									handleResultClick(`/articles?q=${encodeURIComponent(query)}`);
+								}}
+							>
+								<div className="icon">
+									<IconSearch />
+								</div>
+								<div className="title">{`${t('Search')} "${query}"`}</div>
+							</div>
+						)}
 					</div>
 				</form>
 				{displayResults && <div className="click-catcher" onClick={hideSearchResults} />}

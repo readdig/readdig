@@ -116,6 +116,49 @@
         }
       }
     }
+
+    .no-content {
+      grid-column: 1 / -1;
+    }
+
+    .pagination {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 0;
+
+      .page-info {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        min-width: 2rem;
+        text-align: center;
+      }
+
+      .btn-page {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        background-color: var(--background-secondary);
+        border: 1px solid var(--divider-medium);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background-color: var(--background-tertiary);
+          border-color: var(--divider-dark);
+        }
+
+        &:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      }
+    }
   }
 
   .end-loader,

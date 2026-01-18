@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import AsyncSelect from 'react-select/async';
 
 import { RSSIndicator, NoOptionsMessage, Option, Input } from './FeedOption';
-import { getFeatured } from '../../api/feed';
+import { search } from '../../api/search';
 
 const FeedAutocomplete = ({ placeholder, onChange }) => {
 	const [value, setValue] = useState();
@@ -11,9 +11,13 @@ const FeedAutocomplete = ({ placeholder, onChange }) => {
 	const follows = useSelector((state) => state.follows || {});
 
 	const loadOptions = async (inputValue) => {
-		const query = { q: encodeURIComponent(inputValue || ''), per_page: 8 };
-		const res = await getFeatured(query);
-		const data = res.data.map((f) => ({ value: f.id, label: f.title, feed: f }));
+		if (!inputValue) return [];
+		const res = await search(inputValue, { type: 'feeds' });
+		const data = (res.data.feeds || []).map((f) => ({
+			value: f.id,
+			label: f.title,
+			feed: f,
+		}));
 		return data;
 	};
 

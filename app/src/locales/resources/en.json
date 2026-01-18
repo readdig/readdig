@@ -51,7 +51,6 @@
   "No feeds found": "No feeds found",
   "No articles found": "No articles found",
   "No content found": "No content found",
-  "Keywords and URL": "Keywords and URL",
   "RSS": "RSS",
   "Podcast": "Podcast",
   "Subscribe": "Subscribe",
@@ -297,7 +296,6 @@
   "Search": "Search",
   "Search feeds and articles...": "Search feeds and articles...",
   "No results found": "No results found",
-  "Feeds": "Feeds",
   "Articles": "Articles",
   "Like article": "Like article",
   "Unlike article": "Unlike article",
@@ -307,6 +305,9 @@
   "Cancel free": "Cancel free",
   "Free": "Free",
   "All": "All",
-  "Recommended": "Featured",
-  "Search my feeds and articles": "Search my feeds and articles"
+  "Explore": "Explore",
+  "Featured Feeds": "Featured Feeds",
+  "Popular Articles": "Popular Articles",
+  "Enter keywords to search articles": "Enter keywords to search articles",
+  "Enter keywords or URL to search feeds": "Enter keywords or URL to search feeds"
 }

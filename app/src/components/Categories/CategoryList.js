@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
-import { useTranslation } from 'react-i18next';
 import { IconSparkles } from '@tabler/icons-react';
 import * as TablerIcons from '@tabler/icons-react';
 
@@ -14,7 +13,6 @@ const renderTablerIcon = (iconName, size = 18, color = null) => {
 };
 
 const CategoryList = ({ value, onChange }) => {
-	const { t } = useTranslation();
 	const [categories, setCategories] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -38,20 +36,11 @@ const CategoryList = ({ value, onChange }) => {
 
 	return (
 		<div className="category-list">
-			<button
-				className={classNames('btn', 'category-item', { active: !value })}
-				onClick={() => onChange(null)}
-			>
-				<div className="icon-wrapper">
-					<IconSparkles color="#f59e0b" />
-				</div>
-				<span className="name">{t('Recommended')}</span>
-			</button>
 			{categories.map((cat) => (
 				<button
 					key={cat.id}
 					className={classNames('btn', 'category-item', { active: value === cat.id })}
-					onClick={() => onChange(cat.id)}
+					onClick={() => onChange(value === cat.id ? null : cat.id)}
 					title={cat.description || cat.name}
 				>
 					<div className="icon-wrapper">

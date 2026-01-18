@@ -64,6 +64,13 @@
       "when": 1767513657851,
       "tag": "0008_lucky_reavers",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1768778437328,
+      "tag": "0009_featured_articles_optimization",
+      "breakpoints": true
     }
   ]
 }

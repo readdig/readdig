@@ -67,6 +67,7 @@ export const feeds = pgTable(
 		index('feeds_consecutive_scrape_failures_idx').on(table.consecutiveScrapeFailures),
 		index('feeds_created_at_idx').on(table.createdAt),
 		index('feeds_updated_at_idx').on(table.updatedAt),
+		index('feeds_valid_dup_id_idx').on(table.valid, table.duplicateOfId, table.id),
 	],
 );
 

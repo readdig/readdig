@@ -1,0 +1,2 @@
+CREATE INDEX "articles_created_feed_idx" ON "articles" USING btree ("created_at","feed_id");--> statement-breakpoint
+CREATE INDEX "feeds_valid_dup_id_idx" ON "feeds" USING btree ("valid","duplicate_of_id","id");

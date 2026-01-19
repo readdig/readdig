@@ -71,6 +71,13 @@
       "when": 1768778437328,
       "tag": "0009_featured_articles_optimization",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768784428500,
+      "tag": "0010_remove_articles_created_feed_idx",
+      "breakpoints": true
     }
   ]
 }

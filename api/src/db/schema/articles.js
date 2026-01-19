@@ -68,7 +68,6 @@ export const articles = pgTable(
 		index('articles_created_at_idx').on(table.createdAt),
 		index('articles_updated_at_idx').on(table.updatedAt),
 		index('articles_views_idx').on(table.views),
-		index('articles_created_feed_idx').on(table.createdAt, table.feedId),
 	],
 );
 

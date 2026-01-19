@@ -106,9 +106,8 @@ exports.articles = async (req, res) => {
 		.leftJoin(follows, eq(follows.feedId, feeds.id))
 		.where(
 			and(
-				eq(feeds.valid, true),
-				sql`${feeds.duplicateOfId} IS NULL`,
-				sql`${articles.createdAt} > NOW() - INTERVAL '7 days'`,
+				sql`${articles.duplicateOfId} IS NULL`,
+				sql`${articles.createdAt} > NOW() - INTERVAL '1 day'`,
 			),
 		)
 		.groupBy(articles.id, feeds.id)

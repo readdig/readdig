@@ -1,0 +1,1 @@
+DROP INDEX "articles_created_feed_idx";

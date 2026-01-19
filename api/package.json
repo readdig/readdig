@@ -40,7 +40,7 @@
 		"@mozilla/readability": "^0.6.0",
 		"@sendgrid/mail": "^7.4.4",
 		"@sentry/node": "^6.4.1",
-		"bcrypt": "^6.0.0",
+		"bcryptjs": "^2.4.3",
 		"bull": "^3.22.6",
 		"compression": "^1.7.4",
 		"content-type": "^1.0.4",

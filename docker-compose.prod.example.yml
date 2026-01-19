@@ -31,6 +31,8 @@ services:
       - '8000:8000'
     volumes:
       - ./data/static:/usr/src/readdig/api/static
+      # Optional: Override PM2 config
+      # - ./data/ecosystem.prod.config.js:/usr/src/readdig/api/ecosystem.prod.config.js
     depends_on:
       cache:
         condition: service_healthy

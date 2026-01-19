@@ -105,7 +105,7 @@ app/latest.html
 nginx.conf
 
 # PM2 Configurations
-ecosystem.prod.config.js
+
 
 # Docker Compose
 docker-compose.yml

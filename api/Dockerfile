@@ -1,34 +1,57 @@
-# Use node
-FROM node:20-alpine
+# Build stage
+FROM node:20-alpine AS builder
 
-# Install PM2 and redis-cli, postgresql-client globally
-RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
-
-# Create app directory
 WORKDIR /usr/src/readdig/api
 
-# Copy app source code
+# Copy package files first for better layer caching
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Copy source code
 COPY . .
 
-# Inatall package
-RUN yarn install
+# Build
+RUN rm -rf ./dist && mkdir ./dist && yarn build
 
-# Remove the existing build directory and create a fresh one
-RUN rm -rf ./dist && mkdir ./dist
-
-# Build to dist
-RUN yarn build
-
-# Copy email files to fresh /dist directory
+# Copy email templates to dist
 COPY ./src/utils/email/templates ./dist/utils/email/templates
+
+# Production stage
+FROM node:20-alpine
+
+# Build arguments for labels
+ARG VERSION=latest
+ARG BUILD_DATE
+ARG VCS_REF
+
+# OCI standard labels for GitHub Container Registry
+LABEL org.opencontainers.image.title="Readdig API" \
+    org.opencontainers.image.description="Readdig API Server" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.revision="${VCS_REF}" \
+    org.opencontainers.image.source="https://github.com/readdig/readdig" \
+    org.opencontainers.image.licenses="Apache-2.0"
+
+# Install PM2 and tools
+RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
+
+WORKDIR /usr/src/readdig/api
+
+# Copy built files from builder stage
+COPY --from=builder /usr/src/readdig/api/dist ./dist
+COPY --from=builder /usr/src/readdig/api/node_modules ./node_modules
+COPY --from=builder /usr/src/readdig/api/package.json ./
+COPY --from=builder /usr/src/readdig/api/ecosystem.prod.config.js ./
+COPY --from=builder /usr/src/readdig/api/drizzle ./drizzle
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Expose port 8000
 EXPOSE 8000
 
-# Use entrypoint script to run migrations before starting app
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["pm2-runtime", "start", "ecosystem.prod.config.js"]

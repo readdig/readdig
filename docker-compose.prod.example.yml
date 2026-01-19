@@ -1,0 +1,112 @@
+services:
+  # Frontend Application
+  app:
+    image: ghcr.io/readdig/readdig/app:latest
+    container_name: readdig-app
+    restart: always
+    ports:
+      - '3000:3000'
+    networks:
+      - readdig
+    environment:
+      # Required
+      API_URL: /api
+      # Optional - Product info
+      PRODUCT_URL: https://your-domain.com
+      PRODUCT_NAME: Readdig
+      PRODUCT_DESCRIPTION: Readdig - RSS and Podcast Reader
+      # Optional - Analytics & Monitoring
+      SENTRY_DSN: ''
+      UMAMI_WEBSITE_ID: ''
+      UMAMI_URL: ''
+      # Optional - Payment
+      PADDLE_VENDOR_ID: ''
+
+  # Backend API
+  api:
+    image: ghcr.io/readdig/readdig/api:latest
+    container_name: readdig-api
+    restart: always
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./data/static:/usr/src/readdig/api/static
+    depends_on:
+      cache:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    networks:
+      - readdig
+    environment:
+      # Core
+      DOCKER: 'true'
+      NODE_ENV: production
+      API_PORT: 8000
+      API_HOST: 0.0.0.0
+      # Database & Cache
+      CACHE_URL: redis://cache:6379
+      DATABASE_URL: postgresql://readdig:CHANGE_ME@database:5432/readdig
+      JWT_SECRET: CHANGE_ME
+      PRODUCT_URL: https://your-domain.com
+      PRODUCT_NAME: Readdig
+      USER_AGENT: ReaddigBot/1.0
+      # Optional - Email
+      EMAIL_SENDER_SUPPORT_NAME: ''
+      EMAIL_SENDER_SUPPORT_EMAIL: ''
+      EMAIL_SENDGRID_SECRET: ''
+      # Optional - Cloudflare proxy
+      CLOUDFLARE_PROXY_URL: ''
+      CLOUDFLARE_PROXY_SECRET: ''
+      # Optional - Paddle payment
+      PADDLE_PUBLIC_KEY: ''
+      PADDLE_API_URL: ''
+      PADDLE_VENDOR_ID: ''
+      PADDLE_VENDOR_AUTH_CODE: ''
+      # Optional - Monitoring
+      SENTRY_DSN: ''
+      # Optional - Gravatar CDN
+      GRAVATAR_CDN: ''
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+
+  # Redis Cache
+  cache:
+    image: redis:8-alpine
+    container_name: readdig-cache
+    restart: always
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - readdig
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+
+  # PostgreSQL Database
+  database:
+    image: postgres:17-alpine
+    container_name: readdig-database
+    restart: always
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: readdig
+      POSTGRES_USER: readdig
+      POSTGRES_PASSWORD: CHANGE_ME
+    networks:
+      - readdig
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U readdig -d readdig"]
+      interval: 10s
+      timeout: 30s
+      retries: 300
+
+networks:
+  readdig:
+    driver: bridge

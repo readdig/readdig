@@ -46,7 +46,8 @@ COPY --from=builder /usr/src/readdig/api/dist ./dist
 COPY --from=builder /usr/src/readdig/api/node_modules ./node_modules
 COPY --from=builder /usr/src/readdig/api/package.json ./
 COPY --from=builder /usr/src/readdig/api/ecosystem.prod.config.js ./
-COPY --from=builder /usr/src/readdig/api/drizzle ./drizzle
+COPY --from=builder /usr/src/readdig/api/src/db/migrations ./src/db/migrations
+COPY --from=builder /usr/src/readdig/api/drizzle.config.js ./
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/

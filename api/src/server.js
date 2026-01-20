@@ -123,13 +123,14 @@ fs.readdirSync(path.join(__dirname, 'routes')).map((file) => {
 setupExpressErrorHandler(api);
 
 if (require.main === module) {
-	api.listen(config.server.port, config.server.host, (err) => {
+	const server = api.listen(config.server.port, config.server.host, (err) => {
 		if (err) {
 			logger.error(err);
 			process.exit(1);
 		}
+		const addr = server.address();
 		logger.info(
-			`API is now running on http://${config.server.host}:${config.server.port} in ${config.env} mode`,
+			`API is now running on http://${addr.address}:${addr.port} in ${config.env} mode`,
 		);
 	});
 }

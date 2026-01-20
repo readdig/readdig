@@ -19,11 +19,9 @@ Readdig is an RSS and Podcast reader application.
 
 - RSS feed reader
 - Podcast player
-- User authentication and management
 - Feed organization with folders and tags
 - Article starring and reading history
 - OPML import/export
-- Email notifications
 - Payment integration with Paddle
 
 ## Architecture
@@ -95,196 +93,65 @@ The app will be available at `http://localhost:3000`
 
 ### Docker Deployment
 
-#### 1. Clone Repository
+This is the recommended way to deploy Readdig for production use. It uses pre-built images from GitHub Container Registry.
+
+#### 1. Get Configuration Files
+
+You can clone the repository to get the necessary configuration files (or just download the specific files you need):
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/readdig/readdig.git
 cd readdig
 ```
 
-#### 2. Configure API Service
+#### 2. Configure Environment
+
+1.  **Docker Compose**:
+    ```bash
+    cp docker-compose.example.yml docker-compose.yml
+    ```
+
+2.  **Edit Configuration**:
+    Open `docker-compose.yml` and modify the `environment` sections for both `api` and `app` services.
+    *   **Database**: Set `POSTGRES_PASSWORD` and update `DATABASE_URL` to match.
+    *   **Security**: Set a secure `JWT_SECRET`.
+    *   **Domain**: Update `PRODUCT_URL`, `REACT_APP_PRODUCT_URL` and `REACT_APP_API_URL`.
+
+3.  **Nginx (Optional but Recommended)**:
+    If you want to run Nginx as a reverse proxy in front of the containers:
+    ```bash
+    cp nginx.example.conf nginx.conf
+    # Edit to match your server_name, then include it in your Nginx setup
+    ```
+
+#### 3. Start Services
 
 ```bash
-cd api
+# Pull the latest images
+docker-compose pull
 
-# Copy configuration templates
-cp .env.example .env
-cp docker-compose.yml.example docker-compose.yml
-cp ecosystem.prod.config.js.example ecosystem.prod.config.js
-```
-
-Edit `api/.env`:
-
-```bash
-# Production environment
-NODE_ENV=production
-
-
-# Product Information
-PRODUCT_URL=https://www.readdig.com
-PRODUCT_NAME=Readdig.com
-USER_AGENT=ReaddigBot/1.0 (https://www.readdig.com)
-
-# Security - IMPORTANT: Generate secure keys
-JWT_SECRET=your-jwt-secret-key-here
-
-# Email Configuration (SendGrid)
-EMAIL_SENDER_SUPPORT_NAME=Readdig Support
-EMAIL_SENDER_SUPPORT_EMAIL=support@readdig.com
-EMAIL_SENDGRID_SECRET=your-sendgrid-api-key
-
-# Optional: Cloudflare Worker Proxy
-CLOUDFLARE_PROXY_URL=https://your-worker.workers.dev
-CLOUDFLARE_PROXY_SECRET=your-cloudflare-secret
-
-# Optional: Paddle Payment Integration
-PADDLE_PUBLIC_KEY=your-paddle-public-key
-PADDLE_API_URL=https://vendors.paddle.com/api/2.0
-PADDLE_VENDOR_ID=your-vendor-id
-PADDLE_VENDOR_AUTH_CODE=your-auth-code
-
-# Optional: Sentry Error Tracking
-SENTRY_DSN=your-sentry-dsn
-```
-
-Edit `api/docker-compose.yml` to set a secure database password:
-
-```yaml
-api:
-  environment:
-    DATABASE_URL: postgresql://readdig:your-secure-password@database:5432/readdig
-
-database:
-  environment:
-    POSTGRES_PASSWORD: your-secure-password
-```
-
-**Important**: Make sure the database password in `database.environment.POSTGRES_PASSWORD` matches the one in `api.environment.DATABASE_URL`
-
-**Note**: Redis runs without password in the internal Docker network, which is secure for private deployments.
-
-#### 3. Start API Services
-
-```bash
-# Build and start all services (API, PostgreSQL, Redis)
+# Start containers in background
 docker-compose up -d
 
-# Check service status
+# Check status
 docker-compose ps
-
-# View logs
-docker-compose logs -f api
 ```
 
-The API will be available at `http://localhost:8000`
+The services will be available at:
+*   **Frontend**: `http://localhost:3000` (or `http://localhost` if using Nginx)
+*   **API**: `http://localhost:8000` (or `http://localhost/api` if using Nginx)
 
-**Note**: Database migrations will run automatically when the API container starts.
+#### 4. Customizing Configuration (Advanced)
 
-#### 4. Configure App Service
+*   **API Scaling**: The API service defaults to 1 instance. If you need to scale or change PM2 settings, you can mount a custom config file to `/app/ecosystem.prod.config.js`. See `docker-compose.yml` for an example.
+*   **Database Migrations**: Migrations run automatically on container startup.
+
+#### 5. Verify
 
 ```bash
-cd ../app
-
-# Copy configuration templates
-cp .env.example .env
-cp docker-compose.yml.example docker-compose.yml
-cp nginx.conf.example nginx.conf
-```
-
-Edit `app/.env`:
-
-```bash
-# React App Configuration
-NODE_ENV=production
-
-# Product Information
-REACT_APP_PRODUCT_URL=https://www.readdig.com
-REACT_APP_PRODUCT_NAME=Readdig.com
-REACT_APP_PRODUCT_DESCRIPTION=Readdig.com an RSS and Podcast reader
-
-# API Endpoint - IMPORTANT: Point to your actual API
-REACT_APP_API_URL=https://api.readdig.com
-# Or if API is on same domain: https://www.readdig.com/api
-
-# Optional: Analytics and Monitoring
-REACT_APP_SENTRY_DSN=your-sentry-dsn
-REACT_APP_PADDLE_VENDOR_ID=your-paddle-vendor-id
-```
-
-Edit `app/nginx.conf` (replace domain names):
-
-```nginx
-server {
-  listen 80;
-  listen [::]:80;
-  server_name yourdomain.com;
-  return 301 http://www.yourdomain.com$request_uri;
-}
-
-server {
-  listen 80;
-  listen [::]:80;
-  server_name www.yourdomain.com;
-
-  # Serve React app static files
-  location / {
-    root /usr/share/nginx/html;
-    try_files $uri $uri/ /index.html =404;
-  }
-
-  # Proxy API requests to backend
-  location /api/ {
-    proxy_pass http://api:8000/;
-    proxy_http_version  1.1;
-    proxy_cache_bypass  $http_upgrade;
-
-    proxy_set_header Upgrade            $http_upgrade;
-    proxy_set_header Connection         "upgrade";
-    proxy_set_header Host               $host;
-    proxy_set_header X-Real-IP          $remote_addr;
-    proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto  $scheme;
-    proxy_set_header X-Forwarded-Host   $host;
-    proxy_set_header X-Forwarded-Port   $server_port;
-  }
-}
-```
-
-**Notes**:
-- This is the Nginx configuration **inside the app Docker container**
-- Replace `yourdomain.com` with your actual domain name
-- The first server block redirects non-www to www
-- `proxy_pass http://api:8000/` - points to the API container (using Docker network name)
-- The trailing slash in `/api/` and `http://api:8000/` is important - it removes `/api` prefix when forwarding
-- For production deployments with external reverse proxy, you may need to adjust this configuration
-
-#### 5. Build and Start App Service
-
-```bash
-# Build the app (compiles React with environment variables)
-docker-compose build
-
-# Start the app service
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-```
-
-The frontend will be available at `http://localhost:80`
-
-#### 6. Verify Deployment
-
-```bash
-# Check API health
 curl http://localhost:8000/health
-
-# Expected response: {"status":"ok"}
+# Should return {"status":"ok"}
 ```
-
-Open your browser:
-- Frontend: `http://localhost:80`
-- API: `http://localhost:8000`
 
 ## Configuration
 
@@ -296,7 +163,7 @@ Open your browser:
 |----------|-------------|----------|
 | `NODE_ENV` | Environment (development/production) | Yes |
 | `API_PORT` | API server port | Yes |
-| `API_HOST` | API server host | Yes |
+| `API_HOST` | API server host | No |
 | `DATABASE_URL` | PostgreSQL connection string | Yes |
 | `CACHE_URL` | Redis connection string | Yes |
 | `JWT_SECRET` | JWT signing secret | Yes |
@@ -316,163 +183,15 @@ Open your browser:
 
 ### Production Deployment with Reverse Proxy
 
-For production, use a reverse proxy Nginx on your host to:
+For production, it is highly recommended to use the provided `nginx.example.conf` (renamed to `nginx.conf`) or your own reverse proxy to:
 - Handle SSL/TLS certificates
 - Route requests to appropriate services
 - Serve both app and API from the same domain
 
-**Important**: This is the **host-level reverse proxy** configuration, separate from the `nginx.conf` inside the app Docker container. The architecture is:
-
-```
-Internet → Host Nginx (SSL/proxy) → Docker Containers
-                ├─ App container (port 80)
-                └─ API container (port 8000)
-```
-
-
-**Configuration Summary**:
-
-| Configuration | Location | Purpose |
-|--------------|----------|---------|
-| `app/nginx.conf` | Inside app Docker container | Serves React static files and proxies `/api/` to backend container |
-
-**Deployment scenarios**:
-- **Local development**: Only `app/nginx.conf` needed (no SSL)
-- **Production with Docker only**: Only `app/nginx.conf` needed (add SSL to Docker config)
-- **Production with host reverse proxy** (recommended): Both configs needed - host Nginx handles SSL, `app/nginx.conf` handles internal routing
-
-## Maintenance
-
-### View Logs
-
-```bash
-# API logs
-cd api && docker-compose logs -f api
-
-# App logs
-cd app && docker-compose logs -f app
-
-# Database logs
-cd api && docker-compose logs -f database
-```
-
-### Restart Services
-
-```bash
-# Restart API
-cd api && docker-compose restart api
-
-# Restart App
-cd app && docker-compose restart app
-```
-
-### Update Application
-
-```bash
-# Pull latest code
-git pull
-
-# Update API
-cd api
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-
-# Update App (requires rebuild when env vars change)
-cd ../app
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### Backup Database
-
-```bash
-# Create backup
-docker exec database pg_dump -U readdig readdig > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Restore backup
-docker exec -i database psql -U readdig readdig < backup_20231201_120000.sql
-```
-
-### Monitor Resources
-
-```bash
-# View resource usage
-docker stats
-
-# View disk usage
-docker system df
-```
-
-## Troubleshooting
-
-### API Cannot Connect to Database
-
-1. Check database is running:
-   ```bash
-   docker-compose ps database
-   ```
-
-2. Verify `DATABASE_URL` in `.env`:
-   ```bash
-   DATABASE_URL=postgresql://readdig:password@database:5432/readdig
-   ```
-
-3. Check database logs:
-   ```bash
-   docker-compose logs database
-   ```
-
-### App Shows API Connection Error
-
-1. Verify `REACT_APP_API_URL` in `app/.env`
-2. Rebuild the app (React env vars are set at build time):
-   ```bash
-   docker-compose build --no-cache
-   docker-compose up -d
-   ```
-
-### Port Already in Use
-
-Change the port mapping in `docker-compose.yml`:
-
-```yaml
-ports:
-  - '8080:8000'  # Use port 8080 instead of 8000
-```
-
-### Out of Disk Space
-
-Clean up Docker resources:
-
-```bash
-# Remove unused images
-docker image prune -a
-
-# Remove unused volumes
-docker volume prune
-
-# Clean everything
-docker system prune -a --volumes
-```
-
-### Environment Variables Not Working
-
-**For API**: Restart the container after changing `.env`:
-```bash
-docker-compose restart api
-```
-
-**For App**: Rebuild the image (React bakes env vars at build time):
-```bash
-docker-compose build --no-cache
-docker-compose up -d
-```
-
+Structure:
 ## Security Best Practices
 
-1. **Change Default Passwords**: Update database password in both `docker-compose.yml` and `.env`
+1. **Change Default Passwords**: Update database password in `docker-compose.yml`
 2. **Use Strong JWT Secret**: Generate a secure random string for `JWT_SECRET`
 3. **Enable HTTPS**: Use a reverse proxy with SSL/TLS certificates
 4. **Restrict Ports**: Only expose necessary ports to the public
@@ -480,29 +199,31 @@ docker-compose up -d
 6. **Environment Variables**: Never commit `.env` files to version control
 7. **Database Backups**: Set up automated database backups
 
-## Development
-
-### Available Scripts
-
-#### API Scripts
+## Development Scripts
 
 ```bash
 yarn api          # Start API server
-yarn conductor    # Start conductor worker
-yarn feed         # Start feed worker
-yarn og           # Start OG worker
-yarn clean        # Start clean worker
 yarn dev          # Start all services with PM2
-yarn build        # Build for production
 yarn db:migrate   # Run database migrations
-yarn db:studio    # Open Drizzle Studio
+yarn start        # Start App development server
 ```
 
-#### App Scripts
+## Support
+
+1. **Change Default Passwords**: Update database password in `docker-compose.yml`
+2. **Use Strong JWT Secret**: Generate a secure random string for `JWT_SECRET`
+3. **Enable HTTPS**: Use a reverse proxy with SSL/TLS certificates
+4. **Restrict Ports**: Only expose necessary ports to the public
+5. **Regular Updates**: Keep Docker images and dependencies updated
+6. **Environment Variables**: Never commit `.env` files to version control
+
+## Development Scripts
 
 ```bash
-yarn start        # Start development server
-yarn build        # Build for production
+yarn api          # Start API server
+yarn dev          # Start all services with PM2
+yarn db:migrate   # Run database migrations
+yarn start        # Start App development server
 ```
 
 ## Support

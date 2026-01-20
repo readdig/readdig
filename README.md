@@ -128,13 +128,13 @@ cd readdig
 
 ```bash
 # Pull the latest images
-docker-compose pull
+docker compose pull
 
 # Start containers in background
-docker-compose up -d
+docker compose up -d
 
 # Check status
-docker-compose ps
+docker compose ps
 ```
 
 The services will be available at:

@@ -34,6 +34,7 @@ RUN sed -i \
     ./build/favicons/manifest.json
 
 # Production stage
+# Production stage
 FROM nginx:alpine
 
 # Build arguments for labels
@@ -60,8 +61,8 @@ RUN chmod +x /docker-entrypoint.sh
 # Configure nginx for SPA (fallback to index.html)
 RUN printf '%s\n' \
     'server {' \
-    '    listen 3000;' \
-    '    listen [::]:3000;' \
+    '    listen 80;' \
+    '    listen [::]:80;' \
     '    root /usr/share/nginx/html;' \
     '    index index.html;' \
     '    location / {' \
@@ -69,6 +70,6 @@ RUN printf '%s\n' \
     '    }' \
     '}' > /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+EXPOSE 80
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

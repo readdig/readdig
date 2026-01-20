@@ -5,7 +5,7 @@ services:
     container_name: readdig-app
     restart: always
     ports:
-      - '3000:3000'
+      - '3000:80'
     networks:
       - readdig
     environment:

@@ -155,7 +155,9 @@ curl http://localhost:8000/health
 
 ## Configuration
 
-### Environment Variables
+### Docker Environment Variables
+
+Configure these values in your `docker-compose.yml` file under the `environment` section for each service.
 
 #### API Environment Variables
 
@@ -175,11 +177,14 @@ curl http://localhost:8000/health
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `REACT_APP_PRODUCT_URL` | Product URL | Yes |
-| `REACT_APP_PRODUCT_NAME` | Product name | Yes |
-| `REACT_APP_API_URL` | API endpoint URL | Yes |
-| `REACT_APP_SENTRY_DSN` | Sentry DSN | No |
-| `REACT_APP_PADDLE_VENDOR_ID` | Paddle vendor ID | No |
+| `PRODUCT_URL` | Product URL | Yes |
+| `PRODUCT_NAME` | Product name | Yes |
+| `PRODUCT_DESCRIPTION` | Product description | No |
+| `API_URL` | API endpoint URL | Yes |
+| `SENTRY_DSN` | Sentry DSN | No |
+| `PADDLE_VENDOR_ID` | Paddle vendor ID | No |
+| `UMAMI_WEBSITE_ID` | Umami Website ID | No |
+| `UMAMI_URL` | Umami Instance URL | No |
 
 ### Production Deployment with Reverse Proxy
 

@@ -1,7 +1,7 @@
 # Build stage
 FROM node:20-alpine AS builder
 
-WORKDIR /usr/src/readdig/api
+WORKDIR /app
 
 # Copy package files first for better layer caching
 COPY package.json yarn.lock ./
@@ -39,15 +39,18 @@ LABEL org.opencontainers.image.title="Readdig API" \
 # Install PM2 and tools
 RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
 
-WORKDIR /usr/src/readdig/api
+WORKDIR /app
 
 # Copy built files from builder stage
-COPY --from=builder /usr/src/readdig/api/dist ./dist
-COPY --from=builder /usr/src/readdig/api/node_modules ./node_modules
-COPY --from=builder /usr/src/readdig/api/package.json ./
-COPY --from=builder /usr/src/readdig/api/ecosystem.prod.config.js ./
-COPY --from=builder /usr/src/readdig/api/src/db/migrations ./src/db/migrations
-COPY --from=builder /usr/src/readdig/api/drizzle.config.js ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/ecosystem.prod.config.js ./
+COPY --from=builder /app/src/db/migrations ./db/migrations
+COPY --from=builder /app/drizzle.config.js ./
+
+# Update migration path in drizzle.config.js for production structure
+RUN sed -i 's|./src/db/migrations|./db/migrations|g' drizzle.config.js
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/

@@ -17,7 +17,7 @@ function forever() {
 			logger.info('Clean worker iteration completed...');
 		})
 		.catch((err) => {
-			logger.error(`Clean worker broke down ${err.message}`);
+			logger.error(`Clean worker broke down ${err.stack || err.message}`);
 		});
 	timeout = setTimeout(forever, conductorInterval * 1000);
 }
@@ -54,7 +54,7 @@ async function cleanInvalidFeeds() {
 			);
 		}
 	} catch (err) {
-		logger.error(`Error cleaning invalid feeds: ${err.message}`);
+		logger.error(`Error cleaning invalid feeds: ${err.stack || err.message}`);
 	}
 }
 
@@ -106,7 +106,7 @@ async function cleanOldArticles() {
 			);
 		}
 	} catch (err) {
-		logger.error(`Error cleaning old articles: ${err.message}`);
+		logger.error(`Error cleaning old articles: ${err.stack || err.message}`);
 	}
 }
 
@@ -115,7 +115,7 @@ function shutdown(signal) {
 	try {
 		clearTimeout(timeout);
 	} catch (err) {
-		logger.error(`Failure during Clean worker shutdown: ${err.message}`);
+		logger.error(`Failure during Clean worker shutdown: ${err.stack || err.message}`);
 		process.exit(1);
 	}
 	process.exit(0);
@@ -126,7 +126,7 @@ function failure(reason, err) {
 	try {
 		clearTimeout(timeout);
 	} catch (err) {
-		logger.error(`Failure during Clean worker shutdown: ${err.message}`);
+		logger.error(`Failure during Clean worker shutdown: ${err.stack || err.message}`);
 	}
 	process.exit(1);
 }

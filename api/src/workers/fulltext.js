@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { eq, and, isNull, desc, sql } from 'drizzle-orm';
+import { eq, and, isNull, desc, gte } from 'drizzle-orm';
 
 import { db } from '../db';
 import { feeds, articles, contents } from '../db/schema';
@@ -24,11 +24,13 @@ export async function fulltextProcessor(job) {
 		const extra = { feed: job.data.feed };
 		logger.error(
 			`Fulltext job encountered an error ${JSON.stringify({
-				err: err.message,
+				err: err.stack || err.message,
 				tags,
 				extra,
 			})}`,
 		);
+	} finally {
+		await markDone(job.data.feed);
 	}
 
 	logger.info(`Completed fulltext scraping for ${job.data.feed}`);
@@ -40,12 +42,10 @@ async function handleFulltext(job) {
 
 	if (!feedId) {
 		logger.warn(
-			`Fulltext job feedId is required fields for '${JSON.stringify(job.data)}'`,
+			`Fulltext job feedId is a required field for '${JSON.stringify(job.data)}'`,
 		);
 		return;
 	}
-
-	await markDone(feedId);
 
 	const feed = await db.query.feeds.findFirst({
 		where: eq(feeds.id, feedId),
@@ -75,7 +75,7 @@ async function handleFulltext(job) {
 		.where(
 			and(
 				eq(articles.feedId, feedId),
-				sql`${articles.createdAt} >= ${oneDayAgo.toISOString()}`,
+				gte(articles.createdAt, oneDayAgo),
 				isNull(contents.id),
 			),
 		)

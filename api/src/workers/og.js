@@ -26,11 +26,13 @@ export async function ogProcessor(job) {
 		const extra = { feed: job.data.feed };
 		logger.error(
 			`OG job encountered an error ${JSON.stringify({
-				err: err.message,
+				err: err.stack || err.message,
 				tags,
 				extra,
 			})}`,
 		);
+	} finally {
+		await markDone(job.data.feed);
 	}
 
 	logger.info(`Completed OG scraping for ${job.data.feed}`);
@@ -41,11 +43,9 @@ async function handleOg(job) {
 	const feedId = job.data.feed;
 
 	if (!feedId) {
-		logger.warn(`OG job feedId is required fields for '${JSON.stringify(job.data)}'`);
+		logger.warn(`OG job feedId is a required field for '${JSON.stringify(job.data)}'`);
 		return;
 	}
-
-	await markDone(feedId);
 
 	const feed = await db.query.feeds.findFirst({
 		where: eq(feeds.id, feedId),
@@ -108,7 +108,7 @@ async function shutdown(signal) {
 	try {
 		await shutdownQueue('og');
 	} catch (err) {
-		logger.error(`Failure during OG worker shutdown: ${err.message}`);
+		logger.error(`Failure during OG worker shutdown: ${err.stack || err.message}`);
 		process.exit(1);
 	}
 	process.exit(0);

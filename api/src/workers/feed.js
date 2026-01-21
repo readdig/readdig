@@ -35,11 +35,13 @@ export async function feedProcessor(job) {
 		const extra = { feed: job.data.feed };
 		logger.error(
 			`Feed job encountered an error ${JSON.stringify({
-				err: err.message,
+				err: err.stack || err.message,
 				tags,
 				extra,
 			})}`,
 		);
+	} finally {
+		await markDone(job.data.feed);
 	}
 
 	logger.info(`Completed feed scraping for ${job.data.feed}`);
@@ -49,11 +51,9 @@ async function handleFeed(job) {
 	const feedId = job.data.feed;
 
 	if (!feedId) {
-		logger.warn(`Feed job feedId is required fields for '${JSON.stringify(job.data)}'`);
+		logger.warn(`Feed job feedId is a required field for '${JSON.stringify(job.data)}'`);
 		return;
 	}
-
-	await markDone(feedId);
 
 	const feed = await db.query.feeds.findFirst({
 		where: eq(feeds.id, feedId),
@@ -222,7 +222,7 @@ async function shutdown(signal) {
 	try {
 		await shutdownQueue('feed');
 	} catch (err) {
-		logger.error(`Failure during feed worker shutdown: ${err.message}`);
+		logger.error(`Failure during feed worker shutdown: ${err.stack || err.message}`);
 		process.exit(1);
 	}
 	process.exit(0);

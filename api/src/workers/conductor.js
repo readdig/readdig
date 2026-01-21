@@ -23,7 +23,7 @@ function forever() {
 			logger.info('Conductor iteration completed...');
 		})
 		.catch((err) => {
-			logger.error(`Conductor broke down ${err.message}`);
+			logger.error(`Conductor broke down ${err.stack || err.message}`);
 		});
 	timeout = setTimeout(forever, conductorInterval * 1000);
 }
@@ -109,7 +109,7 @@ function shutdown(signal) {
 	try {
 		clearTimeout(timeout);
 	} catch (err) {
-		logger.error(`Failure during Conductor worker shutdown: ${err.message}`);
+		logger.error(`Failure during Conductor worker shutdown: ${err.stack || err.message}`);
 		process.exit(1);
 	}
 	process.exit(0);

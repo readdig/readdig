@@ -4,7 +4,7 @@ import basicAuth from 'express-basic-auth';
 import { db } from '../db';
 import { lower } from '../db/lower';
 import { users } from '../db/schema';
-import { verifyPassword } from './auth';
+import { comparePassword } from './auth';
 
 const asyncAuthorizer = async (email, password, cb) => {
 	if (!email || !password) return cb(null, false);
@@ -20,7 +20,7 @@ const asyncAuthorizer = async (email, password, cb) => {
 	});
 	if (!user) return cb(null, false);
 
-	if (!(await verifyPassword(password, user.password))) return cb(null, false);
+	if (!(await comparePassword(password, user.password))) return cb(null, false);
 	return cb(null, true);
 };
 

@@ -7,11 +7,7 @@ import { users } from '../db/schema';
 import { isBlockedUsername } from '../utils/blocklist';
 import { isEmail, isUsername } from '../utils/validation';
 import { SendPasswordResetEmail, SendWelcomeEmail } from '../utils/email/send';
-import {
-	cryptoPassword,
-	verifyPassword,
-	serializeAuthenticatedUser,
-} from '../utils/auth';
+import { hashPassword, comparePassword, serializeAuthenticatedUser } from '../utils/auth';
 
 exports.signup = async (req, res) => {
 	const body = req.body || {};
@@ -51,7 +47,7 @@ exports.signup = async (req, res) => {
 	data.name = data.username.trim();
 	data.username = data.username.trim();
 	data.email = data.email.trim().toLowerCase();
-	data.password = await cryptoPassword(data.password);
+	data.password = await hashPassword(data.password);
 
 	const exists = await db.query.users.findFirst({
 		where: or(
@@ -99,7 +95,7 @@ exports.login = async (req, res) => {
 		return res.status(404).json('Username or Email does not exist.');
 	}
 
-	if (!(await verifyPassword(data.password, user.password))) {
+	if (!(await comparePassword(data.password, user.password))) {
 		return res.status(400).json('Password incorrect.');
 	}
 
@@ -144,7 +140,7 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
 	const data = req.body || {};
 
-	const password = await cryptoPassword(data.password);
+	const password = await hashPassword(data.password);
 	const [user] = await db
 		.update(users)
 		.set({

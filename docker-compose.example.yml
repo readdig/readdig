@@ -16,11 +16,11 @@ services:
       PRODUCT_NAME: Readdig
       PRODUCT_DESCRIPTION: Readdig - RSS and Podcast Reader
       # Optional - Analytics & Monitoring
-      SENTRY_DSN: ''
-      UMAMI_WEBSITE_ID: ''
-      UMAMI_URL: ''
+      # SENTRY_DSN: ''
+      # UMAMI_WEBSITE_ID: ''
+      # UMAMI_URL: ''
       # Optional - Payment
-      PADDLE_VENDOR_ID: ''
+      # PADDLE_VENDOR_ID: ''
 
   # Backend API
   api:
@@ -45,7 +45,7 @@ services:
       DOCKER: 'true'
       NODE_ENV: production
       API_PORT: 8000
-      API_HOST: 0.0.0.0
+      # API_HOST: 0.0.0.0
       # Database & Cache
       CACHE_URL: redis://cache:6379
       DATABASE_URL: postgresql://readdig:CHANGE_ME@database:5432/readdig
@@ -54,21 +54,21 @@ services:
       PRODUCT_NAME: Readdig
       USER_AGENT: ReaddigBot/1.0
       # Optional - Email
-      EMAIL_SENDER_SUPPORT_NAME: ''
-      EMAIL_SENDER_SUPPORT_EMAIL: ''
-      EMAIL_SENDGRID_SECRET: ''
+      # EMAIL_SENDER_SUPPORT_NAME: ''
+      # EMAIL_SENDER_SUPPORT_EMAIL: ''
+      # EMAIL_SENDGRID_SECRET: ''
       # Optional - Cloudflare proxy
-      CLOUDFLARE_PROXY_URL: ''
-      CLOUDFLARE_PROXY_SECRET: ''
+      # CLOUDFLARE_PROXY_URL: ''
+      # CLOUDFLARE_PROXY_SECRET: ''
       # Optional - Paddle payment
-      PADDLE_PUBLIC_KEY: ''
-      PADDLE_API_URL: ''
-      PADDLE_VENDOR_ID: ''
-      PADDLE_VENDOR_AUTH_CODE: ''
+      # PADDLE_PUBLIC_KEY: ''
+      # PADDLE_API_URL: ''
+      # PADDLE_VENDOR_ID: ''
+      # PADDLE_VENDOR_AUTH_CODE: ''
       # Optional - Monitoring
-      SENTRY_DSN: ''
+      # SENTRY_DSN: ''
       # Optional - Gravatar CDN
-      GRAVATAR_CDN: ''
+      # GRAVATAR_CDN: ''
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
       interval: 10s

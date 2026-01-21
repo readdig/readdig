@@ -18,11 +18,7 @@ import gravatar from '../utils/gravatar';
 import { isBlockedUsername } from '../utils/blocklist';
 import { isDataURL, isEmail, isURL, isUsername } from '../utils/validation';
 import { userSubscription } from '../utils/subscription';
-import {
-	cryptoPassword,
-	serializeAuthenticatedUser,
-	verifyPassword,
-} from '../utils/auth';
+import { hashPassword, serializeAuthenticatedUser, comparePassword } from '../utils/auth';
 
 exports.list = async (req, res) => {
 	if (!req.User || !req.User.admin) {
@@ -211,7 +207,7 @@ exports.delete = async (req, res) => {
 		return res.status(404).json('User does not exist.');
 	}
 
-	if (!(await verifyPassword(data.password, user.password))) {
+	if (!(await comparePassword(data.password, user.password))) {
 		return res.status(400).json('Password incorrect.');
 	}
 
@@ -320,7 +316,7 @@ exports.put = async (req, res) => {
 	}
 
 	if (data.password && data.oldPassword) {
-		if (!(await verifyPassword(data.oldPassword, user.password))) {
+		if (!(await comparePassword(data.oldPassword, user.password))) {
 			return res.status(400).json('The old password is incorrect.');
 		}
 
@@ -328,7 +324,7 @@ exports.put = async (req, res) => {
 			return res.status(400).json('Password incorrect.');
 		}
 
-		const cryptoPasswd = await cryptoPassword(data.password);
+		const cryptoPasswd = await hashPassword(data.password);
 		data.password = cryptoPasswd;
 	}
 
@@ -420,7 +416,7 @@ exports.history = async (req, res) => {
 		return res.status(400).json('Services is required field.');
 	}
 
-	if (!(await verifyPassword(data.password, user.password))) {
+	if (!(await comparePassword(data.password, user.password))) {
 		return res.status(400).json('Password incorrect.');
 	}
 

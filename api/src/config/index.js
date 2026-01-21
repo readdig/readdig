@@ -55,7 +55,7 @@ const _default = {
 		secret: process.env.CLOUDFLARE_PROXY_SECRET || '',
 	},
 	email: {
-		backend: 'sendgrid',
+		backend: process.env.EMAIL_BACKEND,
 		sender: {
 			support: {
 				name: process.env.EMAIL_SENDER_SUPPORT_NAME,

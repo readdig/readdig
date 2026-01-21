@@ -54,9 +54,10 @@ services:
       PRODUCT_NAME: Readdig
       USER_AGENT: ReaddigBot/1.0
       # Optional - Email
+      # EMAIL_BACKEND: 'sendgrid'
+      # EMAIL_SENDGRID_SECRET: ''
       # EMAIL_SENDER_SUPPORT_NAME: ''
       # EMAIL_SENDER_SUPPORT_EMAIL: ''
-      # EMAIL_SENDGRID_SECRET: ''
       # Optional - Cloudflare proxy
       # CLOUDFLARE_PROXY_URL: ''
       # CLOUDFLARE_PROXY_SECRET: ''

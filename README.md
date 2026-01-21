@@ -169,9 +169,21 @@ Configure these values in your `docker-compose.yml` file under the `environment`
 | `DATABASE_URL` | PostgreSQL connection string | Yes |
 | `CACHE_URL` | Redis connection string | Yes |
 | `JWT_SECRET` | JWT signing secret | Yes |
+| `PRODUCT_URL` | Product URL | Yes |
+| `PRODUCT_NAME` | Product name | Yes |
+| `USER_AGENT` | User agent for feed fetching | No |
+| `EMAIL_BACKEND` | Email backend (only `sendgrid` supported, leave empty to disable) | No |
 | `EMAIL_SENDGRID_SECRET` | SendGrid API key | No |
-| `SENTRY_DSN` | Sentry error tracking DSN | No |
+| `EMAIL_SENDER_SUPPORT_NAME` | Support email sender name | No |
+| `EMAIL_SENDER_SUPPORT_EMAIL` | Support email sender address | No |
+| `CLOUDFLARE_PROXY_URL` | Cloudflare worker proxy URL | No |
+| `CLOUDFLARE_PROXY_SECRET` | Cloudflare worker proxy secret | No |
+| `PADDLE_PUBLIC_KEY` | Paddle public key | No |
+| `PADDLE_API_URL` | Paddle API URL | No |
 | `PADDLE_VENDOR_ID` | Paddle vendor ID | No |
+| `PADDLE_VENDOR_AUTH_CODE` | Paddle vendor auth code | No |
+| `SENTRY_DSN` | Sentry error tracking DSN | No |
+| `GRAVATAR_CDN` | Gravatar CDN URL (leave empty for default) | No |
 
 #### App Environment Variables
 

@@ -53,6 +53,7 @@ services:
       PRODUCT_URL: https://your-domain.com
       PRODUCT_NAME: Readdig
       USER_AGENT: ReaddigBot/1.0
+      # STATIC_PATH: ./static
       # Optional - Email
       # EMAIL_BACKEND: 'sendgrid'
       # EMAIL_SENDGRID_SECRET: ''

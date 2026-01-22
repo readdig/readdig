@@ -172,6 +172,7 @@ Configure these values in your `docker-compose.yml` file under the `environment`
 | `PRODUCT_URL` | Product URL | Yes |
 | `PRODUCT_NAME` | Product name | Yes |
 | `USER_AGENT` | User agent for feed fetching | No |
+| `STATIC_PATH` | Static files path (default: `./static`) | No |
 | `EMAIL_BACKEND` | Email backend (only `sendgrid` supported, leave empty to disable) | No |
 | `EMAIL_SENDGRID_SECRET` | SendGrid API key | No |
 | `EMAIL_SENDER_SUPPORT_NAME` | Support email sender name | No |

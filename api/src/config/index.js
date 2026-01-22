@@ -42,7 +42,7 @@ const _default = {
 		url: process.env.CACHE_URL,
 	},
 	static: {
-		path: process.env.STATIC_PATH,
+		path: process.env.STATIC_PATH || './static',
 	},
 	logger: {
 		level: process.env.LOGGER_LEVEL || 'error',

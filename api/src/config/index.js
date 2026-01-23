@@ -79,6 +79,7 @@ const _default = {
 	gravatar: {
 		cdn: process.env.GRAVATAR_CDN,
 	},
+	freeMode: process.env.FREE_MODE !== 'false',
 	newrelic: false,
 };
 

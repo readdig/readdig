@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { IconSettings, IconUser, IconHelpCircle } from '@tabler/icons-react';
+import config from '../../config';
 
 const Menu = () => {
 	const { t, i18n } = useTranslation();
@@ -46,20 +47,24 @@ const Menu = () => {
 				<span>{t('Accounts')}</span>
 			</h3>
 			<ul>
-				<li
-					className={classNames({
-						active: pathname === '/settings/plans',
-					})}
-				>
-					<Link to="/settings/plans">{t('Plans')}</Link>
-				</li>
-				<li
-					className={classNames({
-						active: pathname === '/settings/billing',
-					})}
-				>
-					<Link to="/settings/billing">{t('Billing history')}</Link>
-				</li>
+				{!config.freeMode && (
+					<li
+						className={classNames({
+							active: pathname === '/settings/plans',
+						})}
+					>
+						<Link to="/settings/plans">{t('Plans')}</Link>
+					</li>
+				)}
+				{!config.freeMode && (
+					<li
+						className={classNames({
+							active: pathname === '/settings/billing',
+						})}
+					>
+						<Link to="/settings/billing">{t('Billing history')}</Link>
+					</li>
+				)}
 				<li
 					className={classNames({
 						active: pathname === '/settings/profile',

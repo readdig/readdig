@@ -185,6 +185,7 @@ Configure these values in your `docker-compose.yml` file under the `environment`
 | `PADDLE_VENDOR_AUTH_CODE` | Paddle vendor auth code | No |
 | `SENTRY_DSN` | Sentry error tracking DSN | No |
 | `GRAVATAR_CDN` | Gravatar CDN URL (leave empty for default) | No |
+| `FREE_MODE` | Free mode (enabled by default, set to `false` to enable paid plans) | No |
 
 #### App Environment Variables
 
@@ -198,6 +199,7 @@ Configure these values in your `docker-compose.yml` file under the `environment`
 | `PADDLE_VENDOR_ID` | Paddle vendor ID | No |
 | `UMAMI_WEBSITE_ID` | Umami Website ID | No |
 | `UMAMI_URL` | Umami Instance URL | No |
+| `FREE_MODE` | Free mode (enabled by default, set to `false` to enable paid plans) | No |
 
 ### Production Deployment with Reverse Proxy
 

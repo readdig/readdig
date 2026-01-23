@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import PageTitle from '../components/PageTitle';
 import Pricings from '../components/Pricings';
+import config from '../config';
 
 const Welcome = () => {
 	return (
@@ -30,8 +31,8 @@ const Welcome = () => {
 			<section className="jumbotron">
 				<h1>A PWA platform RSS reader and podcasts player.</h1>
 				<p>
-					Using RSS subscribe your news sites, blogs, Weibo, YouTube, X, and
-					newsletters, etc.
+					Using RSS subscribe your news sites, blogs, Weibo, YouTube, X, and newsletters,
+					etc.
 				</p>
 				<Link to="/signup" className="btn primary">
 					START TRIAL
@@ -42,7 +43,7 @@ const Welcome = () => {
 					<img src="/static/screenshot.png" alt="screenshot" />
 				</div>
 			</section>
-			<Pricings />
+			{!config.freeMode && <Pricings />}
 			<footer className="footer">© Readdig.com</footer>
 		</>
 	);

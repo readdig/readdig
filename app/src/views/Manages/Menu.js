@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { IconDashboard } from '@tabler/icons-react';
+import config from '../../config';
 
 const Menu = () => {
 	const { t } = useTranslation();
@@ -44,20 +45,24 @@ const Menu = () => {
 				>
 					<Link to="/manages/accounts">{t('Manage accounts')}</Link>
 				</li>
-				<li
-					className={classNames({
-						active: pathname === '/manages/plans',
-					})}
-				>
-					<Link to="/manages/plans">{t('Manage plans')}</Link>
-				</li>
-				<li
-					className={classNames({
-						active: pathname === '/manages/transactions',
-					})}
-				>
-					<Link to="/manages/transactions">{t('Transactions')}</Link>
-				</li>
+				{!config.freeMode && (
+					<li
+						className={classNames({
+							active: pathname === '/manages/plans',
+						})}
+					>
+						<Link to="/manages/plans">{t('Manage plans')}</Link>
+					</li>
+				)}
+				{!config.freeMode && (
+					<li
+						className={classNames({
+							active: pathname === '/manages/transactions',
+						})}
+					>
+						<Link to="/manages/transactions">{t('Transactions')}</Link>
+					</li>
+				)}
 				<li
 					className={classNames({
 						active: pathname === '/manages/email',

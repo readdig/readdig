@@ -21,6 +21,8 @@ services:
       # UMAMI_URL: ''
       # Optional - Payment
       # PADDLE_VENDOR_ID: ''
+      # Optional - Free Mode (enabled by default, set to 'false' to enable paid plans)
+      # FREE_MODE: 'false'
 
   # Backend API
   api:
@@ -71,6 +73,8 @@ services:
       # SENTRY_DSN: ''
       # Optional - Gravatar CDN
       # GRAVATAR_CDN: ''
+      # Optional - Free Mode (enabled by default, set to 'false' to enable paid plans)
+      # FREE_MODE: 'false'
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/health"]
       interval: 10s

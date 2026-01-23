@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { eq, or, and } from 'drizzle-orm';
 
+import { config } from '../config';
 import { db } from '../db';
 import { lower } from '../db/lower';
 import { users } from '../db/schema';
@@ -62,7 +63,7 @@ exports.signup = async (req, res) => {
 
 	const userCount = await db.$count(users);
 	const isFirstUser = userCount === 0;
-	data.role = isFirstUser ? 'admin' : 'user';
+	data.role = isFirstUser ? 'admin' : config.freeMode ? 'free' : 'user';
 
 	const [user] = await db.insert(users).values(data).returning();
 

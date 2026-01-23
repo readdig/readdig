@@ -21,6 +21,7 @@ import Checkout from './Checkout';
 import Plans from './Plans';
 import Billing from './Billing';
 import PaySuccess from './PaySuccess';
+import config from '../../config';
 
 const Index = () => {
 	useFontSize();
@@ -47,10 +48,14 @@ const Index = () => {
 						<Route component={OPML} path="/settings/opml" />
 						<Route component={Help} path="/settings/helps" />
 						<Route component={History} path="/settings/history" />
-						<Route component={Plans} path="/settings/plans" />
-						<Route component={Billing} path="/settings/billing" />
-						<Route component={PaySuccess} path="/settings/pay/success" />
-						<Route component={Checkout} path="/settings/pay/:subscriptionId" />
+						{!config.freeMode && <Route component={Plans} path="/settings/plans" />}
+						{!config.freeMode && <Route component={Billing} path="/settings/billing" />}
+						{!config.freeMode && (
+							<Route component={PaySuccess} path="/settings/pay/success" />
+						)}
+						{!config.freeMode && (
+							<Route component={Checkout} path="/settings/pay/:subscriptionId" />
+						)}
 					</Switch>
 				</div>
 			</div>

@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { getUser } from './api/user';
+import config from './config';
 
 import AuthedRoute from './AuthedRoute';
 import UnauthedRoute from './UnauthedRoute';
@@ -96,14 +97,22 @@ const AppRoute = () => {
 				<AuthedRoute component={Settings} view={true} path="/settings/opml" />
 				<AuthedRoute component={Settings} view={true} path="/settings/helps" />
 				<AuthedRoute component={Settings} view={true} path="/settings/history" />
-				<AuthedRoute component={Settings} view={true} path="/settings/plans" />
-				<AuthedRoute component={Settings} view={true} path="/settings/billing" />
-				<AuthedRoute component={Settings} view={true} path="/settings/pay/success" />
-				<AuthedRoute
-					component={Settings}
-					view={true}
-					path="/settings/pay/:subscriptionId"
-				/>
+				{!config.freeMode && (
+					<AuthedRoute component={Settings} view={true} path="/settings/plans" />
+				)}
+				{!config.freeMode && (
+					<AuthedRoute component={Settings} view={true} path="/settings/billing" />
+				)}
+				{!config.freeMode && (
+					<AuthedRoute component={Settings} view={true} path="/settings/pay/success" />
+				)}
+				{!config.freeMode && (
+					<AuthedRoute
+						component={Settings}
+						view={true}
+						path="/settings/pay/:subscriptionId"
+					/>
+				)}
 				<AuthedRoute component={Manages} exact path="/manages" />
 				<AuthedRoute component={Manages} view={true} path="/manages/feeds" />
 				<AuthedRoute component={Manages} view={true} path="/manages/categories" />
@@ -113,8 +122,12 @@ const AppRoute = () => {
 				<AuthedRoute component={Manages} view={true} path="/manages/totals" />
 				<AuthedRoute component={Manages} view={true} path="/manages/blocklist" />
 				<AuthedRoute component={Manages} view={true} path="/manages/monitoring" />
-				<AuthedRoute component={Manages} view={true} path="/manages/plans" />
-				<AuthedRoute component={Manages} view={true} path="/manages/transactions" />
+				{!config.freeMode && (
+					<AuthedRoute component={Manages} view={true} path="/manages/plans" />
+				)}
+				{!config.freeMode && (
+					<AuthedRoute component={Manages} view={true} path="/manages/transactions" />
+				)}
 				<AuthedRoute component={Manages} view={true} path="/manages/debug" />
 				<UnauthedRoute component={Welcome} exact path="/welcome" />
 				<UnauthedRoute component={Signin} exact path="/login" />

@@ -15,6 +15,7 @@ find /usr/share/nginx/html -type f -name "*.js" -exec sed -i \
   -e "s|__REACT_APP_PADDLE_VENDOR_ID__|${PADDLE_VENDOR_ID:-}|g" \
   -e "s|__REACT_APP_UMAMI_WEBSITE_ID__|${UMAMI_WEBSITE_ID:-}|g" \
   -e "s|__REACT_APP_UMAMI_URL__|${UMAMI_URL:-}|g" \
+  -e "s|__REACT_APP_FREE_MODE__|${FREE_MODE:-}|g" \
   {} \;
 
 # Replace placeholders in HTML files (for index.html meta tags, title, and inline scripts)
@@ -27,6 +28,7 @@ find /usr/share/nginx/html -type f -name "*.html" -exec sed -i \
   -e "s|__REACT_APP_PADDLE_VENDOR_ID__|${PADDLE_VENDOR_ID:-}|g" \
   -e "s|__REACT_APP_UMAMI_WEBSITE_ID__|${UMAMI_WEBSITE_ID:-}|g" \
   -e "s|__REACT_APP_UMAMI_URL__|${UMAMI_URL:-}|g" \
+  -e "s|__REACT_APP_FREE_MODE__|${FREE_MODE:-}|g" \
   {} \;
 
 # Replace placeholders in JSON files (for manifest.json PWA config)

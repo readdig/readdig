@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import PageTitle from '../components/PageTitle';
 import { signup } from '../api/auth';
+import config from '../config';
 
 const Signup = () => {
 	const { t, i18n } = useTranslation();
@@ -22,7 +23,7 @@ const Signup = () => {
 			setSubmitting(true);
 			await signup(dispatch, data.username, data.email, data.password, i18n.language);
 			setSubmitting(false);
-			history.push('/settings/plans');
+			history.push(config.freeMode ? '/' : '/settings/plans');
 		} catch (err) {
 			setSubmitting(false);
 		}

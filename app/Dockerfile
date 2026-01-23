@@ -8,7 +8,7 @@ COPY package.json yarn.lock ./
 
 # Install dependencies
 RUN apk add --no-cache python3 make g++
-RUN yarn install --network-timeout 1000000
+RUN yarn config set registry https://registry.yarnpkg.com && yarn install --network-timeout 1000000
 
 # Copy source code
 COPY . .

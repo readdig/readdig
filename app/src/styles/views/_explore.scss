@@ -41,6 +41,7 @@
 
 		.search-wrapper {
 			display: flex;
+            min-height: 2.25rem;
 			gap: 0;
 			align-items: center;
 			border: 1px solid var(--divider-light);
@@ -61,7 +62,7 @@
 					border: none;
 					background: transparent;
 					box-shadow: none;
-					min-height: 2.25rem;
+					min-height: 2rem;
 
 					&:hover {
 						border: none;

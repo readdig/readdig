@@ -1,32 +1,32 @@
 body {
   &.dark {
-    --box-shadow:             rgb(255 255 255 / 8%);
-    --box-shadow-circle:      rgb(0 0 0 / 20%);
-    --sidebar-overlay:        rgb(0 0 0 / 50%);
-    --modal-overlay:          rgb(0 0 0 / 80%);
-    --player-progress-linear: linear-gradient(rgb(255 255 255 / 8%), rgb(0 0 0 / 50%));
+    --box-shadow:             rgb(0 0 0 / 50%);
+    --box-shadow-circle:      rgb(0 0 0 / 50%);
+    --sidebar-overlay:        rgb(0 0 0 / 70%);
+    --modal-overlay:          rgb(0 0 0 / 90%);
+    --player-progress-linear: linear-gradient(rgb(255 255 255 / 10%), rgb(0 0 0 / 60%));
 
-    --bg:             #000000;
-    --bg-dark:        #000000;
-    --bg-medium:      #212124;
-    --bg-light:       #161618;
-    --bg-circle:      #212124;
+    --bg:             #121212;
+    --bg-dark:        #121212;
+    --bg-medium:      #1E1E1E;
+    --bg-light:       #2C2C2E;
+    --bg-circle:      #1E1E1E;
   
-    --input:          #101012;
+    --input:          #2C2C2E;
 
-    --text:				    #FFFFFF;
-    --text-dark:      #C1C1C1;
-    --text-medium:    #818181;
-    --text-light:     #515151;
+    --text:				    #E0E0E0;
+    --text-dark:      #9E9E9E;
+    --text-medium:    #BDBDBD;
+    --text-light:     #757575;
   
-    --svg:            #818181;
-    --svg-medium:     #212124;
-    --svg-light:		  #FFFFFF;
-    --svg-dark:       #C1C1C1;
+    --svg:            #9E9E9E;
+    --svg-medium:     #1E1E1E;
+    --svg-light:		  #E0E0E0;
+    --svg-dark:       #BDBDBD;
 
-    --divider:        #212124;
-    --divider-dark:   #515151;
-    --divider-medium: #818181;
-    --divider-light:  #161618;
+    --divider:        #424242;
+    --divider-dark:   #616161;
+    --divider-medium: #757575;
+    --divider-light:  #303030;
   }
 }

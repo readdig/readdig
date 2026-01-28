@@ -86,12 +86,12 @@ export const upsertManyPosts = async (publicationId, newPosts) => {
 		for (let i = 0; i < insertOperations.length; i += BATCH_SIZE) {
 			const chunk = insertOperations.slice(i, i + BATCH_SIZE);
 			try {
-				await db.insert(articles).values(chunk);
+				await db.insert(articles).values(chunk).onConflictDoNothing();
 			} catch (err) {
 				logger.error(
 					`Failed to batch insert posts (chunk ${i / BATCH_SIZE} - size ${
 						chunk.length
-					}): ${err.message}`,
+					}): ${err.message} code=${err.code} detail=${err.detail}`,
 				);
 			}
 		}

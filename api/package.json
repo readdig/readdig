@@ -1,6 +1,6 @@
 {
 	"name": "readdig-api",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"license": "Apache-2.0",
 	"private": false,
 	"scripts": {

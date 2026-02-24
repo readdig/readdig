@@ -31,6 +31,15 @@
 			width: 2.875rem;
 			overflow: hidden;
 
+			.feeds-header {
+				opacity: 0;
+				max-height: 0;
+				padding-top: 0;
+				padding-bottom: 0;
+				margin-top: 0;
+				visibility: hidden;
+			}
+
 			ul {
 				li {
 					a {
@@ -137,6 +146,14 @@
 				box-shadow: rem(6px 0 10px 0) var(--box-shadow);
 				border-right-width: 1px;
 
+				.feeds-header {
+					opacity: 1;
+					max-height: 50px;
+					padding: 0.125rem 0.675rem 0.125rem 0.775rem;
+					margin-top: rem(5px);
+					visibility: visible;
+				}
+
 				ul {
 					li {
 						a {
@@ -179,6 +196,15 @@
 			z-index: 11;
 			width: 2.875rem;
 			overflow: hidden;
+
+			.feeds-header {
+				opacity: 0;
+				max-height: 0;
+				padding-top: 0;
+				padding-bottom: 0;
+				margin-top: 0;
+				visibility: hidden;
+			}
 
 			ul {
 				li {

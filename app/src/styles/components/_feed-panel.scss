@@ -39,6 +39,82 @@
 .feeds {
   overflow-y: auto;
   overflow-x: hidden;
+
+  .feeds-header {
+    display: flex;
+    align-items: center;
+    padding: 0.125rem 0.675rem 0.125rem 0.775rem;
+    margin-top: rem(5px);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bg);
+    user-select: none;
+    opacity: 1;
+    max-height: 50px;
+    overflow: hidden;
+    transition: opacity 0.3s ease, max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+
+    svg {
+      width: rem(16px);
+      height: rem(16px);
+      transition: color 0.15s ease;
+    }
+
+    .feeds-header-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: rem(22px);
+      height: rem(22px);
+      margin-right: rem(6px);
+      color: var(--text-light);
+    }
+
+    .feeds-header-title {
+      flex: 1;
+      height: rem(22px);
+      line-height: rem(22px);
+      font-size: rem(12px);
+      font-weight: 400;
+      color: var(--text-medium);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .feeds-header-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .feeds-header-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-light);
+      transition: background-color 0.15s ease;
+      padding: rem(3px);
+
+      &:last-child {
+        margin-left: 3px;
+      }
+
+      @media (hover: hover) {
+        &:hover {
+          background-color: var(--bg-light);
+          
+          svg {
+            color: var(--primary-dark);
+          }
+        }
+      }
+    }
+  }
 }
 
 .feeds,

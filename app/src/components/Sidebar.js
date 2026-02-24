@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMediaQuery } from 'react-responsive';
 
-import AddFeed from './Feeds/AddFeed';
 import FeedPanel from './Feeds/FeedPanel';
 import SmartFeeds from './Feeds/SmartFeeds';
 
@@ -53,7 +52,11 @@ const Sidebar = () => {
 
 			// Only trigger if horizontal swipe is dominant and not in view mode
 			const isInViewMode = document.querySelector('.app.view') !== null;
-			if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD && !isInViewMode) {
+			if (
+				Math.abs(deltaX) > Math.abs(deltaY) &&
+				Math.abs(deltaX) > SWIPE_THRESHOLD &&
+				!isInViewMode
+			) {
 				if (deltaX > 0 && menuIsOpen && touchStartX.current < EDGE_WIDTH) {
 					// Swipe right from left edge to open
 					openMenu();
@@ -82,7 +85,6 @@ const Sidebar = () => {
 			<div className="sidebar" onClick={isTabletOrMobile ? closeMenu : undefined}>
 				<SmartFeeds />
 				<FeedPanel />
-				<AddFeed />
 			</div>
 		</>
 	);

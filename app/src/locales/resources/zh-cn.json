@@ -43,6 +43,7 @@
   "Logout": "退出",
   "Add": "添加",
   "Feed": "订阅",
+  "Feeds": "订阅源",
   "OPML": "OPML",
   "Folder": "文件夹",
   "By {{author}}": "来自 {{author}}",

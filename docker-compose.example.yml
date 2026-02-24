@@ -34,7 +34,7 @@ services:
     volumes:
       - ./data/static:/app/static
       # Optional: Override PM2 config
-      # - ./data/ecosystem.prod.config.js:/app/ecosystem.prod.config.js
+      # - ./ecosystem.prod.config.js:/app/ecosystem.prod.config.js
     depends_on:
       cache:
         condition: service_healthy

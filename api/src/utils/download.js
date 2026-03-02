@@ -34,7 +34,7 @@ const download = async (url, prefix, hash, dir, folder) => {
 
 	const basePath = config.static.path;
 	const filename = `${prefix}${hash}`;
-	const pathname = path.join(__dirname, basePath, folder, dir);
+	const pathname = path.resolve(basePath, folder, dir);
 	const filePath = path.join(pathname, filename);
 
 	try {

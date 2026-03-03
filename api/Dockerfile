@@ -39,6 +39,13 @@ LABEL org.opencontainers.image.title="Readdig API" \
 # Install PM2 and tools
 RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
 
+# Install and configure pm2-logrotate to limit log size
+RUN pm2 install pm2-logrotate && \
+    pm2 set pm2-logrotate:max_size 10M && \
+    pm2 set pm2-logrotate:retain 5 && \
+    pm2 set pm2-logrotate:compress true && \
+    pm2 set pm2-logrotate:rotateInterval '*/30 * * * *'
+
 WORKDIR /app
 
 # Copy built files from builder stage

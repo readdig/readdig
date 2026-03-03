@@ -17,17 +17,15 @@ env:
   API_IMAGE_NAME: ${{ github.repository }}/api
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Images
+  # Prepare version info for all jobs
+  prepare:
+    name: Prepare Version
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write
-
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Get version
         id: version
         run: |
@@ -37,21 +35,15 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Update package.json version
         run: |
-          # Remove 'v' prefix from version (v1.0.0 -> 1.0.0)
           VERSION="${{ steps.version.outputs.VERSION }}"
           VERSION_NUM="${VERSION#v}"
-          
-          # Update app/package.json
-          cd app
-          npm version $VERSION_NUM --no-git-tag-version --allow-same-version
-          cd ..
-          
-          # Update api/package.json
-          cd api
-          npm version $VERSION_NUM --no-git-tag-version --allow-same-version
-          cd ..
+          cd app && npm version $VERSION_NUM --no-git-tag-version --allow-same-version && cd ..
+          cd api && npm version $VERSION_NUM --no-git-tag-version --allow-same-version && cd ..
 
       - name: Commit version update
         run: |
@@ -61,8 +53,18 @@ jobs:
           git commit -m "chore: bump version to ${{ steps.version.outputs.VERSION }}" || echo "No changes to commit"
           git push origin HEAD:main || echo "Push failed, continuing..."
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  # ============================================================
+  # App Image Builds
+  # ============================================================
+  build-app-amd64:
+    name: Build App (amd64)
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -74,63 +76,203 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata for App
-        id: meta-app
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Extract Docker metadata for API
-        id: meta-api
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Build and push App image
+      - name: Build and push App image (amd64)
         uses: docker/build-push-action@v5
         with:
           context: ./app
           file: ./app/Dockerfile
           push: true
-          tags: ${{ steps.meta-app.outputs.tags }}
-          labels: ${{ steps.meta-app.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-amd64
+          cache-from: type=gha,scope=app-amd64
+          cache-to: type=gha,mode=max,scope=app-amd64
+          platforms: linux/amd64
           build-args: |
-            VERSION=${{ steps.version.outputs.VERSION }}
+            VERSION=${{ needs.prepare.outputs.version }}
             BUILD_DATE=${{ github.event.repository.updated_at }}
             VCS_REF=${{ github.sha }}
 
-      - name: Build and push API image
+  build-app-arm64:
+    name: Build App (arm64)
+    needs: prepare
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push App image (arm64)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-arm64
+          cache-from: type=gha,scope=app-arm64
+          cache-to: type=gha,mode=max,scope=app-arm64
+          platforms: linux/arm64
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.version }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+
+  merge-app-manifest:
+    name: Merge App Manifest
+    needs: [prepare, build-app-amd64, build-app-arm64]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and push multi-arch manifest for App
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          VERSION_NUM="${VERSION#v}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}"
+
+          # Extract major and minor versions
+          MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
+          MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+
+          # Create multi-arch manifests for all tags
+          for TAG in "${VERSION_NUM}" "${MINOR}" "${MAJOR}" "latest"; do
+            docker buildx imagetools create -t "${IMAGE}:${TAG}" \
+              "${IMAGE}:${VERSION}-amd64" \
+              "${IMAGE}:${VERSION}-arm64"
+          done
+
+  # ============================================================
+  # API Image Builds
+  # ============================================================
+  build-api-amd64:
+    name: Build API (amd64)
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image (amd64)
         uses: docker/build-push-action@v5
         with:
           context: ./api
           file: ./api/Dockerfile
           push: true
-          tags: ${{ steps.meta-api.outputs.tags }}
-          labels: ${{ steps.meta-api.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-amd64
+          cache-from: type=gha,scope=api-amd64
+          cache-to: type=gha,mode=max,scope=api-amd64
+          platforms: linux/amd64
           build-args: |
-            VERSION=${{ steps.version.outputs.VERSION }}
+            VERSION=${{ needs.prepare.outputs.version }}
             BUILD_DATE=${{ github.event.repository.updated_at }}
             VCS_REF=${{ github.sha }}
 
+  build-api-arm64:
+    name: Build API (arm64)
+    needs: prepare
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image (arm64)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          file: ./api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-arm64
+          cache-from: type=gha,scope=api-arm64
+          cache-to: type=gha,mode=max,scope=api-arm64
+          platforms: linux/arm64
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.version }}
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+
+  merge-api-manifest:
+    name: Merge API Manifest
+    needs: [prepare, build-api-amd64, build-api-arm64]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create and push multi-arch manifest for API
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          VERSION_NUM="${VERSION#v}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}"
+
+          # Extract major and minor versions
+          MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
+          MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+
+          # Create multi-arch manifests for all tags
+          for TAG in "${VERSION_NUM}" "${MINOR}" "${MAJOR}" "latest"; do
+            docker buildx imagetools create -t "${IMAGE}:${TAG}" \
+              "${IMAGE}:${VERSION}-amd64" \
+              "${IMAGE}:${VERSION}-arm64"
+          done
+
+  # ============================================================
+  # GitHub Release
+  # ============================================================
   release:
     name: Create GitHub Release
-    needs: build-and-push
+    needs: [prepare, merge-app-manifest, merge-api-manifest]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -141,19 +283,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
-        id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "VERSION=${{ inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Generate changelog
         id: changelog
         run: |
-          # Get previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           
           if [ -z "$PREV_TAG" ]; then
@@ -162,7 +294,6 @@ jobs:
             COMMITS=$(git log --oneline --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD)
           fi
           
-          # Write to file to handle multiline
           echo "## What's Changed" > changelog.md
           echo "" >> changelog.md
           echo "$COMMITS" >> changelog.md
@@ -172,18 +303,18 @@ jobs:
           echo "Pull the images from GitHub Container Registry:" >> changelog.md
           echo "" >> changelog.md
           echo "\`\`\`bash" >> changelog.md
-          echo "docker pull ghcr.io/${{ github.repository }}/app:${{ steps.version.outputs.VERSION }}" >> changelog.md
-          echo "docker pull ghcr.io/${{ github.repository }}/api:${{ steps.version.outputs.VERSION }}" >> changelog.md
+          echo "docker pull ghcr.io/${{ github.repository }}/app:${{ needs.prepare.outputs.version }}" >> changelog.md
+          echo "docker pull ghcr.io/${{ github.repository }}/api:${{ needs.prepare.outputs.version }}" >> changelog.md
           echo "\`\`\`" >> changelog.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          name: Release ${{ steps.version.outputs.VERSION }}
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
           body_path: changelog.md
           draft: false
-          prerelease: ${{ contains(steps.version.outputs.VERSION, '-') }}
+          prerelease: ${{ contains(needs.prepare.outputs.version, '-') }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

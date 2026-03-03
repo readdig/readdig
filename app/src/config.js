@@ -15,7 +15,10 @@ const config = {
 	paddle: {
 		vendorId: process.env.REACT_APP_PADDLE_VENDOR_ID,
 	},
-	freeMode: process.env.REACT_APP_FREE_MODE !== 'false',
+	_freeMode: process.env.REACT_APP_FREE_MODE,
+	get freeMode() {
+		return this._freeMode !== 'false';
+	},
 };
 
 export default config;

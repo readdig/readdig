@@ -2,7 +2,6 @@ services:
   # Frontend Application
   app:
     image: ghcr.io/readdig/readdig/app:latest
-    container_name: app
     restart: always
     ports:
       - '80:80'
@@ -29,7 +28,6 @@ services:
   # Backend API
   api:
     image: ghcr.io/readdig/readdig/api:latest
-    container_name: api
     restart: always
     ports:
       - '8000:8000'
@@ -85,7 +83,6 @@ services:
   # Redis Cache
   cache:
     image: redis:8-alpine
-    container_name: cache
     restart: always
     volumes:
       - ./data/redis:/data
@@ -100,10 +97,9 @@ services:
   # PostgreSQL Database
   database:
     image: postgres:17-alpine
-    container_name: database
     restart: always
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgresql:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: readdig
       POSTGRES_USER: readdig

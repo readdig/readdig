@@ -3,7 +3,7 @@ import { feeds } from '../db/schema';
 import { logger } from '../utils/logger';
 import { addBulkQueue, addQueueStatus, getQueueStatus } from '../utils/queue';
 
-const conductorInterval = 60; // seconds
+const conductorInterval = 120; // seconds
 const normalScrapeInterval = 10; // minutes
 const invalidScrapeInterval = 720; // minutes
 const failureScrapeInterval = 10080; // minutes

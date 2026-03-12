@@ -19,6 +19,15 @@ exports.list = async (req, res) => {
 	);
 
 	let whereConditions = [sql`${feeds.duplicateOfId} IS NULL`, eq(feeds.valid, true)];
+	// If a featured feed exists for a title, hide other feeds with the same title.
+	whereConditions.push(
+		sql`NOT EXISTS (
+			SELECT 1 FROM feeds f2
+			WHERE f2.title = ${feeds.title}
+			AND f2.featured = true
+			AND f2.id != ${feeds.id}
+		)`,
+	);
 
 	if (categoryId) {
 		whereConditions.push(

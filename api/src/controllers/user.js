@@ -213,7 +213,7 @@ exports.delete = async (req, res) => {
 
 	const subscription = await userSubscription(userId);
 	const isSubscriptionActived = subscription && !subscription.expired;
-	const isFreePlan = subscription && subscription.basePrice === '0';
+	const isFreePlan = subscription && parseFloat(subscription.plan.basePrice) === 0;
 
 	if (isSubscriptionActived && !isFreePlan) {
 		return res.status(400).json('This account subscription plan has not expired.');
@@ -338,7 +338,11 @@ exports.put = async (req, res) => {
 				return res.status(400).json('Cannot set admin user to free.');
 			}
 			const subscription = await userSubscription(userId);
-			if (subscription && !subscription.expired) {
+			if (
+				subscription &&
+				parseFloat(subscription.plan.basePrice) > 0 &&
+				!subscription.expired
+			) {
 				return res.status(400).json('The user has an active subscription.');
 			}
 		}

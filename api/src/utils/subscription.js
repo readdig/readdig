@@ -1,13 +1,18 @@
 import { eq, desc, sql, inArray, and } from 'drizzle-orm';
 
 import { db } from '../db';
-import { subscriptions } from '../db/schema';
+import { plans, subscriptions } from '../db/schema';
 
 export const userSubscription = async (userId) => {
 	const [subscription] = await db
 		.select({
 			id: subscriptions.id,
 			planId: subscriptions.planId,
+			plan: {
+				id: plans.id,
+				name: plans.name,
+				basePrice: plans.basePrice,
+			},
 			status: subscriptions.status,
 			nextBillDate: subscriptions.nextBillDate,
 			payoutDate: subscriptions.payoutDate,
@@ -15,6 +20,7 @@ export const userSubscription = async (userId) => {
 			expired: sql`CASE WHEN ${subscriptions.nextBillDate} <= NOW() THEN true ELSE false END`,
 		})
 		.from(subscriptions)
+		.leftJoin(plans, eq(subscriptions.planId, plans.id))
 		.where(
 			and(
 				eq(subscriptions.userId, userId),

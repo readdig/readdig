@@ -68,10 +68,7 @@ const Articles = () => {
 				}
 				source.current = axios.CancelToken.source();
 				setArticleLoading(true);
-				const res = await getFeaturedArticles(
-					{ page: 1, per_page: 50 },
-					source.current.token,
-				);
+				const res = await getFeaturedArticles({}, source.current.token);
 				setFeaturedArticles(res.data || []);
 				setFeaturedLoaded(true);
 			} catch (err) {

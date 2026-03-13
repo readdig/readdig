@@ -1,17 +1,17 @@
-import { eq, desc, asc, and, sql, count } from 'drizzle-orm';
+import { eq, desc, asc, and, or, sql, count } from 'drizzle-orm';
 
 import { db } from '../db';
 import { feeds, follows, likes, articles, stars, listens } from '../db/schema';
+import { cache } from '../utils/cache';
 import { normalizeUrl } from '../utils/urls';
 import { escapeRegexp } from '../utils/escapeRegexp';
 import { getUnsafeUrls } from '../utils/blocklist';
 import { FEED_WEIGHTS, ARTICLE_WEIGHTS } from '../utils/weights';
 
 exports.list = async (req, res) => {
-	const query = req.query || {};
 	const userId = req.user.sub;
-	const limit = parseInt(query.per_page || 20);
-	const offset = (parseInt(query.page || 1) - 1) * limit;
+	const query = req.query || {};
+	const limit = 50;
 	const categoryId = query.categoryId;
 	const unsafeUrls = await getUnsafeUrls();
 	const unsafeUrlsRegexp = unsafeUrls.map((url) =>
@@ -83,16 +83,19 @@ exports.list = async (req, res) => {
 			`),
 			asc(feeds.id),
 		)
-		.limit(limit)
-		.offset(offset);
+		.limit(limit);
 
 	res.json(data);
 };
 
 exports.articles = async (req, res) => {
-	const query = req.query || {};
-	const limit = parseInt(query.per_page || 20);
-	const offset = (parseInt(query.page || 1) - 1) * limit;
+	const limit = 50;
+	const articlesCacheKey = 'featured:articles';
+
+	const cachedArticles = await cache.get(articlesCacheKey);
+	if (cachedArticles) {
+		return res.json(cachedArticles);
+	}
 
 	const data = await db
 		.select({
@@ -114,6 +117,7 @@ exports.articles = async (req, res) => {
 		.innerJoin(feeds, eq(articles.feedId, feeds.id))
 		.leftJoin(stars, eq(stars.articleId, articles.id))
 		.leftJoin(listens, eq(listens.articleId, articles.id))
+		.leftJoin(follows, eq(follows.feedId, feeds.id))
 		.where(
 			and(
 				sql`${articles.duplicateOfId} IS NULL`,
@@ -121,12 +125,24 @@ exports.articles = async (req, res) => {
 			),
 		)
 		.groupBy(articles.id, feeds.id)
+		.having(
+			and(
+				sql`COUNT(DISTINCT ${follows.id}) > 0`,
+				or(
+					sql`COUNT(DISTINCT ${stars.id}) > 0`,
+					sql`COUNT(DISTINCT ${listens.id}) > 0`,
+					sql`${articles.likes} > 0`,
+					sql`${articles.views} > 0`,
+				),
+			),
+		)
 		.orderBy(
 			desc(sql`
 				(
 					${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
 					(COUNT(DISTINCT ${stars.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
 					(COUNT(DISTINCT ${listens.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
+					(COUNT(DISTINCT ${follows.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
 					(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
 					(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})
 				) /
@@ -136,8 +152,8 @@ exports.articles = async (req, res) => {
 				)
 			`),
 		)
-		.limit(limit)
-		.offset(offset);
+		.limit(limit);
 
+	await cache.set(articlesCacheKey, data);
 	res.json(data);
 };

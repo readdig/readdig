@@ -44,7 +44,9 @@ const ActionPopover = ({
 				</MenuItem>
 			) : (
 				!user.admin &&
-				(!user.subscription || user.subscription.expired || parseFloat(user.subscription.plan.basePrice) === 0) && (
+				(!user.subscription ||
+					user.subscription.expired ||
+					parseFloat(user.subscription.plan.basePrice) === 0) && (
 					<MenuItem onClick={() => changeUser(user.id, { role: 'free' })}>
 						{t('Set as free')}
 					</MenuItem>

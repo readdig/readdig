@@ -14,6 +14,7 @@ export const FEED_WEIGHTS = {
 export const ARTICLE_WEIGHTS = {
 	BASE: 1,
 	SAVED: 8,
+	FOLLOWER: 2,
 	LIKE: 5,
 	VIEW: 0.1,
 	PLAYED: 1,

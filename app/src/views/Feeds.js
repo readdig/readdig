@@ -62,7 +62,7 @@ const Feeds = () => {
 			}
 			source.current = axios.CancelToken.source();
 			setLoading(true);
-			const params = { page: 1, per_page: 50 };
+			const params = {};
 			if (catId) {
 				params.categoryId = catId;
 			}

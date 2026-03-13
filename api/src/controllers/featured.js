@@ -1,7 +1,7 @@
 import { eq, desc, asc, and, sql, count } from 'drizzle-orm';
 
 import { db } from '../db';
-import { feeds, follows, likes, articles } from '../db/schema';
+import { feeds, follows, likes, articles, stars, listens } from '../db/schema';
 import { normalizeUrl } from '../utils/urls';
 import { escapeRegexp } from '../utils/escapeRegexp';
 import { getUnsafeUrls } from '../utils/blocklist';
@@ -112,7 +112,8 @@ exports.articles = async (req, res) => {
 		})
 		.from(articles)
 		.innerJoin(feeds, eq(articles.feedId, feeds.id))
-		.leftJoin(follows, eq(follows.feedId, feeds.id))
+		.leftJoin(stars, eq(stars.articleId, articles.id))
+		.leftJoin(listens, eq(listens.articleId, articles.id))
 		.where(
 			and(
 				sql`${articles.duplicateOfId} IS NULL`,
@@ -122,13 +123,17 @@ exports.articles = async (req, res) => {
 		.groupBy(articles.id, feeds.id)
 		.orderBy(
 			desc(sql`
-				(${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
-				(COUNT(${follows.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
-				(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
-				(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})) /
-				POWER(GREATEST((EXTRACT(EPOCH FROM (NOW() - ${
-					articles.createdAt
-				})) / 3600), 0) + 2, ${sql.raw(String(ARTICLE_WEIGHTS.GRAVITY))})
+				(
+					${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
+					(COUNT(DISTINCT ${stars.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
+					(COUNT(DISTINCT ${listens.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
+					(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
+					(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})
+				) /
+				POWER(
+					GREATEST((EXTRACT(EPOCH FROM (NOW() - ${articles.createdAt})) / 3600), 0) + 2,
+					${sql.raw(String(ARTICLE_WEIGHTS.GRAVITY))}
+				)
 			`),
 		)
 		.limit(limit)

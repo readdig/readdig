@@ -12,9 +12,10 @@ export const FEED_WEIGHTS = {
 };
 
 export const ARTICLE_WEIGHTS = {
-	FOLLOWER: 1,
+	BASE: 1,
+	SAVED: 8,
 	LIKE: 5,
 	VIEW: 0.1,
+	PLAYED: 1,
 	GRAVITY: 1.8,
-	BASE: 1,
 };

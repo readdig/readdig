@@ -53,7 +53,7 @@ exports.signup = async (req, res) => {
 	const exists = await db.query.users.findFirst({
 		where: or(
 			eq(lower(users.email), data.email.toLowerCase()),
-			eq(users.username, data.email),
+			eq(users.username, data.username),
 		),
 	});
 

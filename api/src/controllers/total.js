@@ -13,8 +13,8 @@ exports.get = async (req, res) => {
 			// Primary articles count - optimized with JOIN
 			db
 				.select({ count: count(articles.id) })
-				.from(articles)
-				.innerJoin(follows, eq(articles.feedId, follows.feedId))
+				.from(follows)
+				.innerJoin(articles, eq(articles.feedId, follows.feedId))
 				.where(and(eq(follows.userId, userId), eq(follows.primary, true)))
 				.then((result) => result[0]?.count || 0),
 

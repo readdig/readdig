@@ -161,8 +161,8 @@ export const getPrimaryArticles = async (
 			unread: unread ? sql`true` : unreadFilter(userId, articles.id),
 			orderedAt: sql`CAST(EXTRACT(epoch FROM ${articles.createdAt}) * 1000 AS BIGINT)`,
 		})
-		.from(articles)
-		.innerJoin(follows, eq(articles.feedId, follows.feedId))
+		.from(follows)
+		.innerJoin(articles, eq(articles.feedId, follows.feedId))
 		.leftJoin(feeds, eq(articles.feedId, feeds.id))
 		.leftJoin(stars, and(eq(stars.articleId, articles.id), eq(stars.userId, userId)))
 		.leftJoin(

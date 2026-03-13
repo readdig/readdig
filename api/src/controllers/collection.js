@@ -73,6 +73,7 @@ exports.list = async (req, res) => {
 				followAlias: follows.alias, // User-defined alias for the feed
 				followPrimary: follows.primary, // Indicates if it's a primary follow
 				followFullText: follows.fullText, // Full text content preference
+				followCreatedAt: follows.createdAt, // Baseline for "New" articles (Scheme 1)
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
@@ -94,22 +95,30 @@ exports.list = async (req, res) => {
 			),
 	);
 
-	// 2. CTE for unread counts. No changes here.
+	// 2. CTE for unread counts. Optimized with subscription-relative timing minus 30 days buffer (Scheme 1 revised).
 	const unreadCountsCTE = db.$with('unread_counts').as(
 		db
 			.select({
 				feedId: articles.feedId,
 				count: sql`COUNT(*)::int`.as('count'),
 			})
-			.from(filteredFeedsCTE)
-			.innerJoin(articles, eq(articles.feedId, filteredFeedsCTE.id))
+			.from(articles)
+			.innerJoin(filteredFeedsCTE, eq(articles.feedId, filteredFeedsCTE.id))
 			.where(
-				sql`NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = ${articles.id} AND r.user_id = ${userId})`,
+				and(
+					// Show articles from 30 days BEFORE the subscription date onwards
+					sql`${articles.createdAt} >= ${filteredFeedsCTE.followCreatedAt} - INTERVAL '30 days'`,
+					sql`NOT EXISTS (
+						SELECT 1 FROM ${reads} r
+						WHERE r.article_id = ${articles.id}
+						AND r.user_id = ${userId}
+					)`,
+				),
 			)
 			.groupBy(articles.feedId),
 	);
 
-	// 3. CTE combining feeds with counts. Now only selecting fields explicitly used in the final JSON response.
+	// 3. CTE combining feeds with counts.
 	const feedsWithCountsCTE = db.$with('feeds_with_counts').as(
 		db
 			.select({

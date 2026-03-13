@@ -121,6 +121,15 @@ export const getPrimaryArticles = async (
 ) => {
 	let whereConditions = [eq(follows.userId, userId), eq(follows.primary, true)];
 
+	const [counts] = await db
+		.select({ count: sql`count(*)` })
+		.from(follows)
+		.where(and(...whereConditions));
+
+	if (parseInt(counts.count) === 0) {
+		return [];
+	}
+
 	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
 		const endIds = endOfArticleIds.split(',').filter((a) => a);
 		whereConditions.push(
@@ -185,6 +194,15 @@ export const getStarArticles = async (
 	queryText,
 ) => {
 	let starWhereConditions = [eq(stars.userId, userId)];
+
+	const [counts] = await db
+		.select({ count: sql`count(*)` })
+		.from(stars)
+		.where(and(...starWhereConditions));
+
+	if (parseInt(counts.count) === 0) {
+		return [];
+	}
 
 	if (queryText) {
 		const searchPattern = `%${queryText}%`;
@@ -252,6 +270,15 @@ export const getReadArticles = async (
 ) => {
 	let readWhereConditions = [eq(reads.userId, userId), eq(reads.view, true)];
 
+	const [counts] = await db
+		.select({ count: sql`count(*)` })
+		.from(reads)
+		.where(and(...readWhereConditions));
+
+	if (parseInt(counts.count) === 0) {
+		return [];
+	}
+
 	if (queryText) {
 		const searchPattern = `%${queryText}%`;
 		readWhereConditions.push(
@@ -312,6 +339,15 @@ export const getPlayedArtilces = async (
 	queryText,
 ) => {
 	let listenWhereConditions = [eq(listens.userId, userId)];
+
+	const [counts] = await db
+		.select({ count: sql`count(*)` })
+		.from(listens)
+		.where(and(...listenWhereConditions));
+
+	if (parseInt(counts.count) === 0) {
+		return [];
+	}
 
 	if (queryText) {
 		const searchPattern = `%${queryText}%`;

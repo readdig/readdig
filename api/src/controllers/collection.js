@@ -101,8 +101,8 @@ exports.list = async (req, res) => {
 				feedId: articles.feedId,
 				count: sql`COUNT(*)::int`.as('count'),
 			})
-			.from(articles)
-			.innerJoin(filteredFeedsCTE, eq(articles.feedId, filteredFeedsCTE.id))
+			.from(filteredFeedsCTE)
+			.innerJoin(articles, eq(articles.feedId, filteredFeedsCTE.id))
 			.where(
 				sql`NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = ${articles.id} AND r.user_id = ${userId})`,
 			)

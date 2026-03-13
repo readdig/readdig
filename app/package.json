@@ -1,6 +1,6 @@
 {
   "name": "readdig-app",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "license": "Apache-2.0",
   "private": false,
   "scripts": {

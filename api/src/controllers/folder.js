@@ -85,7 +85,7 @@ exports.post = async (req, res) => {
 		})
 		.returning();
 
-	if (feedIds) {
+	if (feedIds && feedIds.length > 0) {
 		if (!(await isFeedId(feedIds))) {
 			return res.status(400).json('Some wrong feed Id provided.');
 		}

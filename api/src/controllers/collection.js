@@ -174,7 +174,12 @@ exports.list = async (req, res) => {
 			and(
 				eq(folders.userId, userId),
 				query.folderId ? eq(folders.id, query.folderId) : undefined,
-				isNotNull(feedsWithCountsCTE.id),
+				searchText
+					? or(
+							like(lower(folders.name), `%${searchText.toLowerCase()}%`),
+							isNotNull(feedsWithCountsCTE.id),
+					  )
+					: undefined,
 			),
 		)
 		.groupBy(folders.id, folders.name, folders.icon)

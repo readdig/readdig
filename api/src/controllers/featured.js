@@ -11,7 +11,7 @@ import { FEED_WEIGHTS, ARTICLE_WEIGHTS } from '../utils/weights';
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
 	const query = req.query || {};
-	const limit = 50;
+	const limit = 100;
 	const categoryId = query.categoryId;
 	const unsafeUrls = await getUnsafeUrls();
 	const unsafeUrlsRegexp = unsafeUrls.map((url) =>
@@ -89,7 +89,7 @@ exports.list = async (req, res) => {
 };
 
 exports.articles = async (req, res) => {
-	const limit = 50;
+	const limit = 100;
 	const articlesCacheKey = 'featured:articles';
 
 	const cachedArticles = await cache.get(articlesCacheKey);

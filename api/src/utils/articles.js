@@ -20,10 +20,16 @@ import { ParseContent } from '../parsers/content';
 const unreadFilter = (userId, articleId) => {
 	return sql`
 		CASE
+			WHEN EXISTS (
+				SELECT 1 FROM ${follows}
+				WHERE ${follows.userId} = ${userId}
+				AND ${follows.feedId} = ${articles.feedId}
+				AND ${articles.createdAt} < ${follows.createdAt} - INTERVAL '30 days'
+			) THEN false
 			WHEN NOT EXISTS (
-				SELECT 1 FROM reads
-				WHERE reads.user_id = ${userId}
-				AND reads.article_id = ${articleId}
+				SELECT 1 FROM ${reads}
+				WHERE ${reads.userId} = ${userId}
+				AND ${reads.articleId} = ${articleId}
 			) THEN true
 			ELSE false
 		END
@@ -65,6 +71,12 @@ export const getUserArticles = async (
 				SELECT 1 FROM ${reads}
 				WHERE ${reads.userId} = ${userId}
 				AND ${reads.articleId} = ${articles.id}
+			)`,
+			sql`EXISTS (
+				SELECT 1 FROM ${follows}
+				WHERE ${follows.userId} = ${userId}
+				AND ${follows.feedId} = ${articles.feedId}
+				AND ${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'
 			)`,
 		);
 	}
@@ -147,6 +159,7 @@ export const getPrimaryArticles = async (
 				WHERE ${reads.userId} = ${userId}
 				AND ${reads.articleId} = ${articles.id}
 			)`,
+			sql`${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'`,
 		);
 	}
 

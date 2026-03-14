@@ -104,15 +104,12 @@ exports.list = async (req, res) => {
 			})
 			.from(filteredFeedsCTE)
 			.innerJoin(articles, eq(articles.feedId, filteredFeedsCTE.id))
+			.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId)))
 			.where(
 				and(
 					// Show articles from 30 days BEFORE the subscription date onwards
 					sql`${articles.createdAt} >= ${filteredFeedsCTE.followCreatedAt} - INTERVAL '30 days'`,
-					sql`NOT EXISTS (
-						SELECT 1 FROM ${reads} r
-						WHERE r.article_id = ${articles.id}
-						AND r.user_id = ${userId}
-					)`,
+					sql`${reads.articleId} IS NULL`,
 				),
 			)
 			.groupBy(articles.feedId),

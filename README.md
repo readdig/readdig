@@ -29,7 +29,7 @@ Readdig is an RSS and Podcast reader application.
 The application consists of:
 
 - **API**: Node.js backend service (Express.js)
-- **App**: React frontend (Create React App)
+- **APP**: React frontend (Create React App)
 - **Database**: PostgreSQL
 - **Cache**: Redis
 - **Queue**: Bull (Redis-based)

@@ -167,9 +167,13 @@
 									visibility: visible;
 								}
 
-								&.count,
-								&.action {
+								&.count {
 									width: 2.375rem;
+								}
+
+								&.action {
+									height: rem(22px);
+									width: rem(22px);
 								}
 							}
 						}

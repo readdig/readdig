@@ -27,6 +27,12 @@
 			box-shadow: $box-shadow;
 			border: 1px solid var(--divider);
 			padding: 2rem;
+
+			.btn {
+				display: inline-flex;
+				justify-content: center;
+				min-width: rem(120px);
+			}
 		}
 	}
 

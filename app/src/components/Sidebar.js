@@ -34,8 +34,8 @@ const Sidebar = () => {
 	useEffect(() => {
 		if (!isTabletOrMobile) return;
 
-		const SWIPE_THRESHOLD = 50;
-		const EDGE_WIDTH = 30;
+		const SWIPE_THRESHOLD = 70;
+		const EDGE_WIDTH = 60;
 
 		const handleTouchStart = (e) => {
 			touchStartX.current = e.touches[0].clientX;

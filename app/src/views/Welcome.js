@@ -11,7 +11,7 @@ const Welcome = () => {
 			<PageTitle />
 			<header className="navbar">
 				<nav className="navbar-container">
-					<Link className="logo" to="/" title="Readdig.com">
+					<Link className="logo" to="/" title={config.product.name}>
 						<img src="/favicons/logo.png" alt="" />
 					</Link>
 					<ul className="navbar-nav">
@@ -44,7 +44,7 @@ const Welcome = () => {
 				</div>
 			</section>
 			{!config.freeMode && <Pricings />}
-			<footer className="footer">© Readdig.com</footer>
+			<footer className="footer">© {config.product.name}</footer>
 		</>
 	);
 };

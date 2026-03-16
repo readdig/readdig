@@ -23,7 +23,7 @@ const Signup = () => {
 			setSubmitting(true);
 			await signup(dispatch, data.username, data.email, data.password, i18n.language);
 			setSubmitting(false);
-			history.push(config.freeMode ? '/' : '/settings/plans');
+			history.push(config.freeMode ? '/feeds' : '/settings/plans');
 		} catch (err) {
 			setSubmitting(false);
 		}

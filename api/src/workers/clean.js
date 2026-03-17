@@ -1,7 +1,7 @@
 import { client } from '../db';
 import { logger } from '../utils/logger';
 
-const conductorInterval = 30 * 60; // seconds
+const conductorInterval = 60 * 60; // seconds
 const BATCH_SIZE = 10000; // Process articles in batches
 
 let timeout = null;
@@ -39,8 +39,17 @@ async function cleanInvalidFeeds() {
 			WITH invalid_feeds AS (
 				SELECT id
 				FROM feeds
-				WHERE valid = false
-					AND created_at < NOW() - INTERVAL '6 months'
+				WHERE created_at < NOW() - INTERVAL '6 months'
+					AND (
+						valid = false
+						OR (
+							featured = false
+							AND (
+								consecutive_scrape_failures > 1050
+								AND NOT EXISTS (SELECT 1 FROM follows f WHERE f.feed_id = feeds.id)
+							)
+						)
+					)
 			)
 			DELETE FROM feeds
 			WHERE id IN (SELECT id FROM invalid_feeds)
@@ -77,6 +86,7 @@ async function cleanOldArticles() {
 						AND NOT EXISTS (SELECT 1 FROM reads r WHERE r.article_id = a.id)
 						AND NOT EXISTS (SELECT 1 FROM stars s WHERE s.article_id = a.id)
 						AND NOT EXISTS (SELECT 1 FROM listens l WHERE l.article_id = a.id)
+						AND NOT EXISTS (SELECT 1 FROM likes lk WHERE lk.article_id = a.id)
 					ORDER BY a.created_at
 					LIMIT ${BATCH_SIZE}
 				),

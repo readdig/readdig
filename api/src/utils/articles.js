@@ -72,13 +72,27 @@ export const getUserArticles = async (
 				WHERE ${reads.userId} = ${userId}
 				AND ${reads.articleId} = ${articles.id}
 			)`,
-			sql`EXISTS (
-				SELECT 1 FROM ${follows}
-				WHERE ${follows.userId} = ${userId}
-				AND ${follows.feedId} = ${articles.feedId}
-				AND ${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'
-			)`,
 		);
+
+		if (feedId) {
+			whereConditions.push(
+				sql`NOT EXISTS (
+					SELECT 1 FROM ${follows}
+					WHERE ${follows.userId} = ${userId}
+					AND ${follows.feedId} = ${articles.feedId}
+					AND ${articles.createdAt} < ${follows.createdAt} - INTERVAL '30 days'
+				)`,
+			);
+		} else {
+			whereConditions.push(
+				sql`EXISTS (
+					SELECT 1 FROM ${follows}
+					WHERE ${follows.userId} = ${userId}
+					AND ${follows.feedId} = ${articles.feedId}
+					AND ${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'
+				)`,
+			);
+		}
 	}
 
 	let query = db

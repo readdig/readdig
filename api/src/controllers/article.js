@@ -134,7 +134,11 @@ exports.get = async (req, res) => {
 		}
 	}
 
-	if (article.unread) {
+	const existsRead = await db.query.reads.findFirst({
+		where: and(eq(reads.userId, userId), eq(reads.articleId, articleId), eq(reads.view, true)),
+	});
+
+	if (!existsRead) {
 		await db
 			.insert(reads)
 			.values({
@@ -144,9 +148,11 @@ exports.get = async (req, res) => {
 			})
 			.onConflictDoUpdate({
 				target: [reads.userId, reads.articleId],
-				set: { view: true, updatedAt: new Date() },
+				set: { view: true, createdAt: new Date(), updatedAt: new Date() },
 			});
 	}
+
+	article.unread = false;
 
 	res.json(article);
 };

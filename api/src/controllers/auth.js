@@ -20,6 +20,7 @@ exports.signup = async (req, res) => {
 		password: body.password,
 		settings: {
 			language,
+			autoRead: false,
 			unreadOnly: false,
 			mobileHideSidebar: true,
 			fontSize: 0,

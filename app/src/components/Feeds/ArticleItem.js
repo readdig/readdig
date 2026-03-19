@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { decodeHTML } from 'entities';
@@ -16,11 +16,38 @@ const ArticleItem = ({
 	visited = false,
 	removed = false,
 	onRemove,
+	onAutoRead,
 }) => {
 	const { t } = useTranslation();
 
 	const playable = article.feed.type === 'podcast' && article.type === 'episode';
 	const desc = decodeHTML(article.description);
+
+	const hoverTimer = useRef(null);
+
+	const handleMouseEnter = () => {
+		if (onAutoRead && article.unread) {
+			hoverTimer.current = setTimeout(() => {
+				onAutoRead(article);
+			}, 800);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		if (hoverTimer.current) {
+			clearTimeout(hoverTimer.current);
+			hoverTimer.current = null;
+		}
+	};
+
+	useEffect(() => {
+		return () => {
+			if (hoverTimer.current) {
+				clearTimeout(hoverTimer.current);
+				hoverTimer.current = null;
+			}
+		};
+	}, []);
 
 	return (
 		<Link
@@ -29,6 +56,9 @@ const ArticleItem = ({
 				active: currentId && currentId === article.id,
 			})}
 			to={to}
+			data-article-id={article.id}
+			onMouseEnter={onAutoRead ? handleMouseEnter : undefined}
+			onMouseLeave={onAutoRead ? handleMouseLeave : undefined}
 		>
 			<div className="left">
 				<div className="icon">

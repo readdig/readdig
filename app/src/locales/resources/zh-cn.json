@@ -344,5 +344,7 @@
   "Featured Feeds": "精选订阅源",
   "Popular Articles": "热门文章",
   "Enter keywords to search articles": "输入关键词搜索文章",
-  "Enter keywords or URL to search feeds": "输入关键词或 URL 搜索订阅源"
+  "Enter keywords or URL to search feeds": "输入关键词或 URL 搜索订阅源",
+  "Auto mark articles as read": "自动标记文章为已读",
+  "Hover on desktop or scroll past on mobile to mark articles as read.": "桌面端悬停文章、移动端滚动浏览时自动标记为已读。"
 }

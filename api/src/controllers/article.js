@@ -135,7 +135,11 @@ exports.get = async (req, res) => {
 	}
 
 	const existsRead = await db.query.reads.findFirst({
-		where: and(eq(reads.userId, userId), eq(reads.articleId, articleId), eq(reads.view, true)),
+		where: and(
+			eq(reads.userId, userId),
+			eq(reads.articleId, articleId),
+			eq(reads.view, true),
+		),
 	});
 
 	if (!existsRead) {
@@ -155,6 +159,40 @@ exports.get = async (req, res) => {
 	article.unread = false;
 
 	res.json(article);
+};
+
+exports.read = async (req, res) => {
+	const userId = req.user.sub;
+	const articleId = req.body.articleId;
+	const articleIds = req.body.articleIds || [];
+	const ids = articleId ? [articleId] : articleIds;
+
+	if (ids.length === 0) {
+		return res.status(400).json('articleId or articleIds must be provided.');
+	}
+
+	for (const id of ids) {
+		if (!isUUID(id)) {
+			return res.status(400).json(`Article Id (${id}) is an invalid UUId.`);
+		}
+	}
+
+	const now = new Date();
+
+	await db
+		.insert(reads)
+		.values(
+			ids.map((id) => ({
+				userId: userId,
+				articleId: id,
+			})),
+		)
+		.onConflictDoUpdate({
+			target: [reads.userId, reads.articleId],
+			set: { updatedAt: now },
+		});
+
+	res.sendStatus(204);
 };
 
 exports.remove = async (req, res) => {

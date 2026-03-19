@@ -43,3 +43,36 @@ export const likeArticle = async (articleId) => {
 export const unlikeArticle = async (articleId) => {
 	return await fetch('DELETE', `/like/article/${articleId}`);
 };
+
+export const markArticlesRead = async (dispatch, articles) => {
+	const list = Array.isArray(articles) ? articles : [articles];
+	const unread = list.filter((a) => a.unread);
+	if (unread.length === 0) return;
+
+	for (const article of unread) {
+		dispatch({
+			articleId: article.id,
+			feedId: article.feed && article.feed.id,
+			type: 'MARK_ARTICLE_READ',
+		});
+	}
+
+	try {
+		if (unread.length === 1) {
+			await fetch('POST', '/articles/read', { articleId: unread[0].id });
+		} else {
+			await fetch('POST', '/articles/read', {
+				articleIds: unread.map((a) => a.id),
+			});
+		}
+	} catch (err) {
+		for (const article of unread) {
+			dispatch({
+				articleId: article.id,
+				feedId: article.feed && article.feed.id,
+				type: 'MARK_ARTICLE_UNREAD',
+			});
+		}
+		throw err;
+	}
+};

@@ -272,6 +272,62 @@ const ACTION_HANDLERS = {
 			follows,
 		};
 	},
+	MARK_ARTICLE_READ: (previousState, action) => {
+		const articleId = action.articleId;
+		const feedId = action.feedId;
+		const articles = { ...previousState.articles };
+		const follows = { ...previousState.follows };
+		const totals = { ...previousState.totals };
+
+		if (articles[articleId] && articles[articleId].unread) {
+			articles[articleId] = { ...articles[articleId], unread: false };
+
+			if (feedId && follows[feedId]) {
+				const unreadCount = follows[feedId].unreadCount || 0;
+				follows[feedId] = {
+					...follows[feedId],
+					unreadCount: Math.max(0, unreadCount - 1),
+				};
+			}
+		}
+
+		return {
+			...previousState,
+			reachedEndOfArticles:
+				Object.keys(articles).length === 0 ? true : previousState.reachedEndOfArticles,
+			articles,
+			follows,
+			totals,
+		};
+	},
+	MARK_ARTICLE_UNREAD: (previousState, action) => {
+		const articleId = action.articleId;
+		const feedId = action.feedId;
+		const articles = { ...previousState.articles };
+		const follows = { ...previousState.follows };
+		const totals = { ...previousState.totals };
+
+		if (articles[articleId] && !articles[articleId].unread) {
+			articles[articleId] = { ...articles[articleId], unread: true };
+
+			if (feedId && follows[feedId]) {
+				const unreadCount = follows[feedId].unreadCount || 0;
+				follows[feedId] = {
+					...follows[feedId],
+					unreadCount: unreadCount + 1,
+				};
+			}
+		}
+
+		return {
+			...previousState,
+			reachedEndOfArticles:
+				Object.keys(articles).length === 0 ? true : previousState.reachedEndOfArticles,
+			articles,
+			follows,
+			totals,
+		};
+	},
 	DELETE_ARTICLE: (previousState, action) => {
 		const articleId = action.articleId;
 		const removeType = action.removeType;

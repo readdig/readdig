@@ -19,6 +19,7 @@ const Settings = () => {
 		const settings = user.settings || {};
 		setData({
 			unreadOnly: settings.unreadOnly || false,
+			autoRead: settings.autoRead || false,
 			mobileHideSidebar: settings.mobileHideSidebar || false,
 			fontSize: settings.fontSize || 0,
 			textSize: settings.textSize || 0,
@@ -59,6 +60,21 @@ const Settings = () => {
 					</label>
 					<div className="note">
 						{t('Filter read articles, not displayed in the article list.')}
+					</div>
+				</div>
+				<div className="form-group checkbox">
+					<label>
+						<input
+							type="checkbox"
+							name="autoRead"
+							checked={data.autoRead || false}
+							disabled={submitting}
+							onChange={(e) => onChange('autoRead', e.target.checked)}
+						/>
+						<span>{t('Auto mark articles as read')}</span>
+					</label>
+					<div className="note">
+						{t('Hover on desktop or scroll past on mobile to mark articles as read.')}
 					</div>
 				</div>
 				<div className="form-group checkbox">

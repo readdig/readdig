@@ -4,7 +4,6 @@ import { sort } from 'fast-sort';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { isMobile } from 'react-device-detect';
 import { useTranslation } from 'react-i18next';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -13,6 +12,7 @@ import GoToTop from '../GoToTop';
 import PageTitle from '../PageTitle';
 import ArticleItem from './ArticleItem';
 import TagPanel from '../Tags/TagPanel';
+import useMobileAndTouch from '../../hooks/useMobileAndTouch';
 import { getArticles, removeArticle, clearArticles } from '../../api/article';
 
 const StarArticleList = () => {
@@ -20,6 +20,7 @@ const StarArticleList = () => {
 	const scrollable = useRef();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
+	const isMobileAndTouch = useMobileAndTouch();
 	const articles = useSelector((state) =>
 		sort(Object.values(state.articles || {})).desc((a) => a.orderedAt),
 	);
@@ -138,7 +139,7 @@ const StarArticleList = () => {
 						clearFeedArticles();
 						getFeedArticles();
 					}}
-					pullDownToRefresh={isMobile}
+					pullDownToRefresh={isMobileAndTouch}
 					pullDownToRefreshThreshold={80}
 					pullDownToRefreshContent={<div className="pull-loader down">&#8595;</div>}
 					releaseToRefreshContent={<div className="pull-loader up">&#8595;</div>}

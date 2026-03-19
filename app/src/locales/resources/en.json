@@ -310,5 +310,7 @@
   "Featured Feeds": "Featured Feeds",
   "Popular Articles": "Popular Articles",
   "Enter keywords to search articles": "Enter keywords to search articles",
-  "Enter keywords or URL to search feeds": "Enter keywords or URL to search feeds"
+  "Enter keywords or URL to search feeds": "Enter keywords or URL to search feeds",
+  "Auto mark articles as read": "Auto mark articles as read",
+  "Hover on desktop or scroll past on mobile to mark articles as read.": "Hover on desktop or scroll past on mobile to mark articles as read."
 }

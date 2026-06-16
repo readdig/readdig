@@ -138,7 +138,13 @@ export const syncV2EXReplies = async (article) => {
 	try {
 		const items = await fetchAllReplies(topicId);
 		const replies = items.map(mapReply);
-		await cache.set(key, replies, (config.v2ex.ttl || 30) * 60);
+		// Cache write is best-effort; a Redis hiccup must not discard the
+		// replies we just fetched.
+		cache
+			.set(key, replies, (config.v2ex.ttl || 30) * 60)
+			.catch((err) =>
+				logger.warn(`Failed to cache v2ex replies for topic ${topicId}: ${err.message}`),
+			);
 		return replies;
 	} catch (err) {
 		logger.warn(`Failed to fetch v2ex replies for topic ${topicId}: ${err.message}`);

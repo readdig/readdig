@@ -22,7 +22,7 @@ dotenv.config({ path: envPath });
 
 const _default = {
 	name: pkg.name,
-	version: pkg.version,
+	version: (process.env.APP_VERSION || pkg.version).replace(/^v/, ''),
 	product: {
 		url: process.env.PRODUCT_URL,
 		name: process.env.PRODUCT_NAME,

@@ -36,6 +36,9 @@ LABEL org.opencontainers.image.title="Readdig API" \
     org.opencontainers.image.source="https://github.com/readdig/readdig" \
     org.opencontainers.image.licenses="Apache-2.0"
 
+# Expose the release version to the running app (health endpoint, Sentry release).
+ENV APP_VERSION=${VERSION}
+
 # Install PM2 and tools
 RUN yarn global add pm2 && apk add --no-cache redis postgresql-client
 

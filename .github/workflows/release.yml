@@ -11,6 +11,12 @@ on:
         required: true
         type: string
 
+# Serialize releases so concurrent runs can't race on the shared floating
+# Docker tags (latest / major / minor). Never cancel a release mid-flight.
+concurrency:
+  group: ${{ github.workflow }}-release
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   APP_IMAGE_NAME: ${{ github.repository }}/app
@@ -21,37 +27,47 @@ jobs:
   prepare:
     name: Prepare Version
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
+      build_date: ${{ steps.version.outputs.BUILD_DATE }}
+      build_ref: ${{ steps.version.outputs.BUILD_REF }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Get version
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "VERSION=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+            VERSION="${{ inputs.tag }}"
           else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            VERSION="${GITHUB_REF#refs/tags/}"
           fi
+          # Normalize to a leading 'v' so tags are consistent (e.g. v1.2.3)
+          case "$VERSION" in
+            v*) ;;
+            *) VERSION="v${VERSION}" ;;
+          esac
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          # Resolve which commit every job should build:
+          # - tag push: the commit the tag points to (github.sha).
+          # - manual dispatch: the named tag if it already exists (re-release),
+          #   otherwise the commit the workflow was dispatched from.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && \
+             git rev-parse -q --verify "refs/tags/${VERSION}" >/dev/null; then
+            TARGET="refs/tags/${VERSION}"
+          else
+            TARGET="${{ github.sha }}"
+          fi
+          # Pin to a concrete commit SHA so checkout and the VCS_REF label are
+          # deterministic and consistent across every job.
+          BUILD_REF=$(git rev-parse "${TARGET}^{commit}")
 
-      - name: Update package.json version
-        run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          VERSION_NUM="${VERSION#v}"
-          cd app && npm version $VERSION_NUM --no-git-tag-version --allow-same-version && cd ..
-          cd api && npm version $VERSION_NUM --no-git-tag-version --allow-same-version && cd ..
-
-      - name: Commit version update
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add app/package.json api/package.json
-          git commit -m "chore: bump version to ${{ steps.version.outputs.VERSION }}" || echo "No changes to commit"
-          git push origin HEAD:main || echo "Push failed, continuing..."
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          echo "BUILD_REF=${BUILD_REF}" >> $GITHUB_OUTPUT
 
   # ============================================================
   # App Image Builds
@@ -65,6 +81,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -88,8 +106,8 @@ jobs:
           platforms: linux/amd64
           build-args: |
             VERSION=${{ needs.prepare.outputs.version }}
-            BUILD_DATE=${{ github.event.repository.updated_at }}
-            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ needs.prepare.outputs.build_date }}
+            VCS_REF=${{ needs.prepare.outputs.build_ref }}
 
   build-app-arm64:
     name: Build App (arm64)
@@ -100,6 +118,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -123,8 +143,8 @@ jobs:
           platforms: linux/arm64
           build-args: |
             VERSION=${{ needs.prepare.outputs.version }}
-            BUILD_DATE=${{ github.event.repository.updated_at }}
-            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ needs.prepare.outputs.build_date }}
+            VCS_REF=${{ needs.prepare.outputs.build_ref }}
 
   merge-app-manifest:
     name: Merge App Manifest
@@ -149,12 +169,17 @@ jobs:
           VERSION_NUM="${VERSION#v}"
           IMAGE="${{ env.REGISTRY }}/${{ env.APP_IMAGE_NAME }}"
 
-          # Extract major and minor versions
-          MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
-          MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+          # Always tag the exact version. Floating tags (major/minor/latest) are
+          # only updated for stable releases — a prerelease (version contains
+          # '-', e.g. v1.2.0-rc1) must not overwrite them.
+          TAGS=("${VERSION_NUM}")
+          if [[ "$VERSION_NUM" != *-* ]]; then
+            MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
+            MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+            TAGS+=("${MINOR}" "${MAJOR}" "latest")
+          fi
 
-          # Create multi-arch manifests for all tags
-          for TAG in "${VERSION_NUM}" "${MINOR}" "${MAJOR}" "latest"; do
+          for TAG in "${TAGS[@]}"; do
             docker buildx imagetools create -t "${IMAGE}:${TAG}" \
               "${IMAGE}:${VERSION}-amd64" \
               "${IMAGE}:${VERSION}-arm64"
@@ -172,6 +197,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -195,8 +222,8 @@ jobs:
           platforms: linux/amd64
           build-args: |
             VERSION=${{ needs.prepare.outputs.version }}
-            BUILD_DATE=${{ github.event.repository.updated_at }}
-            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ needs.prepare.outputs.build_date }}
+            VCS_REF=${{ needs.prepare.outputs.build_ref }}
 
   build-api-arm64:
     name: Build API (arm64)
@@ -207,6 +234,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -230,8 +259,8 @@ jobs:
           platforms: linux/arm64
           build-args: |
             VERSION=${{ needs.prepare.outputs.version }}
-            BUILD_DATE=${{ github.event.repository.updated_at }}
-            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ needs.prepare.outputs.build_date }}
+            VCS_REF=${{ needs.prepare.outputs.build_ref }}
 
   merge-api-manifest:
     name: Merge API Manifest
@@ -256,12 +285,17 @@ jobs:
           VERSION_NUM="${VERSION#v}"
           IMAGE="${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}"
 
-          # Extract major and minor versions
-          MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
-          MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+          # Always tag the exact version. Floating tags (major/minor/latest) are
+          # only updated for stable releases — a prerelease (version contains
+          # '-', e.g. v1.2.0-rc1) must not overwrite them.
+          TAGS=("${VERSION_NUM}")
+          if [[ "$VERSION_NUM" != *-* ]]; then
+            MAJOR=$(echo "$VERSION_NUM" | cut -d. -f1)
+            MINOR=$(echo "$VERSION_NUM" | cut -d. -f1-2)
+            TAGS+=("${MINOR}" "${MAJOR}" "latest")
+          fi
 
-          # Create multi-arch manifests for all tags
-          for TAG in "${VERSION_NUM}" "${MINOR}" "${MAJOR}" "latest"; do
+          for TAG in "${TAGS[@]}"; do
             docker buildx imagetools create -t "${IMAGE}:${TAG}" \
               "${IMAGE}:${VERSION}-amd64" \
               "${IMAGE}:${VERSION}-arm64"
@@ -281,11 +315,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ needs.prepare.outputs.build_ref }}
           fetch-depth: 0
 
       - name: Generate changelog
         id: changelog
         run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          VERSION_NUM="${VERSION#v}"
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           
           if [ -z "$PREV_TAG" ]; then
@@ -303,8 +340,8 @@ jobs:
           echo "Pull the images from GitHub Container Registry:" >> changelog.md
           echo "" >> changelog.md
           echo "\`\`\`bash" >> changelog.md
-          echo "docker pull ghcr.io/${{ github.repository }}/app:${{ needs.prepare.outputs.version }}" >> changelog.md
-          echo "docker pull ghcr.io/${{ github.repository }}/api:${{ needs.prepare.outputs.version }}" >> changelog.md
+          echo "docker pull ghcr.io/${{ github.repository }}/app:${VERSION_NUM}" >> changelog.md
+          echo "docker pull ghcr.io/${{ github.repository }}/api:${VERSION_NUM}" >> changelog.md
           echo "\`\`\`" >> changelog.md
 
       - name: Create GitHub Release

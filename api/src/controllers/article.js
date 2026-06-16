@@ -12,6 +12,7 @@ import {
 	getArticleById,
 	getParsedArticle,
 } from '../utils/articles';
+import { isV2EXEnabled, isV2EXFeed, syncV2EXReplies } from '../utils/v2ex';
 
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
@@ -131,6 +132,15 @@ exports.get = async (req, res) => {
 			if (articleType === 'parsed') {
 				return res.status(400).json('Get the full text failed.');
 			}
+		}
+	}
+
+	// Auto-fetch v2ex topic replies for any v2ex feed, independent of full text.
+	if (isV2EXEnabled() && isV2EXFeed(article.feed)) {
+		try {
+			article.replies = await syncV2EXReplies(article);
+		} catch (err) {
+			article.replies = [];
 		}
 	}
 

@@ -54,6 +54,12 @@ const _default = {
 		url: process.env.CLOUDFLARE_PROXY_URL || '',
 		secret: process.env.CLOUDFLARE_PROXY_SECRET || '',
 	},
+	v2ex: {
+		token: process.env.V2EX_TOKEN || '',
+		baseUrl: process.env.V2EX_BASE_URL || 'https://www.v2ex.com',
+		// Minutes to keep cached replies before re-fetching from the API.
+		ttl: parseInt(process.env.V2EX_REPLIES_TTL || '30', 10),
+	},
 	email: {
 		backend: process.env.EMAIL_BACKEND,
 		sender: {

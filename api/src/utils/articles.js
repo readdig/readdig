@@ -438,6 +438,7 @@ export const getArticleById = async (userId, articleId) => {
 			likes: articles.likes,
 			views: articles.views,
 			createdAt: articles.createdAt,
+			repliesFetchedAt: articles.repliesFetchedAt,
 			feed: {
 				id: feeds.id,
 				title: feeds.title,

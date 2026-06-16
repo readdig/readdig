@@ -7,6 +7,7 @@ import Image from '../Image';
 import Lightbox from '../Lightbox';
 import HtmlRender from '../HtmlRender';
 import PlayOrPause from './PlayOrPause';
+import ArticleReplies from './ArticleReplies';
 
 const ArticleContent = ({ article = {} }) => {
 	const { t } = useTranslation();
@@ -122,6 +123,7 @@ const ArticleContent = ({ article = {} }) => {
 					</div>
 				)}
 			<HtmlRender article={article} openModal={openModal} />
+			<ArticleReplies article={article} />
 			<Lightbox isOpen={modalIsOpen} attribs={imageAttribs} closeModal={closeModal} />
 		</div>
 	);

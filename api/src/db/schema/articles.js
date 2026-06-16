@@ -15,6 +15,7 @@ import { reads } from './reads';
 import { stars } from './stars';
 import { listens } from './listens';
 import { likes } from './likes';
+import { replies } from './replies';
 
 export const articles = pgTable(
 	'articles',
@@ -48,6 +49,8 @@ export const articles = pgTable(
 		likes: integer('likes').default(0),
 		views: integer('views').default(0),
 		fingerprint: text('fingerprint').notNull(),
+		// Last time external replies (e.g. v2ex) were fetched into the replies table.
+		repliesFetchedAt: timestamp('replies_fetched_at'),
 		datePublished: timestamp('date_published').defaultNow(),
 		dateModified: timestamp('date_modified').defaultNow(),
 		createdAt: timestamp('created_at').defaultNow(),
@@ -82,4 +85,5 @@ export const articlesRelations = relations(articles, ({ one, many }) => ({
 	stars: many(stars),
 	listens: many(listens),
 	likes: many(likes),
+	replies: many(replies),
 }));

@@ -78,6 +78,13 @@
       "when": 1768784428500,
       "tag": "0010_remove_articles_created_feed_idx",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1781486394120,
+      "tag": "0011_v2ex_replies",
+      "breakpoints": true
     }
   ]
 }

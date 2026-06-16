@@ -239,6 +239,126 @@
   }
 }
 
+.article-replies {
+  padding: 0 0 1.25rem;
+  margin-top: rem(20px);
+
+  .replies-header {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: rem(8px);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-medium);
+    padding-bottom: 0.625rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid var(--divider-light);
+
+    .updated {
+      font-weight: 400;
+      font-size: 0.75rem;
+      color: var(--text-light);
+    }
+  }
+
+  .replies-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .reply {
+    display: flex;
+    padding: rem(16px) 0;
+    border-bottom: 1px solid var(--divider-light);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    .avatar {
+      flex-shrink: 0;
+      width: rem(36px);
+      height: rem(36px);
+      margin-right: rem(12px);
+
+      img,
+      .placeholder {
+        width: rem(36px);
+        height: rem(36px);
+        border-radius: $border-radius;
+        object-fit: cover;
+      }
+    }
+
+    .body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: rem(8px);
+      font-size: 0.8125rem;
+      color: var(--text-light);
+      margin-bottom: rem(4px);
+      border-bottom: 0;
+
+      .username {
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--primary);
+        }
+      }
+
+      .floor {
+        color: var(--text-light);
+      }
+
+      .thanks {
+        display: inline-flex;
+        align-items: center;
+        gap: rem(2px);
+        color: var(--primary);
+      }
+    }
+
+    .content {
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      color: var(--text-dark);
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+
+      p {
+        margin: 0 0 0.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      a {
+        color: var(--primary);
+        word-break: break-all;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: $border-radius-sm;
+      }
+    }
+  }
+}
+
 /* 4K Styles */
 @media (min-width: 1441px) {
   .article-content {

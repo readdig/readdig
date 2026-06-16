@@ -48,6 +48,8 @@
   "Folder": "文件夹",
   "By {{author}}": "来自 {{author}}",
   "Read More": "阅读原文",
+  "{{count}} replies": "{{count}} 条回复",
+  "Updated": "最后更新",
   "No selected content": "未选择内容",
   "No feeds found": "未找到订阅",
   "No articles found": "还没有文章",

@@ -13,10 +13,6 @@ const MAX_PAGES = 25;
 // Whether v2ex integration is configured (API token present in env).
 export const isV2EXEnabled = () => !!config.v2ex.token;
 
-// A v2ex feed is identified by its feed URL host.
-export const isV2EXFeed = (feed) =>
-	!!(feed && feed.feedUrl && feed.feedUrl.includes('v2ex.com'));
-
 // Extract the numeric topic id from a v2ex topic URL, e.g.
 // https://www.v2ex.com/t/123456#reply3 -> "123456"
 export const getTopicId = (url) => {
@@ -24,6 +20,9 @@ export const getTopicId = (url) => {
 	const match = url.match(/v2ex\.com\/t\/(\d+)/);
 	return match ? match[1] : null;
 };
+
+// An article belongs to v2ex when its own URL is a v2ex topic page.
+export const isV2EXArticle = (article) => !!getTopicId(article && article.url);
 
 const mapReply = (item, index) => ({
 	sourceId: String(item.id),

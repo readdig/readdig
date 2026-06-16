@@ -12,7 +12,7 @@ import {
 	getArticleById,
 	getParsedArticle,
 } from '../utils/articles';
-import { isV2EXEnabled, isV2EXFeed, syncV2EXReplies } from '../utils/v2ex';
+import { isV2EXEnabled, isV2EXArticle, syncV2EXReplies } from '../utils/v2ex';
 
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
@@ -135,8 +135,8 @@ exports.get = async (req, res) => {
 		}
 	}
 
-	// Auto-fetch v2ex topic replies for any v2ex feed, independent of full text.
-	if (isV2EXEnabled() && isV2EXFeed(article.feed)) {
+	// Auto-fetch v2ex topic replies when the article URL is a v2ex topic page.
+	if (isV2EXEnabled() && isV2EXArticle(article)) {
 		try {
 			article.replies = await syncV2EXReplies(article);
 		} catch (err) {

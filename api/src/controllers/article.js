@@ -168,12 +168,6 @@ exports.get = async (req, res) => {
 
 	article.unread = false;
 
-	// repliesFetchedAt is only meaningful alongside fetched replies; drop it
-	// unless the article actually has replies data.
-	if (!article.replies || article.replies.length === 0) {
-		delete article.repliesFetchedAt;
-	}
-
 	res.json(article);
 };
 

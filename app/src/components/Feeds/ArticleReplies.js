@@ -13,15 +13,21 @@ const ArticleReplies = ({ article = {} }) => {
 		return null;
 	}
 
+	// Last reply time, derived from the replies themselves.
+	const lastReplyAt = replies.reduce((latest, reply) => {
+		const time = new Date(reply.datePublished).getTime();
+		return time > latest ? time : latest;
+	}, 0);
+
 	return (
 		<div className="article-replies">
 			<div className="replies-header">
 				<span className="count">
 					{t('{{count}} replies', { count: replies.length })}
 				</span>
-				{article.repliesFetchedAt && (
+				{lastReplyAt > 0 && (
 					<span className="updated">
-						{t('Updated')} <Time value={article.repliesFetchedAt} format="lll" />
+						{t('Updated')} <Time value={lastReplyAt} format="lll" />
 					</span>
 				)}
 			</div>

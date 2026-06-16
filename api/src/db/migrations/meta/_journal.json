@@ -85,6 +85,13 @@
       "when": 1781486394120,
       "tag": "0011_v2ex_replies",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1781628452492,
+      "tag": "0012_drop_replies_table",
+      "breakpoints": true
     }
   ]
 }

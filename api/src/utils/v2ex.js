@@ -1,9 +1,7 @@
 import { fetch } from 'undici';
-import { asc, eq, sql } from 'drizzle-orm';
 
-import { db } from '../db';
-import { articles, replies } from '../db/schema';
 import { config } from '../config';
+import { cache } from './cache';
 import { logger } from './logger';
 
 const REQUEST_TTL = 15 * 1000;
@@ -25,15 +23,16 @@ export const getTopicId = (url) => {
 export const isV2EXArticle = (article) => !!getTopicId(article && article.url);
 
 const mapReply = (item, index) => ({
-	sourceId: String(item.id),
+	id: String(item.id),
 	floor: index + 1,
 	content: item.content || '',
 	contentRendered: item.content_rendered || item.content || '',
 	author: {
 		name: (item.member && item.member.username) || '',
-		url: item.member && item.member.username
-			? `https://www.v2ex.com/member/${item.member.username}`
-			: '',
+		url:
+			item.member && item.member.username
+				? `https://www.v2ex.com/member/${item.member.username}`
+				: '',
 		avatar:
 			(item.member &&
 				(item.member.avatar ||
@@ -43,7 +42,7 @@ const mapReply = (item, index) => ({
 			'',
 	},
 	thanks: item.thanks || 0,
-	datePublished: item.created ? new Date(item.created * 1000) : new Date(),
+	datePublished: (item.created ? new Date(item.created * 1000) : new Date()).toISOString(),
 });
 
 // Fetch a single page of replies from the v2ex API v2.
@@ -117,58 +116,14 @@ const fetchAllReplies = async (topicId) => {
 	return items;
 };
 
-// Read replies already stored for an article, ordered by floor.
-const loadStoredReplies = (articleId) =>
-	db
-		.select()
-		.from(replies)
-		.where(eq(replies.articleId, articleId))
-		.orderBy(asc(replies.floor));
-
-// Persist fetched replies, upserting on (articleId, sourceId).
-const saveReplies = async (articleId, items) => {
-	if (items.length === 0) return;
-	const rows = items.map((item, index) => ({
-		articleId,
-		source: 'v2ex',
-		...mapReply(item, index),
-		updatedAt: new Date(),
-	}));
-
-	await db
-		.insert(replies)
-		.values(rows)
-		.onConflictDoUpdate({
-			target: [replies.articleId, replies.sourceId],
-			set: {
-				floor: sqlExcluded('floor'),
-				content: sqlExcluded('content'),
-				contentRendered: sqlExcluded('content_rendered'),
-				author: sqlExcluded('author'),
-				thanks: sqlExcluded('thanks'),
-				updatedAt: new Date(),
-			},
-		});
-};
-
-// Reference the conflicting insert values in an upsert (Postgres `excluded`).
-function sqlExcluded(column) {
-	return sql.raw(`excluded."${column}"`);
-}
-
-const isFresh = (fetchedAt) => {
-	if (!fetchedAt) return false;
-	const ttlMs = (config.v2ex.ttl || 30) * 60 * 1000;
-	return Date.now() - new Date(fetchedAt).getTime() < ttlMs;
-};
-
 /**
- * Sync replies for a v2ex article and return the stored rows.
+ * Fetch v2ex topic replies for an article, cached in Redis by topic id.
  *
- * Gated on `article.repliesFetchedAt`: if the data is still within the TTL
- * window, the cached rows are returned without calling the API. Otherwise the
- * v2 API is queried, rows are upserted and the timestamp is bumped. Any API
- * failure (auth, rate limit, network) falls back to whatever is already stored.
+ * Keyed by topic (not article), so the same topic shared across multiple feeds
+ * stores a single copy and is fetched at most once per TTL window. The empty
+ * result is cached too, so reply-less topics don't trigger a request on every
+ * open. The reply objects carry `datePublished`; the client derives the
+ * "last reply" time from them.
  */
 export const syncV2EXReplies = async (article) => {
 	if (!config.v2ex.token) return [];
@@ -176,25 +131,17 @@ export const syncV2EXReplies = async (article) => {
 	const topicId = getTopicId(article.url);
 	if (!topicId) return [];
 
-	const articleId = article.id;
-
-	if (isFresh(article.repliesFetchedAt)) {
-		return loadStoredReplies(articleId);
-	}
+	const key = `v2ex:replies:${topicId}`;
+	const cached = await cache.get(key);
+	if (cached) return cached;
 
 	try {
 		const items = await fetchAllReplies(topicId);
-		await saveReplies(articleId, items);
-		const now = new Date();
-		await db
-			.update(articles)
-			.set({ repliesFetchedAt: now })
-			.where(eq(articles.id, articleId));
-		// Reflect the new fetch time on the in-memory article for the response.
-		article.repliesFetchedAt = now;
+		const replies = items.map(mapReply);
+		await cache.set(key, replies, (config.v2ex.ttl || 30) * 60);
+		return replies;
 	} catch (err) {
 		logger.warn(`Failed to fetch v2ex replies for topic ${topicId}: ${err.message}`);
+		return [];
 	}
-
-	return loadStoredReplies(articleId);
 };

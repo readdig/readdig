@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconHeartFilled } from '@tabler/icons-react';
 
 import Time from '../Time';
 import { sanitizeHTML } from '../../utils/sanitize';
@@ -15,7 +14,7 @@ const ArticleReplies = ({ article = {} }) => {
 
 	// Last reply time, derived from the replies themselves.
 	const lastReplyAt = replies.reduce((latest, reply) => {
-		const time = new Date(reply.datePublished).getTime();
+		const time = new Date(reply.createdAt).getTime();
 		return time > latest ? time : latest;
 	}, 0);
 
@@ -32,7 +31,7 @@ const ArticleReplies = ({ article = {} }) => {
 				)}
 			</div>
 			<ul className="replies-list">
-				{replies.map((reply) => {
+				{replies.map((reply, index) => {
 					const author = reply.author || {};
 					return (
 						<li className="reply" key={reply.id}>
@@ -61,14 +60,8 @@ const ArticleReplies = ({ article = {} }) => {
 									) : (
 										<span className="username">{author.name}</span>
 									)}
-									<span className="floor">#{reply.floor}</span>
-									<Time className="time" value={reply.datePublished} />
-									{reply.thanks > 0 && (
-										<span className="thanks">
-											<IconHeartFilled size={14} />
-											{reply.thanks}
-										</span>
-									)}
+									<span className="floor">#{index + 1}</span>
+									<Time className="time" value={reply.createdAt} />
 								</div>
 								<div
 									className="reply-content"

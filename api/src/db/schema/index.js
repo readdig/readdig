@@ -15,3 +15,4 @@ export { folders, foldersRelations } from './folders';
 export { likes, likesRelations } from './likes';
 export { categories, categoriesRelations } from './categories';
 export { feedCategories, feedCategoriesRelations } from './feed-categories';
+export { replies } from './replies';

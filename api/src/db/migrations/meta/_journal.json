@@ -92,6 +92,13 @@
       "when": 1781628452492,
       "tag": "0012_drop_replies_table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1781659943119,
+      "tag": "0013_recreate_replies_by_topic",
+      "breakpoints": true
     }
   ]
 }

@@ -1,18 +1,22 @@
 import { fetch } from 'undici';
+import { and, asc, eq, sql } from 'drizzle-orm';
 
+import { db } from '../db';
+import { replies } from '../db/schema';
 import { config } from '../config';
 import { cache } from './cache';
 import { logger } from './logger';
 
+const SOURCE = 'v2ex';
 const REQUEST_TTL = 15 * 1000;
-const PAGE_SIZE = 20;
-const MAX_PAGES = 25;
+const PAGE_SIZE = 20; // v2ex API replies per page
+const MAX_PAGES = 25; // safety cap on pages fetched per sync
 
 // Whether v2ex integration is configured (API token present in env).
 export const isV2EXEnabled = () => !!config.v2ex.token;
 
 // Extract the numeric topic id from a v2ex topic URL, e.g.
-// https://www.v2ex.com/t/123456#reply3 -> "123456"
+// https://v2ex.com/t/123456#reply3 -> "123456"
 export const getTopicId = (url) => {
 	if (!url) return null;
 	const match = url.match(/v2ex\.com\/t\/(\d+)/);
@@ -22,27 +26,28 @@ export const getTopicId = (url) => {
 // An article belongs to v2ex when its own URL is a v2ex topic page.
 export const isV2EXArticle = (article) => !!getTopicId(article && article.url);
 
-const mapReply = (item, index) => ({
-	id: String(item.id),
-	floor: index + 1,
+// v2ex's content_rendered uses root-relative links (e.g. /member/x, /t/123).
+// Make them absolute so they resolve to v2ex, not our own domain. Leaves
+// protocol-relative (//host) and already-absolute (http...) URLs untouched.
+const absolutizeV2EXLinks = (html) =>
+	html.replace(/\b(href|src)="\/(?!\/)/g, '$1="https://v2ex.com/');
+
+const mapReply = (topicId, item) => ({
+	source: SOURCE,
+	topicId,
+	replyId: item.id,
 	content: item.content || '',
-	contentRendered: item.content_rendered || item.content || '',
+	contentRendered: absolutizeV2EXLinks(item.content_rendered || item.content || ''),
 	author: {
 		name: (item.member && item.member.username) || '',
 		url:
 			item.member && item.member.username
-				? `https://www.v2ex.com/member/${item.member.username}`
+				? `https://v2ex.com/member/${item.member.username}`
 				: '',
-		avatar:
-			(item.member &&
-				(item.member.avatar ||
-					item.member.avatar_large ||
-					item.member.avatar_normal ||
-					item.member.avatar_mini)) ||
-			'',
+		avatar: (item.member && item.member.avatar) || '',
 	},
-	thanks: item.thanks || 0,
-	datePublished: (item.created ? new Date(item.created * 1000) : new Date()).toISOString(),
+	// `created` is unix seconds.
+	createdAt: new Date((item.created || 0) * 1000),
 });
 
 // Fetch a single page of replies from the v2ex API v2.
@@ -61,7 +66,6 @@ const fetchRepliesPage = async (topicId, page) => {
 		});
 
 		const rate = {
-			limit: res.headers.get('x-rate-limit-limit'),
 			remaining: res.headers.get('x-rate-limit-remaining'),
 			reset: res.headers.get('x-rate-limit-reset'),
 		};
@@ -81,30 +85,37 @@ const fetchRepliesPage = async (topicId, page) => {
 			throw new Error(`v2ex api error: ${(body && body.message) || 'unknown'}`);
 		}
 
-		return { result: Array.isArray(body.result) ? body.result : [], rate };
+		return {
+			result: Array.isArray(body.result) ? body.result : [],
+			pagination: body.pagination,
+			rate,
+		};
 	} finally {
 		clearTimeout(timeout);
 	}
 };
 
-// Fetch all reply pages for a topic. Stops on a short page, on the rate-limit
-// budget running out, or when a page introduces no new replies — the v2ex API
-// clamps out-of-range pages to the last page instead of returning empty, so a
-// topic whose reply count is an exact multiple of PAGE_SIZE would otherwise
-// loop and yield duplicate ids.
-const fetchAllReplies = async (topicId) => {
+// Fetch reply pages starting at `startPage` through the last page (from the
+// API's `pagination.pages`). Replies are append-only chronological, so callers
+// start at the page holding the first not-yet-stored reply to avoid
+// re-downloading the whole topic. Dedupes by reply id (pages can overlap if a
+// reply is posted mid-fetch) and stops if the rate-limit budget is exhausted.
+const fetchRepliesFrom = async (topicId, startPage) => {
 	const items = [];
 	const seen = new Set();
-	for (let page = 1; page <= MAX_PAGES; page++) {
-		const { result, rate } = await fetchRepliesPage(topicId, page);
-		const fresh = result.filter((r) => !seen.has(r.id));
-		fresh.forEach((r) => seen.add(r.id));
-		items.push(...fresh);
+	let pages = startPage;
+	for (let page = startPage; page <= pages && page < startPage + MAX_PAGES; page++) {
+		const { result, pagination, rate } = await fetchRepliesPage(topicId, page);
+		if (pagination && pagination.pages) {
+			pages = pagination.pages;
+		}
+		for (const reply of result) {
+			if (!seen.has(reply.id)) {
+				seen.add(reply.id);
+				items.push(reply);
+			}
+		}
 
-		// Short page = last page; no fresh ids = clamped/duplicate page.
-		if (result.length < PAGE_SIZE || fresh.length === 0) break;
-
-		// Respect the documented rate limit: stop early when the budget is gone.
 		const remaining = parseInt(rate.remaining, 10);
 		if (!Number.isNaN(remaining) && remaining <= 0) {
 			logger.warn(
@@ -116,14 +127,52 @@ const fetchAllReplies = async (topicId) => {
 	return items;
 };
 
+// Read stored replies for a topic, oldest first (floor order).
+const loadStoredReplies = (topicId) =>
+	db
+		.select()
+		.from(replies)
+		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)))
+		.orderBy(asc(replies.createdAt), asc(replies.replyId));
+
+// How many replies are already stored for a topic.
+const countStoredReplies = async (topicId) => {
+	const [row] = await db
+		.select({ count: sql`count(*)::int` })
+		.from(replies)
+		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)));
+	return row ? Number(row.count) : 0;
+};
+
+// Reference the conflicting insert values in an upsert (Postgres `excluded`).
+function sqlExcluded(column) {
+	return sql.raw(`excluded."${column}"`);
+}
+
+// Upsert fetched replies into the table, keyed by (topic_id, reply_id).
+const saveReplies = async (topicId, items) => {
+	if (items.length === 0) return;
+	const rows = items.map((item) => mapReply(topicId, item));
+	await db
+		.insert(replies)
+		.values(rows)
+		.onConflictDoUpdate({
+			target: [replies.source, replies.topicId, replies.replyId],
+			set: {
+				content: sqlExcluded('content'),
+				contentRendered: sqlExcluded('content_rendered'),
+				author: sqlExcluded('author'),
+			},
+		});
+};
+
 /**
- * Fetch v2ex topic replies for an article, cached in Redis by topic id.
+ * Return the replies for an article's v2ex topic.
  *
- * Keyed by topic (not article), so the same topic shared across multiple feeds
- * stores a single copy and is fetched at most once per TTL window. The empty
- * result is cached too, so reply-less topics don't trigger a request on every
- * open. The reply objects carry `datePublished`; the client derives the
- * "last reply" time from them.
+ * Data lives in the `replies` table (keyed by topic id, shared across every
+ * article that links to the topic). Redis holds only a per-topic freshness gate
+ * with a TTL: while the key is present the stored rows are served as-is;
+ * otherwise the API is queried, the rows are upserted and the gate is refreshed.
  */
 export const syncV2EXReplies = async (article) => {
 	if (!config.v2ex.token) return [];
@@ -131,23 +180,28 @@ export const syncV2EXReplies = async (article) => {
 	const topicId = getTopicId(article.url);
 	if (!topicId) return [];
 
-	const key = `v2ex:replies:${topicId}`;
-	const cached = await cache.get(key);
-	if (cached) return cached;
-
+	// Best-effort refresh. Everything here — the Redis freshness gate, the API
+	// fetch, the upsert — is wrapped so it can never affect the data we return:
+	// on any failure we still fall through to the stored replies below.
 	try {
-		const items = await fetchAllReplies(topicId);
-		const replies = items.map(mapReply);
-		// Cache write is best-effort; a Redis hiccup must not discard the
-		// replies we just fetched.
-		cache
-			.set(key, replies, (config.v2ex.ttl || 30) * 60)
-			.catch((err) =>
-				logger.warn(`Failed to cache v2ex replies for topic ${topicId}: ${err.message}`),
-			);
-		return replies;
+		const freshKey = `v2ex:replies:fetched:${topicId}`;
+		const fresh = await cache.exists(freshKey);
+		if (!fresh) {
+			// Replies are append-only, so only fetch pages that can hold ones we
+			// don't have yet: the first new reply is at position storedCount+1,
+			// i.e. page floor(storedCount / PAGE_SIZE) + 1. Refreshes then cost
+			// ~1 page instead of re-downloading the whole topic each TTL.
+			const storedCount = await countStoredReplies(topicId);
+			const startPage = Math.floor(storedCount / PAGE_SIZE) + 1;
+			const items = await fetchRepliesFrom(topicId, startPage);
+			await saveReplies(topicId, items);
+			// The freshness gate is just the key's existence; Redis TTL handles
+			// expiry. The value is the fetch timestamp (epoch ms), for debugging only.
+			await cache.set(freshKey, Date.now(), (config.v2ex.ttl || 30) * 60);
+		}
 	} catch (err) {
-		logger.warn(`Failed to fetch v2ex replies for topic ${topicId}: ${err.message}`);
-		return [];
+		logger.warn(`Failed to refresh v2ex replies for topic ${topicId}: ${err.message}`);
 	}
+
+	return loadStoredReplies(topicId);
 };

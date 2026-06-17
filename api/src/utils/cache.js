@@ -21,6 +21,10 @@ export const cache = {
 			return null;
 		}
 	},
+	async exists(key) {
+		if (!key) return false;
+		return (await redis.exists(key)) === 1;
+	},
 	async set(key, payload, ttl = defaultTtl) {
 		if (!key) return;
 		const value = typeof payload === 'string' ? payload : JSON.stringify(payload);

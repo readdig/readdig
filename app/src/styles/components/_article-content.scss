@@ -297,7 +297,7 @@
       min-width: 0;
     }
 
-    .meta {
+    .reply-meta {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
@@ -305,7 +305,6 @@
       font-size: 0.8125rem;
       color: var(--text-light);
       margin-bottom: rem(4px);
-      border-bottom: 0;
 
       .username {
         font-weight: 600;
@@ -330,7 +329,7 @@
       }
     }
 
-    .content {
+    .reply-content {
       font-size: 0.9375rem;
       line-height: 1.6;
       color: var(--text-dark);

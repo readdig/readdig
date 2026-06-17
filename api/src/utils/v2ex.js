@@ -9,7 +9,8 @@ import { logger } from './logger';
 
 const SOURCE = 'v2ex';
 const REQUEST_TTL = 15 * 1000;
-const MAX_PAGES = 25;
+const PAGE_SIZE = 20; // v2ex API replies per page
+const MAX_PAGES = 25; // safety cap on pages fetched per sync
 
 // Whether v2ex integration is configured (API token present in env).
 export const isV2EXEnabled = () => !!config.v2ex.token;
@@ -88,14 +89,16 @@ const fetchRepliesPage = async (topicId, page) => {
 	}
 };
 
-// Fetch every reply page for a topic, driven by the API's `pagination.pages`.
-// Dedupes by reply id (pagination can overlap if a reply is posted mid-fetch)
-// and stops if the per-IP rate-limit budget is exhausted.
-const fetchAllReplies = async (topicId) => {
+// Fetch reply pages starting at `startPage` through the last page (from the
+// API's `pagination.pages`). Replies are append-only chronological, so callers
+// start at the page holding the first not-yet-stored reply to avoid
+// re-downloading the whole topic. Dedupes by reply id (pages can overlap if a
+// reply is posted mid-fetch) and stops if the rate-limit budget is exhausted.
+const fetchRepliesFrom = async (topicId, startPage) => {
 	const items = [];
 	const seen = new Set();
-	let pages = 1;
-	for (let page = 1; page <= pages && page <= MAX_PAGES; page++) {
+	let pages = startPage;
+	for (let page = startPage; page <= pages && page < startPage + MAX_PAGES; page++) {
 		const { result, pagination, rate } = await fetchRepliesPage(topicId, page);
 		if (pagination && pagination.pages) {
 			pages = pagination.pages;
@@ -125,6 +128,15 @@ const loadStoredReplies = (topicId) =>
 		.from(replies)
 		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)))
 		.orderBy(asc(replies.createdAt), asc(replies.replyId));
+
+// How many replies are already stored for a topic.
+const countStoredReplies = async (topicId) => {
+	const [row] = await db
+		.select({ count: sql`count(*)::int` })
+		.from(replies)
+		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)));
+	return row ? Number(row.count) : 0;
+};
 
 // Reference the conflicting insert values in an upsert (Postgres `excluded`).
 function sqlExcluded(column) {
@@ -167,7 +179,13 @@ export const syncV2EXReplies = async (article) => {
 
 	if (!fresh) {
 		try {
-			const items = await fetchAllReplies(topicId);
+			// Replies are append-only, so only fetch pages that can hold ones we
+			// don't have yet: the first new reply is at position storedCount+1,
+			// i.e. page floor(storedCount / PAGE_SIZE) + 1. Refreshes then cost
+			// ~1 page instead of re-downloading the whole topic each TTL.
+			const storedCount = await countStoredReplies(topicId);
+			const startPage = Math.floor(storedCount / PAGE_SIZE) + 1;
+			const items = await fetchRepliesFrom(topicId, startPage);
 			await saveReplies(topicId, items);
 			// Store an object so it round-trips through cache.get's JSON.parse
 			// (raw strings would not). Presence within TTL is the freshness gate.

@@ -48,7 +48,7 @@ const ArticleReplies = ({ article = {} }) => {
 								)}
 							</div>
 							<div className="body">
-								<div className="meta">
+								<div className="reply-meta">
 									{author.url ? (
 										<a
 											href={author.url}
@@ -71,7 +71,7 @@ const ArticleReplies = ({ article = {} }) => {
 									)}
 								</div>
 								<div
-									className="content"
+									className="reply-content"
 									dangerouslySetInnerHTML={{
 										__html: sanitizeHTML(reply.contentRendered || reply.content),
 									}}

@@ -237,6 +237,15 @@
     max-width: 100%;
     height: auto;
   }
+
+  // Wrap long code/pre blocks instead of overflowing horizontally. Covers both
+  // the article body and replies (`.article-replies` is rendered inside here).
+  pre,
+  code {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }
 
 .article-replies {

@@ -11,7 +11,7 @@ import {
 
 // External topic replies, keyed by (source, topic id) so the same topic shared
 // across multiple feeds/articles stores a single set of rows. `source` namespaces
-// providers (currently 'v2ex', room for others later). Reply data is persisted
+// providers ('v2ex', 'hn', room for others later). Reply data is persisted
 // here; per-topic fetch freshness is tracked separately in Redis (a TTL gate).
 export const replies = pgTable(
 	'replies',
@@ -21,6 +21,9 @@ export const replies = pgTable(
 		topicId: text('topic_id').notNull(),
 		// Provider-side reply id (e.g. v2ex `id`), used as the upsert key.
 		replyId: bigint('reply_id', { mode: 'number' }).notNull(),
+		// Provider-side id of the parent reply for threaded sources (e.g. Hacker
+		// News comments). Null for top-level replies and for flat sources (v2ex).
+		parentReplyId: bigint('parent_reply_id', { mode: 'number' }),
 		content: text('content').default(''),
 		contentRendered: text('content_rendered').default(''),
 		author: jsonb('author').default({ name: '', url: '', avatar: '' }),

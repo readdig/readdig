@@ -11,9 +11,14 @@ const SOURCE = 'v2ex';
 const REQUEST_TTL = 15 * 1000;
 const PAGE_SIZE = 20; // v2ex API replies per page
 const MAX_PAGES = 25; // safety cap on pages fetched per sync
+// Rows per insert. Kept bounded because drizzle builds the whole multi-row
+// INSERT in JS — large batches blow its query builder (`Maximum call stack size
+// exceeded`) long before Postgres's parameter limit.
+const INSERT_BATCH_SIZE = 100;
 
-// Whether v2ex integration is configured (API token present in env).
-export const isV2EXEnabled = () => !!config.v2ex.token;
+// Whether v2ex integration is configured: both the API token and the base URL
+// must be set in env.
+export const isV2EXEnabled = () => !!config.v2ex.token && !!config.v2ex.baseUrl;
 
 // Extract the numeric topic id from a v2ex topic URL, e.g.
 // https://v2ex.com/t/123456#reply3 -> "123456"
@@ -144,26 +149,28 @@ const countStoredReplies = async (topicId) => {
 	return row ? Number(row.count) : 0;
 };
 
-// Reference the conflicting insert values in an upsert (Postgres `excluded`).
-function sqlExcluded(column) {
-	return sql.raw(`excluded."${column}"`);
-}
-
-// Upsert fetched replies into the table, keyed by (topic_id, reply_id).
+// Upsert fetched replies into the table, keyed by (topic_id, reply_id). On
+// conflict, overwrite with the just-fetched values (Postgres `excluded` is the
+// row that was proposed for insertion).
 const saveReplies = async (topicId, items) => {
 	if (items.length === 0) return;
 	const rows = items.map((item) => mapReply(topicId, item));
-	await db
-		.insert(replies)
-		.values(rows)
-		.onConflictDoUpdate({
-			target: [replies.source, replies.topicId, replies.replyId],
-			set: {
-				content: sqlExcluded('content'),
-				contentRendered: sqlExcluded('content_rendered'),
-				author: sqlExcluded('author'),
-			},
-		});
+	// Chunked so drizzle's in-JS query builder never sees a huge batch (a cold
+	// load can fetch up to MAX_PAGES * PAGE_SIZE replies at once).
+	for (let i = 0; i < rows.length; i += INSERT_BATCH_SIZE) {
+		const chunk = rows.slice(i, i + INSERT_BATCH_SIZE);
+		await db
+			.insert(replies)
+			.values(chunk)
+			.onConflictDoUpdate({
+				target: [replies.source, replies.topicId, replies.replyId],
+				set: {
+					content: sql`excluded.content`,
+					contentRendered: sql`excluded.content_rendered`,
+					author: sql`excluded.author`,
+				},
+			});
+	}
 };
 
 /**
@@ -175,7 +182,7 @@ const saveReplies = async (topicId, items) => {
  * otherwise the API is queried, the rows are upserted and the gate is refreshed.
  */
 export const syncV2EXReplies = async (article) => {
-	if (!config.v2ex.token) return [];
+	if (!isV2EXEnabled()) return [];
 
 	const topicId = getTopicId(article.url);
 	if (!topicId) return [];

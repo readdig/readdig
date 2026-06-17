@@ -227,6 +227,9 @@ export function ParseFeedPosts(posts, limit = 1000) {
 			let article;
 			try {
 				const url = normalizeUrl(post.link);
+				// RSS <comments> discussion page (e.g. a Hacker News item link),
+				// when present and distinct from the article link.
+				const commentsUrl = post.comments ? normalizeUrl(post.comments) : '';
 				const image = post.image ? normalizeUrl(post.image.url) : '';
 				const author = post.author ? { name: post.author } : null;
 				const pubDate = safeParseDate(post.pubdate);
@@ -265,6 +268,7 @@ export function ParseFeedPosts(posts, limit = 1000) {
 					guid: post.guid,
 					title: title,
 					url: url,
+					commentsUrl: commentsUrl,
 					summary: summary,
 					content: content,
 					image: image,
@@ -282,6 +286,22 @@ export function ParseFeedPosts(posts, limit = 1000) {
 			if (article) {
 				// fix article
 				article = FeedArticleMakeUp(post, article);
+
+				// Feeds that only carry a link to a discussion page (e.g. Hacker
+				// News, whose body is just a "Comments" link) have no real body once
+				// commentsUrl is captured, so don't store the bare link as content.
+				// Done after FeedArticleMakeUp, which re-derives content from the raw
+				// rss:description.
+				if (article.commentsUrl && article.content) {
+					const withoutLinks = strip(
+						article.content.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ''),
+					).trim();
+					if (!withoutLinks) {
+						article.content = '';
+						article.summary = '';
+					}
+				}
+
 				const exists = feedContent.items.filter((i) => i.id === article.id).length;
 				if (!exists) {
 					feedContent.items.push(article);
@@ -296,6 +316,8 @@ export function ParseFeedPosts(posts, limit = 1000) {
 	return feedContent;
 }
 
+// NOTE: ParseJSONPosts intentionally has no commentsUrl handling — the JSON Feed
+// format has no <comments> equivalent, so JSON-sourced articles never set it.
 export function ParseJSONPosts(posts, limit = 1000) {
 	let feedContent;
 

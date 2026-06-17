@@ -429,6 +429,7 @@ export const getArticleById = async (userId, articleId) => {
 		.select({
 			id: articles.id,
 			url: articles.url,
+			commentsUrl: articles.commentsUrl,
 			title: articles.title,
 			description: articles.description,
 			content: articles.content,

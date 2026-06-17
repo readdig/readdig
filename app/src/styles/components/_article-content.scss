@@ -252,7 +252,6 @@
     font-weight: 500;
     color: var(--text-medium);
     padding-bottom: 0.625rem;
-    margin-bottom: 0.25rem;
     border-bottom: 1px solid var(--divider-light);
 
     .updated {
@@ -266,16 +265,26 @@
     list-style: none;
     margin: 0;
     padding: 0;
+
+    // Nested threads (e.g. Hacker News) are indented with a guide line.
+    &.nested {
+      margin-left: rem(18px);
+      padding-left: rem(14px);
+      border-left: 1px solid var(--divider-light);
+    }
+  }
+
+  // Divider only between top-level comment threads. A per-reply border-bottom
+  // plus a `:last-child` reset used to drop the divider after a nested thread's
+  // last reply, so a top-level comment following a thread lost its top line.
+  // Nested replies are separated by the `.nested` guide line instead.
+  > .replies-list > .reply-item:not(:last-child) {
+    border-bottom: 1px solid var(--divider-light);
   }
 
   .reply {
     display: flex;
     padding: rem(16px) 0;
-    border-bottom: 1px solid var(--divider-light);
-
-    &:last-child {
-      border-bottom: 0;
-    }
 
     .avatar {
       flex-shrink: 0;
@@ -283,8 +292,7 @@
       height: rem(36px);
       margin-right: rem(12px);
 
-      img,
-      .placeholder {
+      img {
         width: rem(36px);
         height: rem(36px);
         border-radius: $border-radius;
@@ -319,13 +327,6 @@
 
       .floor {
         color: var(--text-light);
-      }
-
-      .thanks {
-        display: inline-flex;
-        align-items: center;
-        gap: rem(2px);
-        color: var(--primary);
       }
     }
 

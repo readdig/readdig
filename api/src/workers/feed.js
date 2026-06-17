@@ -110,6 +110,7 @@ async function handleFeed(job) {
 			type: articleType,
 			guid: article.guid,
 			url: article.url,
+			commentsUrl: article.commentsUrl || '',
 			title: article.title,
 			description: article.summary,
 			content: article.content,

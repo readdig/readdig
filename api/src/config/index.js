@@ -56,9 +56,17 @@ const _default = {
 	},
 	v2ex: {
 		token: process.env.V2EX_TOKEN || '',
-		baseUrl: process.env.V2EX_BASE_URL || 'https://www.v2ex.com',
+		baseUrl: process.env.V2EX_BASE_URL || '',
 		// Minutes to keep cached replies before re-fetching from the API.
 		ttl: parseInt(process.env.V2EX_REPLIES_TTL || '30', 10),
+	},
+	hn: {
+		// Hacker News needs no credentials, so the integration is gated on
+		// HN_BASE_URL being set (like v2ex's token). Base URL only; the /api/v1
+		// path is appended automatically.
+		baseUrl: process.env.HN_BASE_URL || '',
+		// Minutes to keep cached replies before re-fetching from the API.
+		ttl: parseInt(process.env.HN_COMMENTS_TTL || '30', 10),
 	},
 	email: {
 		backend: process.env.EMAIL_BACKEND,

@@ -1,0 +1,1 @@
+ALTER TABLE "replies" ADD COLUMN "parent_reply_id" bigint;

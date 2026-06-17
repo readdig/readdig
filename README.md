@@ -179,8 +179,10 @@ Configure these values in your `docker-compose.yml` file under the `environment`
 | `CLOUDFLARE_PROXY_URL` | Cloudflare worker proxy URL | No |
 | `CLOUDFLARE_PROXY_SECRET` | Cloudflare worker proxy secret | No |
 | `V2EX_TOKEN` | V2EX API v2 personal access token (enables auto-fetching topic replies) | No |
-| `V2EX_BASE_URL` | V2EX base URL, `/api/v2` is appended automatically (default `https://www.v2ex.com`) | No |
+| `V2EX_BASE_URL` | V2EX base URL, `/api/v2` is appended automatically (e.g. `https://www.v2ex.com`) | No |
 | `V2EX_REPLIES_TTL` | Minutes to cache v2ex replies before re-fetching (default `30`) | No |
+| `HN_BASE_URL` | Algolia HN base URL, `/api/v1` is appended automatically; set to enable auto-fetching HN story comments, no credentials needed (e.g. `https://hn.algolia.com`; unset to disable) | No |
+| `HN_COMMENTS_TTL` | Minutes to cache HN comments before re-fetching (default `30`) | No |
 | `PADDLE_PUBLIC_KEY` | Paddle public key | No |
 | `PADDLE_API_URL` | Paddle API URL | No |
 | `PADDLE_VENDOR_ID` | Paddle vendor ID | No |

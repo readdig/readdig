@@ -13,6 +13,7 @@ import {
 	getParsedArticle,
 } from '../utils/articles';
 import { isV2EXEnabled, isV2EXArticle, syncV2EXReplies } from '../utils/v2ex';
+import { isHNEnabled, isHNArticle, syncHNComments } from '../utils/hackernews';
 
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
@@ -135,10 +136,18 @@ exports.get = async (req, res) => {
 		}
 	}
 
-	// Auto-fetch v2ex topic replies when the article URL is a v2ex topic page.
+	// Auto-fetch external replies for supported sources. v2ex is keyed off the
+	// article's own URL, Hacker News off its discussion (comments) URL; in the
+	// rare case both match, v2ex wins (checked first).
 	if (isV2EXEnabled() && isV2EXArticle(article)) {
 		try {
 			article.replies = await syncV2EXReplies(article);
+		} catch (err) {
+			article.replies = [];
+		}
+	} else if (isHNEnabled() && isHNArticle(article)) {
+		try {
+			article.replies = await syncHNComments(article);
 		} catch (err) {
 			article.replies = [];
 		}

@@ -132,6 +132,7 @@ export const createFeed = async (feedUrl, feedContent) => {
 				type: articleType,
 				guid: article.guid,
 				url: article.url,
+				commentsUrl: article.commentsUrl || '',
 				title: article.title,
 				description: article.summary,
 				content: article.content,

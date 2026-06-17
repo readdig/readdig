@@ -28,6 +28,10 @@ export const articles = pgTable(
 		}),
 		url: text('url').default(''),
 		canonicalUrl: text('canonical_url'),
+		// Discussion/comments page URL from the feed's <comments> element (e.g. a
+		// Hacker News `item?id=` link). Distinct from `url`, which for link-style
+		// feeds points at the external article. Used to fetch external replies.
+		commentsUrl: text('comments_url'),
 		guid: text('guid').notNull(),
 		title: text('title').notNull().default(''),
 		description: text('description').default(''),

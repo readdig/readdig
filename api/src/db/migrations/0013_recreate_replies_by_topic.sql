@@ -1,5 +1,6 @@
 CREATE TABLE "replies" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"source" text DEFAULT 'v2ex' NOT NULL,
 	"topic_id" text NOT NULL,
 	"reply_id" text NOT NULL,
 	"content" text DEFAULT '',
@@ -8,5 +9,5 @@ CREATE TABLE "replies" (
 	"created_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX "replies_topic_reply_idx" ON "replies" USING btree ("topic_id","reply_id");--> statement-breakpoint
-CREATE INDEX "replies_topic_created_idx" ON "replies" USING btree ("topic_id","created_at");
+CREATE UNIQUE INDEX "replies_source_topic_reply_idx" ON "replies" USING btree ("source","topic_id","reply_id");--> statement-breakpoint
+CREATE INDEX "replies_source_topic_created_idx" ON "replies" USING btree ("source","topic_id","created_at");

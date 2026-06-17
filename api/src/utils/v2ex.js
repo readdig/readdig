@@ -1,5 +1,5 @@
 import { fetch } from 'undici';
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { db } from '../db';
 import { replies } from '../db/schema';
@@ -7,6 +7,7 @@ import { config } from '../config';
 import { cache } from './cache';
 import { logger } from './logger';
 
+const SOURCE = 'v2ex';
 const REQUEST_TTL = 15 * 1000;
 const MAX_PAGES = 25;
 
@@ -25,6 +26,7 @@ export const getTopicId = (url) => {
 export const isV2EXArticle = (article) => !!getTopicId(article && article.url);
 
 const mapReply = (topicId, item) => ({
+	source: SOURCE,
 	topicId,
 	replyId: String(item.id),
 	content: item.content || '',
@@ -121,7 +123,7 @@ const loadStoredReplies = (topicId) =>
 	db
 		.select()
 		.from(replies)
-		.where(eq(replies.topicId, topicId))
+		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)))
 		.orderBy(asc(replies.createdAt), asc(replies.replyId));
 
 // Reference the conflicting insert values in an upsert (Postgres `excluded`).
@@ -137,7 +139,7 @@ const saveReplies = async (topicId, items) => {
 		.insert(replies)
 		.values(rows)
 		.onConflictDoUpdate({
-			target: [replies.topicId, replies.replyId],
+			target: [replies.source, replies.topicId, replies.replyId],
 			set: {
 				content: sqlExcluded('content'),
 				contentRendered: sqlExcluded('content_rendered'),

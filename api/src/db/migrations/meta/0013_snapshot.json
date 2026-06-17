@@ -1,5 +1,5 @@
 {
-  "id": "9552a2a7-6e3f-4db4-9efb-021ec4c726ac",
+  "id": "e8b35f86-ea4a-4f34-a801-2fea4da77bcf",
   "prevId": "547aefe7-5a4e-405d-9b29-e359104209d2",
   "version": "7",
   "dialect": "postgresql",
@@ -2780,6 +2780,13 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'v2ex'"
+        },
         "topic_id": {
           "name": "topic_id",
           "type": "text",
@@ -2821,9 +2828,15 @@
         }
       },
       "indexes": {
-        "replies_topic_reply_idx": {
-          "name": "replies_topic_reply_idx",
+        "replies_source_topic_reply_idx": {
+          "name": "replies_source_topic_reply_idx",
           "columns": [
+            {
+              "expression": "source",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
             {
               "expression": "topic_id",
               "isExpression": false,
@@ -2842,9 +2855,15 @@
           "method": "btree",
           "with": {}
         },
-        "replies_topic_created_idx": {
-          "name": "replies_topic_created_idx",
+        "replies_source_topic_created_idx": {
+          "name": "replies_source_topic_created_idx",
           "columns": [
+            {
+              "expression": "source",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
             {
               "expression": "topic_id",
               "isExpression": false,

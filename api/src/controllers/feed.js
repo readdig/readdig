@@ -23,6 +23,7 @@ import { isURL, isUUID } from '../utils/validation';
 import { normalizeUrl } from '../utils/urls';
 import { isBlockedFeedURL } from '../utils/blocklist';
 import { isFeedType, findFeed, createFeed, parseFeedFind } from '../utils/feed';
+import { mergeFeeds } from '../utils/merge';
 import { ParseFeedType, ParseArticleType } from '../parsers/types';
 import { DiscoverFeed } from '../parsers/discovery';
 import { addQueue, addQueueStatus } from '../utils/queue';
@@ -318,6 +319,27 @@ exports.merge = async (req, res) => {
 
 	if (!lFeedId || !rFeedId) {
 		return res.status(403).json('You must provide valid feed Id to perform this action.');
+	}
+
+	if (!isUUID(lFeedId) || !isUUID(rFeedId)) {
+		return res.status(400).json('Feed Id is an invalid ObjectId.');
+	}
+
+	if (lFeedId === rFeedId) {
+		return res.status(400).json('Cannot merge a feed into itself.');
+	}
+
+	const [lFeed, rFeed] = await Promise.all([
+		db.query.feeds.findFirst({ where: eq(feeds.id, lFeedId) }),
+		db.query.feeds.findFirst({ where: eq(feeds.id, rFeedId) }),
+	]);
+
+	if (!lFeed || !rFeed) {
+		return res.status(404).json('Feed does not exist.');
+	}
+
+	if (lFeed.duplicateOfId || rFeed.duplicateOfId) {
+		return res.status(400).json('Cannot merge a feed that is already a duplicate.');
 	}
 
 	await mergeFeeds(lFeedId, rFeedId);

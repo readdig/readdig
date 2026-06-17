@@ -1,5 +1,5 @@
 {
-  "id": "47599b6f-324b-47cd-8a99-5437421cef52",
+  "id": "2804ac37-3ea1-4036-b8aa-24699ad09fdb",
   "prevId": "89d0dbff-6575-4bac-8f55-2c4811ada0d9",
   "version": "7",
   "dialect": "postgresql",
@@ -113,12 +113,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "replies_fetched_at": {
-          "name": "replies_fetched_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
         },
         "date_published": {
           "name": "date_published",
@@ -2786,12 +2780,6 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "article_id": {
-          "name": "article_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
         "source": {
           "name": "source",
           "type": "text",
@@ -2799,18 +2787,17 @@
           "notNull": true,
           "default": "'v2ex'"
         },
-        "source_id": {
-          "name": "source_id",
+        "topic_id": {
+          "name": "topic_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "floor": {
-          "name": "floor",
-          "type": "integer",
+        "reply_id": {
+          "name": "reply_id",
+          "type": "bigint",
           "primaryKey": false,
-          "notNull": false,
-          "default": 0
+          "notNull": true
         },
         "content": {
           "name": "content",
@@ -2833,47 +2820,31 @@
           "notNull": false,
           "default": "'{\"name\":\"\",\"url\":\"\",\"avatar\":\"\"}'::jsonb"
         },
-        "thanks": {
-          "name": "thanks",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "date_published": {
-          "name": "date_published",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
+          "notNull": true
         }
       },
       "indexes": {
-        "replies_article_source_idx": {
-          "name": "replies_article_source_idx",
+        "replies_source_topic_reply_idx": {
+          "name": "replies_source_topic_reply_idx",
           "columns": [
             {
-              "expression": "article_id",
+              "expression": "source",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "source_id",
+              "expression": "topic_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "reply_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2884,17 +2855,23 @@
           "method": "btree",
           "with": {}
         },
-        "replies_article_floor_idx": {
-          "name": "replies_article_floor_idx",
+        "replies_source_topic_created_idx": {
+          "name": "replies_source_topic_created_idx",
           "columns": [
             {
-              "expression": "article_id",
+              "expression": "source",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
             },
             {
-              "expression": "floor",
+              "expression": "topic_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2906,21 +2883,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "replies_article_id_articles_id_fk": {
-          "name": "replies_article_id_articles_id_fk",
-          "tableFrom": "replies",
-          "tableTo": "articles",
-          "columnsFrom": [
-            "article_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

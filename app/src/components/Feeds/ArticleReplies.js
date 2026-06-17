@@ -26,7 +26,7 @@ const ArticleReplies = ({ article = {} }) => {
 				</span>
 				{lastReplyAt > 0 && (
 					<span className="updated">
-						{t('Updated')} <Time value={lastReplyAt} format="lll" />
+						{t('Last reply')} <Time value={lastReplyAt} format="lll" />
 					</span>
 				)}
 			</div>

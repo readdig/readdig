@@ -16,7 +16,7 @@ const MAX_PAGES = 25; // safety cap on pages fetched per sync
 export const isV2EXEnabled = () => !!config.v2ex.token;
 
 // Extract the numeric topic id from a v2ex topic URL, e.g.
-// https://www.v2ex.com/t/123456#reply3 -> "123456"
+// https://v2ex.com/t/123456#reply3 -> "123456"
 export const getTopicId = (url) => {
 	if (!url) return null;
 	const match = url.match(/v2ex\.com\/t\/(\d+)/);
@@ -26,17 +26,23 @@ export const getTopicId = (url) => {
 // An article belongs to v2ex when its own URL is a v2ex topic page.
 export const isV2EXArticle = (article) => !!getTopicId(article && article.url);
 
+// v2ex's content_rendered uses root-relative links (e.g. /member/x, /t/123).
+// Make them absolute so they resolve to v2ex, not our own domain. Leaves
+// protocol-relative (//host) and already-absolute (http...) URLs untouched.
+const absolutizeV2EXLinks = (html) =>
+	html.replace(/\b(href|src)="\/(?!\/)/g, '$1="https://v2ex.com/');
+
 const mapReply = (topicId, item) => ({
 	source: SOURCE,
 	topicId,
-	replyId: String(item.id),
+	replyId: item.id,
 	content: item.content || '',
-	contentRendered: item.content_rendered || item.content || '',
+	contentRendered: absolutizeV2EXLinks(item.content_rendered || item.content || ''),
 	author: {
 		name: (item.member && item.member.username) || '',
 		url:
 			item.member && item.member.username
-				? `https://www.v2ex.com/member/${item.member.username}`
+				? `https://v2ex.com/member/${item.member.username}`
 				: '',
 		avatar: (item.member && item.member.avatar) || '',
 	},
@@ -174,11 +180,13 @@ export const syncV2EXReplies = async (article) => {
 	const topicId = getTopicId(article.url);
 	if (!topicId) return [];
 
-	const freshKey = `v2ex:replies:fetched:${topicId}`;
-	const fresh = await cache.get(freshKey);
-
-	if (!fresh) {
-		try {
+	// Best-effort refresh. Everything here — the Redis freshness gate, the API
+	// fetch, the upsert — is wrapped so it can never affect the data we return:
+	// on any failure we still fall through to the stored replies below.
+	try {
+		const freshKey = `v2ex:replies:fetched:${topicId}`;
+		const fresh = await cache.exists(freshKey);
+		if (!fresh) {
 			// Replies are append-only, so only fetch pages that can hold ones we
 			// don't have yet: the first new reply is at position storedCount+1,
 			// i.e. page floor(storedCount / PAGE_SIZE) + 1. Refreshes then cost
@@ -187,16 +195,12 @@ export const syncV2EXReplies = async (article) => {
 			const startPage = Math.floor(storedCount / PAGE_SIZE) + 1;
 			const items = await fetchRepliesFrom(topicId, startPage);
 			await saveReplies(topicId, items);
-			// Store an object so it round-trips through cache.get's JSON.parse
-			// (raw strings would not). Presence within TTL is the freshness gate.
-			await cache.set(
-				freshKey,
-				{ fetchedAt: new Date().toISOString() },
-				(config.v2ex.ttl || 30) * 60,
-			);
-		} catch (err) {
-			logger.warn(`Failed to fetch v2ex replies for topic ${topicId}: ${err.message}`);
+			// The freshness gate is just the key's existence; Redis TTL handles
+			// expiry. The value is the fetch timestamp (epoch ms), for debugging only.
+			await cache.set(freshKey, Date.now(), (config.v2ex.ttl || 30) * 60);
 		}
+	} catch (err) {
+		logger.warn(`Failed to refresh v2ex replies for topic ${topicId}: ${err.message}`);
 	}
 
 	return loadStoredReplies(topicId);

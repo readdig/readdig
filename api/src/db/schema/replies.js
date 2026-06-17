@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, uuid, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+	jsonb,
+	bigint,
+	index,
+	uniqueIndex,
+} from 'drizzle-orm/pg-core';
 
 // External topic replies, keyed by (source, topic id) so the same topic shared
 // across multiple feeds/articles stores a single set of rows. `source` namespaces
@@ -11,7 +20,7 @@ export const replies = pgTable(
 		source: text('source').notNull().default('v2ex'),
 		topicId: text('topic_id').notNull(),
 		// Provider-side reply id (e.g. v2ex `id`), used as the upsert key.
-		replyId: text('reply_id').notNull(),
+		replyId: bigint('reply_id', { mode: 'number' }).notNull(),
 		content: text('content').default(''),
 		contentRendered: text('content_rendered').default(''),
 		author: jsonb('author').default({ name: '', url: '', avatar: '' }),

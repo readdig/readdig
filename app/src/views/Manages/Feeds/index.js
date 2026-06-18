@@ -193,7 +193,7 @@ const Feeds = () => {
 										<span>
 											{t('{{postCount}} Articles', { postCount: feed.postCount })}
 										</span>
-										{feed.duplicateOf && <span>{', ' + t('Duplicate feed')}</span>}
+										{feed.duplicateOfId && <span>{', ' + t('Duplicate feed')}</span>}
 									</div>
 								</div>
 							</li>

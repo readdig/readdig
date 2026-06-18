@@ -135,7 +135,7 @@ const UpdateModal = ({ isOpen = false, feed = {}, closeModal, onEnd }) => {
 							type="url"
 							autoComplete="false"
 							name="feedUrl"
-							disabled={feed.duplicateOf}
+							disabled={feed.duplicateOfId}
 							ref={register({ required: true })}
 						/>
 					</div>

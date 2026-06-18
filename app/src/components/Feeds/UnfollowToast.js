@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import FollowModal from './FollowModal';
 
-const UnfollowToast = ({ feedId, duplicateOf }) => {
+const UnfollowToast = ({ feedId, duplicateOfId }) => {
 	const { t } = useTranslation();
 	const follows = useSelector((state) => state.follows);
 	const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -19,7 +19,7 @@ const UnfollowToast = ({ feedId, duplicateOf }) => {
 
 	return (
 		<>
-			{feedId && follows && !follows[feedId] && !duplicateOf && (
+			{feedId && follows && !follows[feedId] && !duplicateOfId && (
 				<div className="toast">
 					<span>{t('This feed has not been subscribed, do you need to subscribe?')}</span>
 					<button className="btn link text" onClick={openModal}>

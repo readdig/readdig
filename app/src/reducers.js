@@ -138,15 +138,12 @@ const ACTION_HANDLERS = {
 	},
 	UPDATE_FOLLOW_FEED: (previousState, action) => {
 		const data = action.follow;
-		const follows = previousState.follows;
-
-		let original = data.duplicateOfId && follows && follows[data.duplicateOfId];
 
 		return {
 			...previousState,
 			follows: {
-				...follows,
-				[data.id]: original || data,
+				...previousState.follows,
+				[data.id]: data,
 			},
 		};
 	},
@@ -189,15 +186,6 @@ const ACTION_HANDLERS = {
 			result[item.id] = item;
 			return result;
 		}, {});
-
-		// TODO: Refactor
-		for (let article in articles) {
-			if (!article.duplicateOf) continue;
-			const previous =
-				previousState.articles && previousState.articles[article.duplicateOf];
-			const next = articles[article.duplicateOf];
-			articles[article.id] = next || previous || article;
-		}
 
 		// Remove duplicates
 		const articlesOriginal = {

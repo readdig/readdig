@@ -67,7 +67,7 @@ const ActionPopover = ({
 					</MenuItem>
 				)}
 				<MenuItem onClick={() => openModal('updateModalIsOpen')}>{t('Edit')}</MenuItem>
-				{!feed.duplicateOf && (
+				{!feed.duplicateOfId && (
 					<MenuItem onClick={() => openModal('mergeModalIsOpen')}>{t('Merge')}</MenuItem>
 				)}
 				<MenuItem onClick={() => openModal('deleteModalIsOpen')}>{t('Delete')}</MenuItem>

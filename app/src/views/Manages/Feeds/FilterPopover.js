@@ -94,10 +94,10 @@ const FilterPopover = ({ sortBy, onChange }) => {
 				</MenuItem>
 				<MenuItem
 					className={classNames({
-						active: sortBy === 'duplicateOf,-1',
+						active: sortBy === 'duplicateOfId,-1',
 					})}
 					onClick={() => {
-						onChange('duplicateOf,-1');
+						onChange('duplicateOfId,-1');
 					}}
 				>
 					{t('Duplicate feed')}

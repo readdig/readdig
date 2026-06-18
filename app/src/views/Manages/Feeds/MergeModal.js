@@ -9,7 +9,7 @@ import FeedSelect from './FeedSelect';
 
 import { IconX } from '@tabler/icons-react';
 
-const MergeModal = ({ isOpen = false, feed = {}, closeModal }) => {
+const MergeModal = ({ isOpen = false, feed = {}, closeModal, onEnd }) => {
 	const { t } = useTranslation();
 	const [feedId, setFeedId] = useState();
 	const [submitting, setSubmitting] = useState(false);
@@ -32,6 +32,7 @@ const MergeModal = ({ isOpen = false, feed = {}, closeModal }) => {
 			setSubmitting(true);
 			await mergeFeed(feed.id, feedId);
 			onClose();
+			onEnd && onEnd();
 		} catch (err) {
 			setSubmitting(false);
 		}

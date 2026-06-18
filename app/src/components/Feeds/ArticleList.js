@@ -292,7 +292,7 @@ const ArticleList = () => {
 			/>
 			<UnfollowToast
 				feedId={feedId}
-				duplicateOf={articles[0] ? articles[0].feed.duplicateOf : undefined}
+				duplicateOfId={articles[0] ? articles[0].feed.duplicateOfId : undefined}
 			/>
 			<div className="article-scrolling" id={scrollRootId} ref={scrollable}>
 				<InfiniteScroll

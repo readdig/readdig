@@ -25,9 +25,9 @@ const ViewModal = ({ isOpen = false, feed = {}, closeModal }) => {
 						<IconX />
 					</span>
 				</header>
-				{feed.duplicateOf && (
+				{feed.duplicateOfId && (
 					<div className="text-box">
-						<label>{t('Duplicate ID')}:</label> {feed.duplicateOf}
+						<label>{t('Duplicate ID')}:</label> {feed.duplicateOfId}
 					</div>
 				)}
 				{feed.language && (

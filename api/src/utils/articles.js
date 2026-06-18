@@ -106,6 +106,7 @@ export const getUserArticles = async (
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				type: feeds.type,
 				feedUrl: feeds.feedUrl,
@@ -188,6 +189,7 @@ export const getPrimaryArticles = async (
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				type: feeds.type,
 				feedUrl: feeds.feedUrl,
@@ -265,6 +267,7 @@ export const getStarArticles = async (
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				type: feeds.type,
 				feedUrl: feeds.feedUrl,
@@ -334,6 +337,7 @@ export const getReadArticles = async (
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				type: feeds.type,
 				feedUrl: feeds.feedUrl,
@@ -404,6 +408,7 @@ export const getPlayedArtilces = async (
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				type: feeds.type,
 				feedUrl: feeds.feedUrl,
@@ -441,6 +446,7 @@ export const getArticleById = async (userId, articleId) => {
 			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
 				title: feeds.title,
 				url: feeds.url,
 				type: feeds.type,

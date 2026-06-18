@@ -131,11 +131,11 @@ const repointArticleState = async (tx, table, touch, dupMap, dupIds, targetIds) 
 	}
 };
 
-// Move rFeed's articles onto lFeed. Articles are unique per feed on both
-// (feedId, guid) and (feedId, fingerprint); a non-colliding article is
-// reassigned to lFeed, while one that already exists in lFeed is kept but
-// marked as a duplicate (preserving its per-user state) and has that state
-// (stars/reads/listens/likes) re-pointed at the surviving lFeed article.
+// Establish article-level duplicate links for rFeed. An rFeed article that
+// matches one in lFeed (same guid or fingerprint) is marked as a duplicate of
+// it, and its per-user state (stars/reads/listens/likes) is re-pointed at the
+// surviving lFeed article. Articles with no match are left completely untouched
+// on rFeed — users still reach them through their own reads/stars/etc.
 const mergeArticlesAndState = async (tx, lFeedId, rFeedId) => {
 	const rArticles = await tx
 		.select({
@@ -170,22 +170,13 @@ const mergeArticlesAndState = async (tx, lFeedId, rFeedId) => {
 	const lByGuid = new Map(lMatches.map((a) => [a.guid, a.id]));
 	const lByFingerprint = new Map(lMatches.map((a) => [a.fingerprint, a.id]));
 
-	const toMove = [];
-	const toMark = []; // rFeed articles that already exist in lFeed
+	const toMark = []; // rFeed articles that have a matching article in lFeed
 	for (const a of rArticles) {
 		const targetId = lByGuid.get(a.guid) ?? lByFingerprint.get(a.fingerprint);
 		if (targetId) {
 			toMark.push({ id: a.id, duplicateOfId: targetId });
-		} else {
-			toMove.push(a.id);
 		}
-	}
-
-	if (toMove.length > 0) {
-		await tx
-			.update(articles)
-			.set({ feedId: lFeedId, updatedAt: new Date() })
-			.where(inArray(articles.id, toMove));
+		// no match in lFeed -> leave the article untouched on rFeed
 	}
 
 	if (toMark.length === 0) {

@@ -23,7 +23,6 @@ export const reads = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => [
-		index('reads_user_idx').on(table.userId),
 		index('reads_article_idx').on(table.articleId),
 		uniqueIndex('reads_user_article_idx').on(table.userId, table.articleId),
 		index('reads_user_view_idx').on(table.userId, table.view),

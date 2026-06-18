@@ -58,7 +58,6 @@ export const articles = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => [
-		index('articles_feed_idx').on(table.feedId),
 		index('articles_duplicate_of_idx').on(table.duplicateOfId),
 		index('articles_url_idx').on(table.url),
 		index('articles_guid_idx').on(table.guid),
@@ -68,7 +67,7 @@ export const articles = pgTable(
 		index('articles_feed_id_idx').on(table.feedId, table.id),
 		uniqueIndex('articles_feed_guid_idx').on(table.feedId, table.guid),
 		uniqueIndex('articles_feed_fingerprint_idx').on(table.feedId, table.fingerprint),
-		index('articles_feed_created_at_idx').on(table.feedId, table.createdAt),
+		index('articles_feed_created_at_idx').on(table.feedId, table.createdAt, table.id),
 		index('articles_created_at_idx').on(table.createdAt),
 		index('articles_updated_at_idx').on(table.updatedAt),
 		index('articles_views_idx').on(table.views),

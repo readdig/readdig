@@ -49,7 +49,7 @@ function readProxyURL(url) {
 	});
 }
 
-async function requestURL(url) {
+async function requestURL(url, options = {}) {
 	const isProxy = config.proxy.url && config.proxy.secret;
 	let retries = 2;
 	for (;;) {
@@ -60,7 +60,9 @@ async function requestURL(url) {
 				res = await readProxyURL(url);
 				res.uri = res.headers.get('x-request-url') || url;
 			} else {
-				res = await readURL(url);
+				// `options` (e.g. an Authorization header) applies to the direct
+				// request; the proxy fallback can't carry per-request headers.
+				res = await readURL(url, options);
 				res.uri = res.url;
 				if (isProxy && !res.ok && res.status !== 404) {
 					throw new Error(`Bad status code: ${res.status}`);

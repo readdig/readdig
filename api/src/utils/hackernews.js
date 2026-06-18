@@ -1,19 +1,15 @@
-import { fetch } from 'undici';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { db } from '../db';
 import { replies } from '../db/schema';
 import { config } from '../config';
 import { cache } from './cache';
 import { logger } from './logger';
+import requestURL from './request';
+import { loadStoredReplies, upsertReplies } from './replies';
 
 const SOURCE = 'hn';
-const REQUEST_TTL = 15 * 1000;
 const MAX_COMMENTS = 2000; // safety cap on comments stored per sync
-// Rows per insert. Kept bounded because drizzle builds the whole multi-row
-// INSERT in JS — large batches blow its query builder (`Maximum call stack size
-// exceeded`) long before Postgres's parameter limit.
-const INSERT_BATCH_SIZE = 100;
 
 // Whether the Hacker News integration is enabled. No credentials are needed, so
 // it's gated on HN_BASE_URL being set (like v2ex's token).
@@ -86,46 +82,26 @@ const flattenTree = (storyId, root) => {
 };
 
 // Fetch the whole comment tree for a story from the Algolia HN API in one call.
+// Uses the shared requestURL helper (HTTP/2 agent, User-Agent, timeout and proxy
+// fallback).
 const fetchComments = async (storyId) => {
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), REQUEST_TTL);
-	try {
-		const url = `${config.hn.baseUrl}/api/v1/items/${storyId}`;
-		const res = await fetch(url, {
-			method: 'GET',
-			signal: controller.signal,
-			headers: { 'User-Agent': config.useragent },
-		});
-		if (!res.ok) {
-			throw new Error(`hn bad status ${res.status}`);
-		}
-		const body = await res.json();
-		if (!body || !body.id) {
-			throw new Error('hn api error: empty item');
-		}
-		return flattenTree(storyId, body);
-	} finally {
-		clearTimeout(timeout);
+	const res = await requestURL(`${config.hn.baseUrl}/api/v1/items/${storyId}`);
+	if (!res.ok) {
+		throw new Error(`hn bad status ${res.status}`);
 	}
+	const body = await res.json();
+	if (!body || !body.id) {
+		throw new Error('hn api error: empty item');
+	}
+	return flattenTree(storyId, body);
 };
 
-// Read stored replies for a story, oldest first; the renderer rebuilds the tree
-// from `parentReplyId`.
-const loadStoredReplies = (storyId) =>
-	db
-		.select()
-		.from(replies)
-		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, storyId)))
-		.orderBy(asc(replies.createdAt), asc(replies.replyId));
-
-// Persist fetched comments into the table, keyed by (source, topic_id, reply_id).
+// Persist fetched comments, keyed by (source, topic_id, reply_id).
 //
 // Only rows that are new or whose content/parent changed are written — unchanged
-// comments aren't rewritten on every TTL refresh. Writes are chunked
-// (INSERT_BATCH_SIZE) so drizzle's in-JS query builder never sees a huge batch.
-// On conflict, overwrite with the just-fetched values (Postgres `excluded`).
-// Deletions are intentionally not synced: rows for comments that disappeared
-// upstream are left in place.
+// comments aren't rewritten on every TTL refresh. The whole tree is refetched
+// each time, so the diff is against all stored rows. Deletions are intentionally
+// not synced: rows for comments that disappeared upstream are left in place.
 const saveReplies = async (storyId, items) => {
 	if (items.length === 0) return;
 
@@ -148,23 +124,8 @@ const saveReplies = async (storyId, items) => {
 			!old || old.content !== item.content || old.parentReplyId !== item.parentReplyId
 		);
 	});
-	if (changed.length === 0) return;
-
-	for (let i = 0; i < changed.length; i += INSERT_BATCH_SIZE) {
-		const chunk = changed.slice(i, i + INSERT_BATCH_SIZE);
-		await db
-			.insert(replies)
-			.values(chunk)
-			.onConflictDoUpdate({
-				target: [replies.source, replies.topicId, replies.replyId],
-				set: {
-					parentReplyId: sql`excluded.parent_reply_id`,
-					content: sql`excluded.content`,
-					contentRendered: sql`excluded.content_rendered`,
-					author: sql`excluded.author`,
-				},
-			});
-	}
+	// `threaded` so the parent reference is persisted alongside content/author.
+	await upsertReplies(changed, { threaded: true });
 };
 
 /**
@@ -197,5 +158,5 @@ export const syncHNComments = async (article) => {
 		logger.warn(`Failed to refresh hn replies for story ${storyId}: ${err.message}`);
 	}
 
-	return loadStoredReplies(storyId);
+	return loadStoredReplies(SOURCE, storyId);
 };

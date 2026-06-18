@@ -368,6 +368,109 @@
   }
 }
 
+/* Discourse rich content (linux.do): onebox preview cards, image lightboxes,
+   inline emoji and @mentions. Shared by reply bodies and article bodies. */
+.article-content {
+
+  .reply-content,
+  .content {
+
+    // Inline emoji — keep them text-sized inline, not block images.
+    img.emoji {
+      display: inline-block;
+      width: 1.2em;
+      height: 1.2em;
+      margin: 0 0.05em;
+      vertical-align: text-bottom;
+      border-radius: 0;
+    }
+
+    // @mention pills.
+    a.mention {
+      padding: 0 0.3em;
+      font-size: 0.85em;
+      font-weight: 500;
+      color: var(--primary);
+      background: var(--bg-medium);
+      border-radius: $border-radius-sm;
+      word-break: normal;
+    }
+
+    // Image lightbox wrapper (<div class="lightbox-wrapper">).
+    .lightbox-wrapper {
+      display: inline-block;
+      margin: 0.5rem 0;
+
+      a.lightbox {
+        display: inline-block;
+      }
+
+      // The download/size caption Discourse appends is noise without its JS.
+      .meta {
+        display: none;
+      }
+    }
+
+    // onebox link-preview cards (<aside class="onebox">). Kept compact: a small
+    // right-floated thumbnail, tight padding and reduced type.
+    aside.onebox {
+      margin: 0.5rem 0;
+      padding: 0.5rem 0.625rem;
+      border: 1px solid var(--divider);
+      border-left: 3px solid var(--primary);
+      border-radius: $border-radius-sm;
+      background: var(--bg-light);
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      overflow: hidden; // contain the floated thumbnail
+
+      .source {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-bottom: 0.25rem;
+
+        img.site-icon {
+          width: 14px;
+          height: 14px;
+          margin: 0;
+          border-radius: 0;
+        }
+
+        a {
+          color: var(--text-light);
+          font-size: 0.75rem;
+        }
+      }
+
+      .onebox-body {
+
+        h3,
+        h4 {
+          margin: 0 0 0.15rem;
+          font-size: 0.8125rem;
+        }
+
+        // Small thumbnail floated aside rather than a full-width hero image.
+        img {
+          float: right;
+          max-width: 56px;
+          max-height: 56px;
+          width: auto;
+          height: auto;
+          margin: 0 0 0.25rem 0.5rem;
+          border-radius: $border-radius-sm;
+        }
+
+        p {
+          margin: 0;
+          color: var(--text-medium);
+        }
+      }
+    }
+  }
+}
+
 /* 4K Styles */
 @media (min-width: 1441px) {
   .article-content {

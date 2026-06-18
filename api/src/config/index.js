@@ -68,6 +68,16 @@ const _default = {
 		// Minutes to keep cached replies before re-fetching from the API.
 		ttl: parseInt(process.env.HN_COMMENTS_TTL || '30', 10),
 	},
+	linuxdo: {
+		// linux.do is a public Discourse forum needing no credentials, so the
+		// integration is gated on LINUXDO_BASE_URL being set (like Hacker News).
+		// Used only to enable the feature; topic JSON is fetched from each
+		// article's own canonical URL (the slug must match, so it can't be
+		// reconstructed). Set it to https://linux.do to enable.
+		baseUrl: process.env.LINUXDO_BASE_URL || '',
+		// Minutes to keep cached replies before re-fetching.
+		ttl: parseInt(process.env.LINUXDO_REPLIES_TTL || '30', 10),
+	},
 	email: {
 		backend: process.env.EMAIL_BACKEND,
 		sender: {

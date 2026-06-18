@@ -1,20 +1,16 @@
-import { fetch } from 'undici';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { db } from '../db';
 import { replies } from '../db/schema';
 import { config } from '../config';
 import { cache } from './cache';
 import { logger } from './logger';
+import requestURL from './request';
+import { loadStoredReplies, upsertReplies } from './replies';
 
 const SOURCE = 'v2ex';
-const REQUEST_TTL = 15 * 1000;
 const PAGE_SIZE = 20; // v2ex API replies per page
 const MAX_PAGES = 25; // safety cap on pages fetched per sync
-// Rows per insert. Kept bounded because drizzle builds the whole multi-row
-// INSERT in JS — large batches blow its query builder (`Maximum call stack size
-// exceeded`) long before Postgres's parameter limit.
-const INSERT_BATCH_SIZE = 100;
 
 // Whether v2ex integration is configured: both the API token and the base URL
 // must be set in env.
@@ -55,49 +51,40 @@ const mapReply = (topicId, item) => ({
 	createdAt: new Date((item.created || 0) * 1000),
 });
 
-// Fetch a single page of replies from the v2ex API v2.
+// Fetch a single page of replies from the v2ex API v2. Uses the shared
+// requestURL helper (HTTP/2 agent, User-Agent, timeout and proxy fallback); the
+// v2ex API token is passed as a per-request Authorization header.
 const fetchRepliesPage = async (topicId, page) => {
-	const controller = new AbortController();
-	const timeout = setTimeout(() => controller.abort(), REQUEST_TTL);
-	try {
-		const url = `${config.v2ex.baseUrl}/api/v2/topics/${topicId}/replies?p=${page}`;
-		const res = await fetch(url, {
-			method: 'GET',
-			signal: controller.signal,
-			headers: {
-				Authorization: `Bearer ${config.v2ex.token}`,
-				'User-Agent': config.useragent,
-			},
-		});
+	const url = `${config.v2ex.baseUrl}/api/v2/topics/${topicId}/replies?p=${page}`;
+	const res = await requestURL(url, {
+		headers: { Authorization: `Bearer ${config.v2ex.token}` },
+	});
 
-		const rate = {
-			remaining: res.headers.get('x-rate-limit-remaining'),
-			reset: res.headers.get('x-rate-limit-reset'),
-		};
+	const rate = {
+		remaining: res.headers.get('x-rate-limit-remaining'),
+		reset: res.headers.get('x-rate-limit-reset'),
+	};
 
-		if (res.status === 401 || res.status === 403) {
-			throw new Error(`v2ex auth failed (status ${res.status})`);
-		}
-		if (res.status === 429) {
-			throw new Error('v2ex rate limit exceeded');
-		}
-		if (!res.ok) {
-			throw new Error(`v2ex bad status ${res.status}`);
-		}
-
-		const body = await res.json();
-		if (!body || body.success === false) {
-			throw new Error(`v2ex api error: ${(body && body.message) || 'unknown'}`);
-		}
-
-		return {
-			result: Array.isArray(body.result) ? body.result : [],
-			pagination: body.pagination,
-			rate,
-		};
-	} finally {
-		clearTimeout(timeout);
+	if (res.status === 401 || res.status === 403) {
+		throw new Error(`v2ex auth failed (status ${res.status})`);
 	}
+	if (res.status === 429) {
+		throw new Error('v2ex rate limit exceeded');
+	}
+	if (!res.ok) {
+		throw new Error(`v2ex bad status ${res.status}`);
+	}
+
+	const body = await res.json();
+	if (!body || body.success === false) {
+		throw new Error(`v2ex api error: ${(body && body.message) || 'unknown'}`);
+	}
+
+	return {
+		result: Array.isArray(body.result) ? body.result : [],
+		pagination: body.pagination,
+		rate,
+	};
 };
 
 // Fetch reply pages starting at `startPage` through the last page (from the
@@ -132,14 +119,6 @@ const fetchRepliesFrom = async (topicId, startPage) => {
 	return items;
 };
 
-// Read stored replies for a topic, oldest first (floor order).
-const loadStoredReplies = (topicId) =>
-	db
-		.select()
-		.from(replies)
-		.where(and(eq(replies.source, SOURCE), eq(replies.topicId, topicId)))
-		.orderBy(asc(replies.createdAt), asc(replies.replyId));
-
 // How many replies are already stored for a topic.
 const countStoredReplies = async (topicId) => {
 	const [row] = await db
@@ -149,28 +128,13 @@ const countStoredReplies = async (topicId) => {
 	return row ? Number(row.count) : 0;
 };
 
-// Upsert fetched replies into the table, keyed by (topic_id, reply_id). On
-// conflict, overwrite with the just-fetched values (Postgres `excluded` is the
-// row that was proposed for insertion).
+// Map fetched replies to rows and upsert them, keyed by (source, topic_id,
+// reply_id). v2ex replies are append-only and overwrite-safe, so they're written
+// without diffing.
 const saveReplies = async (topicId, items) => {
 	if (items.length === 0) return;
 	const rows = items.map((item) => mapReply(topicId, item));
-	// Chunked so drizzle's in-JS query builder never sees a huge batch (a cold
-	// load can fetch up to MAX_PAGES * PAGE_SIZE replies at once).
-	for (let i = 0; i < rows.length; i += INSERT_BATCH_SIZE) {
-		const chunk = rows.slice(i, i + INSERT_BATCH_SIZE);
-		await db
-			.insert(replies)
-			.values(chunk)
-			.onConflictDoUpdate({
-				target: [replies.source, replies.topicId, replies.replyId],
-				set: {
-					content: sql`excluded.content`,
-					contentRendered: sql`excluded.content_rendered`,
-					author: sql`excluded.author`,
-				},
-			});
-	}
+	await upsertReplies(rows);
 };
 
 /**
@@ -210,5 +174,5 @@ export const syncV2EXReplies = async (article) => {
 		logger.warn(`Failed to refresh v2ex replies for topic ${topicId}: ${err.message}`);
 	}
 
-	return loadStoredReplies(topicId);
+	return loadStoredReplies(SOURCE, topicId);
 };

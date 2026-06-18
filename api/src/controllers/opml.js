@@ -318,7 +318,7 @@ exports.post = async (req, res) => {
 			url: feeds.url,
 			type: feeds.type,
 			valid: feeds.valid,
-			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
+			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND a.created_at >= NOW()::timestamp - INTERVAL '30 days' AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${userId}))`,
 		})
 		.from(follows)
 		.innerJoin(feeds, eq(follows.feedId, feeds.id))

@@ -15,7 +15,7 @@ export const getFollowDetails = async (followId) => {
 			type: feeds.type,
 			images: feeds.images,
 			valid: feeds.valid,
-			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND a.created_at >= ${follows.createdAt} - INTERVAL '30 days' AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${follows.userId}))`,
+			unreadCount: sql`(SELECT COUNT(*)::int FROM ${articles} a WHERE a.feed_id = ${feeds.id} AND a.created_at >= NOW()::timestamp - INTERVAL '30 days' AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.article_id = a.id AND r.user_id = ${follows.userId}))`,
 		})
 		.from(follows)
 		.innerJoin(feeds, eq(follows.feedId, feeds.id))

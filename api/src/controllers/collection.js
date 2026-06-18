@@ -73,7 +73,6 @@ exports.list = async (req, res) => {
 				followAlias: follows.alias, // User-defined alias for the feed
 				followPrimary: follows.primary, // Indicates if it's a primary follow
 				followFullText: follows.fullText, // Full text content preference
-				followCreatedAt: follows.createdAt, // Baseline for "New" articles
 			})
 			.from(follows)
 			.innerJoin(feeds, eq(follows.feedId, feeds.id))
@@ -95,7 +94,7 @@ exports.list = async (req, res) => {
 			),
 	);
 
-	// 2. CTE for unread counts. Optimized with subscription-relative timing minus 30 days buffer.
+	// 2. CTE for unread counts, bounded to the last 30 days (rolling window).
 	const unreadCountsCTE = db.$with('unread_counts').as(
 		db
 			.select({
@@ -107,8 +106,9 @@ exports.list = async (req, res) => {
 			.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId)))
 			.where(
 				and(
-					// Show articles from 30 days BEFORE the subscription date onwards
-					sql`${articles.createdAt} >= ${filteredFeedsCTE.followCreatedAt} - INTERVAL '30 days'`,
+					// Only count unread articles from the last 30 days (rolling window),
+					// so the scan stays bounded regardless of how long ago the user subscribed.
+					sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
 					sql`${reads.articleId} IS NULL`,
 				),
 			)

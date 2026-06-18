@@ -40,9 +40,9 @@ exports.post = async (req, res) => {
 					and(
 						inArray(articles.feedId, validFeedIds),
 						sql`${reads.id} IS NULL`,
-						// Align with the unread definition: only the "subscription date - 30 days" window.
-						// MIN(follows.createdAt) handles a feed followed in multiple folders.
-						sql`${articles.createdAt} >= (SELECT MIN(${follows.createdAt}) FROM ${follows} WHERE ${follows.userId} = ${userId}::uuid AND ${follows.feedId} = ${articles.feedId}) - INTERVAL '30 days'`,
+						// Only mark articles within the last 30 days (rolling window) as read,
+						// matching the unread definition used everywhere else.
+						sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
 					),
 				),
 		).onConflictDoNothing();
@@ -74,8 +74,9 @@ exports.post = async (req, res) => {
 						eq(follows.userId, userId),
 						inArray(follows.folderId, validFolderIds),
 						sql`${reads.id} IS NULL`,
-						// Align with the unread definition: only the "subscription date - 30 days" window.
-						sql`${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'`,
+						// Only mark articles within the last 30 days (rolling window) as read,
+						// matching the unread definition used everywhere else.
+						sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
 					),
 				),
 		).onConflictDoNothing();

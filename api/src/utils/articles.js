@@ -20,12 +20,7 @@ import { ParseContent } from '../parsers/content';
 const unreadFilter = (userId, articleId) => {
 	return sql`
 		CASE
-			WHEN EXISTS (
-				SELECT 1 FROM ${follows}
-				WHERE ${follows.userId} = ${userId}
-				AND ${follows.feedId} = ${articles.feedId}
-				AND ${articles.createdAt} < ${follows.createdAt} - INTERVAL '30 days'
-			) THEN false
+			WHEN ${articles.createdAt} < NOW()::timestamp - INTERVAL '30 days' THEN false
 			WHEN NOT EXISTS (
 				SELECT 1 FROM ${reads}
 				WHERE ${reads.userId} = ${userId}
@@ -74,25 +69,9 @@ export const getUserArticles = async (
 			)`,
 		);
 
-		if (feedId) {
-			whereConditions.push(
-				sql`NOT EXISTS (
-					SELECT 1 FROM ${follows}
-					WHERE ${follows.userId} = ${userId}
-					AND ${follows.feedId} = ${articles.feedId}
-					AND ${articles.createdAt} < ${follows.createdAt} - INTERVAL '30 days'
-				)`,
-			);
-		} else {
-			whereConditions.push(
-				sql`EXISTS (
-					SELECT 1 FROM ${follows}
-					WHERE ${follows.userId} = ${userId}
-					AND ${follows.feedId} = ${articles.feedId}
-					AND ${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'
-				)`,
-			);
-		}
+		whereConditions.push(
+			sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
+		);
 	}
 
 	let query = db
@@ -174,7 +153,7 @@ export const getPrimaryArticles = async (
 				WHERE ${reads.userId} = ${userId}
 				AND ${reads.articleId} = ${articles.id}
 			)`,
-			sql`${articles.createdAt} >= ${follows.createdAt} - INTERVAL '30 days'`,
+			sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
 		);
 	}
 

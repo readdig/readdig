@@ -106,6 +106,27 @@
       "when": 1781801017299,
       "tag": "0014_idx_unread_covering",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1781834166915,
+      "tag": "0015_reads_recent_read_index",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1781835518841,
+      "tag": "0016_index_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1781836393270,
+      "tag": "0017_drop_articles_guid_idx",
+      "breakpoints": true
     }
   ]
 }

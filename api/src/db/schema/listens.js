@@ -30,11 +30,9 @@ export const listens = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => [
-		index('listens_user_idx').on(table.userId),
 		index('listens_article_idx').on(table.articleId),
 		uniqueIndex('listens_user_article_idx').on(table.userId, table.articleId),
-		index('listens_created_at_idx').on(table.createdAt),
-		index('listens_updated_at_idx').on(table.updatedAt),
+		index('listens_user_created_at_idx').on(table.userId, table.createdAt),
 	],
 );
 

@@ -1,0 +1,1 @@
+DROP INDEX "articles_guid_idx";

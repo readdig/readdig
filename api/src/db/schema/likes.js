@@ -16,12 +16,10 @@ export const likes = pgTable(
 		createdAt: timestamp('created_at').defaultNow(),
 	},
 	(table) => [
-		index('likes_user_idx').on(table.userId),
 		index('likes_article_idx').on(table.articleId),
 		index('likes_feed_idx').on(table.feedId),
 		uniqueIndex('likes_user_article_idx').on(table.userId, table.articleId),
 		uniqueIndex('likes_user_feed_idx').on(table.userId, table.feedId),
-		index('likes_created_at_idx').on(table.createdAt),
 	],
 );
 

@@ -18,12 +18,11 @@ export const stars = pgTable(
 		updatedAt: timestamp('updated_at').defaultNow(),
 	},
 	(table) => [
-		index('stars_user_idx').on(table.userId),
 		index('stars_article_idx').on(table.articleId),
 		uniqueIndex('stars_user_article_idx').on(table.userId, table.articleId),
+		index('stars_user_created_at_idx').on(table.userId, table.createdAt),
 		index('stars_tag_ids_gin_idx').using('gin', table.tagIds),
 		index('stars_created_at_idx').on(table.createdAt),
-		index('stars_updated_at_idx').on(table.updatedAt),
 	],
 );
 

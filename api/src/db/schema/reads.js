@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
 	pgTable,
 	timestamp,
@@ -25,9 +25,10 @@ export const reads = pgTable(
 	(table) => [
 		index('reads_article_idx').on(table.articleId),
 		uniqueIndex('reads_user_article_idx').on(table.userId, table.articleId),
-		index('reads_user_view_idx').on(table.userId, table.view),
+		index('reads_user_view_created_at_idx')
+			.on(table.userId, table.createdAt)
+			.where(sql`${table.view} = true`),
 		index('reads_created_at_idx').on(table.createdAt),
-		index('reads_updated_at_idx').on(table.updatedAt),
 	],
 );
 

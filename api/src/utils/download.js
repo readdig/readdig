@@ -1,12 +1,10 @@
-import path from 'path';
 import mime from 'mime';
-import { promises as fs, existsSync } from 'fs';
 
-import { config } from '../config';
 import { logger } from './logger';
 import request from './request';
 import { thumbnail } from './thumbnail';
 import normalizeType from './normalizeType';
+import { findStored, putStored } from './storage';
 
 const validExtensions = [
 	'gif',
@@ -27,88 +25,76 @@ const validExtensions = [
 	'webp',
 ];
 
-const download = async (url, prefix, hash, dir, folder) => {
-	if (!url || !dir) {
-		return;
-	}
-
-	const basePath = config.static.path;
-	const filename = `${prefix}${hash}`;
-	const pathname = path.resolve(basePath, folder, dir);
-	const filePath = path.join(pathname, filename);
-
+// Fetch + validate the source image, returning { imageBuffer, suffix } or null.
+const fetchImage = async (url) => {
 	try {
-		const filenames = await fs.readdir(pathname);
-		const existFile = filenames.filter((f) => f.startsWith(filename));
-		if (existFile.length > 0) {
-			return path.join(pathname, existFile[0]);
-		}
-	} catch (err) {
-		if (!existsSync(pathname)) {
-			await fs.mkdir(pathname, { recursive: true });
-		}
-	}
-
-	let res, suffix, imageBuffer;
-	try {
-		res = await request(url);
+		const res = await request(url);
 		if (!res.ok) {
-			return;
+			return null;
 		}
 
 		const contentType = normalizeType(res.headers.get('content-type'));
 		const extension = contentType ? mime.getExtension(contentType.type) : '';
 		if (!validExtensions.includes(extension)) {
-			return;
+			return null;
 		}
 
-		imageBuffer = Buffer.from(await res.arrayBuffer());
-		const imageSize = imageBuffer.length;
-		if (!imageSize) {
-			return;
+		const imageBuffer = Buffer.from(await res.arrayBuffer());
+		if (!imageBuffer.length) {
+			return null;
 		}
 
-		suffix = validExtensions.find((extension) => {
-			if (url.endsWith(`.${extension}`)) {
-				return extension;
-			}
-			return;
-		});
-
+		let suffix = validExtensions.find((ext) => url.endsWith(`.${ext}`));
 		if (!suffix && extension) {
 			suffix = extension;
 		}
-
 		if (!suffix) {
-			return;
+			return null;
 		}
+
+		return { imageBuffer, suffix };
 	} catch (err) {
 		logger.info(`Download failed for URL ${url}, ${err.message}.`);
+		return null;
+	}
+};
+
+// Download an image into storage (R2 or local disk) the first time it's needed,
+// returning its storage id (R2 key or file path). Raster formats are stored as a
+// 256px thumbnail; vector/icon formats are stored as-is.
+const download = async (url, prefix, hash, dir, folder) => {
+	if (!url || !dir) {
 		return;
 	}
 
-	let fileOut;
-	const imagePath = `${filePath}.${suffix}`;
+	const name = `${prefix}-${hash}`;
 
-	try {
-		if (!fileOut && !['ico', 'cur', 'svg', 'bmp'].includes(suffix)) {
-			await thumbnail(imageBuffer, 256, 256, imagePath);
-			fileOut = imagePath;
+	const existing = await findStored(folder, dir, name);
+	if (existing) {
+		return existing;
+	}
+
+	const img = await fetchImage(url);
+	if (!img) {
+		return;
+	}
+
+	let buffer = img.imageBuffer;
+	if (!['ico', 'cur', 'svg', 'bmp'].includes(img.suffix)) {
+		try {
+			buffer = await thumbnail(img.imageBuffer, 256, 256);
+		} catch (err) {
+			logger.info(`Thumbnail failed for URL ${url}, ${err.message}.`);
 		}
-	} catch (err) {
-		logger.info(`Thumbnail failed for URL ${url}, ${err.message}.`);
 	}
 
 	try {
-		if (!fileOut) {
-			await fs.writeFile(imagePath, imageBuffer);
-			fileOut = imagePath;
-		}
+		const contentType = mime.getType(img.suffix) || 'application/octet-stream';
+		return await putStored(folder, dir, name, img.suffix, buffer, contentType);
 	} catch (err) {
-		logger.info(`Write image failed for URL ${url}, ${err.message}.`);
+		logger.info(`Store image failed for URL ${url}, ${err.message}.`);
+		return;
 	}
-
-	return fileOut;
 };
 
 export default download;

@@ -44,6 +44,12 @@ const _default = {
 	static: {
 		path: process.env.STATIC_PATH || './static',
 	},
+	r2: {
+		endpoint: process.env.R2_ENDPOINT || '',
+		bucket: process.env.R2_BUCKET || '',
+		accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+		secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+	},
 	logger: {
 		level: process.env.LOGGER_LEVEL || 'error',
 	},

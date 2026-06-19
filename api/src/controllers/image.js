@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import { dataUriToBuffer } from 'data-uri-to-buffer';
 import { eq } from 'drizzle-orm';
 
@@ -8,6 +7,7 @@ import { feeds, articles } from '../db/schema';
 import computeHash from '../utils/hash';
 import download from '../utils/download';
 import { thumbnail, svgIcon } from '../utils/thumbnail';
+import { readStored } from '../utils/storage';
 import { isBlockedImageURL } from '../utils/blocklist';
 import { isDataURL } from '../utils/validation';
 
@@ -116,57 +116,59 @@ async function findImageDownload(keys, images, feedId, folder) {
 	return image;
 }
 
+// Rewrite emoji-only favicon SVGs so a single emoji glyph is centered/scaled.
+function rewriteEmojiSvg(data) {
+	const emojiRegex =
+		/<text[^>]*>(?:[\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}])<\/text>/u;
+	if (!emojiRegex.test(data)) {
+		return data;
+	}
+	return data
+		.replace("width='48' height='48'", '')
+		.replace("viewBox='0 0 16 16'", "viewBox='0 0 24 24'")
+		.replace(
+			"<text x='0' y='14'>",
+			"<text x='50%' y='50%' alignment-baseline='middle' text-anchor='middle'>",
+		);
+}
+
 async function sendImage(res, image, width, height, feedTitle) {
+	// Data URLs are served inline.
+	if (image && isDataURL(image)) {
+		const img = dataUriToBuffer(image);
+		res.type(img.typeFull);
+		return res.end(Buffer.from(img.buffer));
+	}
+
+	// Stored image (R2 or local disk): read the bytes once, then process by type.
+	let buffer = null;
 	if (image) {
-		if (isDataURL(image)) {
-			const img = dataUriToBuffer(image);
-			const imgBuffer = Buffer.from(img.buffer);
-			res.type(img.typeFull);
-			res.end(imgBuffer);
-			return;
-		} else {
-			const imageExt = image.substring(image.lastIndexOf('.') + 1);
-			if (!['ico', 'cur', 'svg', 'bmp'].includes(imageExt)) {
-				try {
-					const imageBuffer = await thumbnail(image, width, height);
-					res.type(imageExt);
-					res.end(imageBuffer);
-					return;
-				} catch (err) {
-					// XXX
-				}
-			} else {
-				if (imageExt === 'svg') {
-					try {
-						const data = await fs.readFile(image, 'utf8');
-						let modifiedData = data;
-						const emojiRegex =
-							/<text[^>]*>(?:[\u{1F300}-\u{1F5FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E0}-\u{1F1FF}])<\/text>/u;
-						if (emojiRegex.test(data)) {
-							modifiedData = modifiedData.replace("width='48' height='48'", '');
-							modifiedData = modifiedData.replace(
-								"viewBox='0 0 16 16'",
-								"viewBox='0 0 24 24'",
-							);
-							modifiedData = modifiedData.replace(
-								"<text x='0' y='14'>",
-								"<text x='50%' y='50%' alignment-baseline='middle' text-anchor='middle'>",
-							);
-						}
-						res.type(imageExt);
-						res.send(modifiedData);
-						return;
-					} catch (err) {
-						// XXX
-					}
-				}
-				res.type(imageExt);
-				res.sendFile(image);
-				return;
-			}
+		try {
+			buffer = await readStored(image);
+		} catch (err) {
+			buffer = null;
 		}
 	}
 
+	if (buffer) {
+		const ext = image.substring(image.lastIndexOf('.') + 1);
+		if (ext === 'svg') {
+			res.type(ext);
+			return res.send(rewriteEmojiSvg(buffer.toString('utf8')));
+		}
+		if (['ico', 'cur', 'bmp'].includes(ext)) {
+			res.type(ext);
+			return res.end(buffer);
+		}
+		try {
+			res.type(ext);
+			return res.end(await thumbnail(buffer, width, height));
+		} catch (err) {
+			// fall through to the placeholder
+		}
+	}
+
+	// Placeholder generated from the feed title.
 	res.type('svg');
 	res.end(svgIcon(feedTitle));
 }

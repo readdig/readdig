@@ -31,6 +31,82 @@ const unreadFilter = (userId, articleId) => {
 	`;
 };
 
+// Pick up to `limit` article ids across a set of followed feeds via a per-feed
+// LATERAL top-N, then merge. Work is bounded to (#feeds * limit) instead of
+// scanning every recent article in the folder/primary set. Equivalent to a global
+// ORDER BY created_at DESC LIMIT: any article in the global top-N is necessarily
+// within its own feed's top-N. Cursor conditions are pushed INTO the lateral so a
+// feed whose newest rows are all before the cursor still contributes its older ones.
+const pickArticleIds = async ({ userId, scope, unread, limit, endOfArticleIds, endOfCreatedAt }) => {
+	const windowCond = unread
+		? sql` AND a.created_at >= NOW()::timestamp - INTERVAL '30 days' AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.user_id = ${userId}::uuid AND r.article_id = a.id)`
+		: sql``;
+
+	let cursorCond = sql``;
+	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
+		const endIds = endOfArticleIds.split(',').filter((id) => id);
+		const before = moment(parseInt(endOfCreatedAt)).toISOString();
+		cursorCond = endIds.length
+			? sql` AND a.created_at <= ${before} AND a.id NOT IN ${endIds}`
+			: sql` AND a.created_at <= ${before}`;
+	}
+
+	const scopeCond =
+		scope.folderId !== undefined
+			? sql`fo.folder_id = ${scope.folderId}::uuid`
+			: sql`fo.primary = true`;
+
+	const rows = await db.execute(sql`
+		SELECT picked.id
+		FROM ${follows} fo
+		CROSS JOIN LATERAL (
+			SELECT a.id, a.created_at
+			FROM ${articles} a
+			WHERE a.feed_id = fo.feed_id${windowCond}${cursorCond}
+			ORDER BY a.created_at DESC
+			LIMIT ${limit}
+		) picked
+		WHERE fo.user_id = ${userId}::uuid AND ${scopeCond}
+		ORDER BY picked.created_at DESC
+		LIMIT ${limit}
+	`);
+	return rows.map((r) => r.id);
+};
+
+// Hydrate the picked ids with the full article shape (feed / starred / played /
+// unread), preserving the created_at DESC order.
+const hydrateArticles = async (ids, userId, unread) => {
+	if (!ids.length) return [];
+	const rows = await db
+		.select({
+			id: articles.id,
+			url: articles.url,
+			title: articles.title,
+			description: articles.description,
+			attachments: articles.attachments,
+			type: articles.type,
+			createdAt: articles.createdAt,
+			feed: {
+				id: feeds.id,
+				duplicateOfId: feeds.duplicateOfId,
+				title: feeds.title,
+				type: feeds.type,
+				feedUrl: feeds.feedUrl,
+			},
+			stared: sql`CASE WHEN stars.id IS NOT NULL THEN true ELSE false END`,
+			played: sql`CASE WHEN listens.id IS NOT NULL THEN true ELSE false END`,
+			unread: unread ? sql`true` : unreadFilter(userId, articles.id),
+			orderedAt: sql`CAST(EXTRACT(epoch FROM ${articles.createdAt}) * 1000 AS BIGINT)`,
+		})
+		.from(articles)
+		.leftJoin(feeds, eq(articles.feedId, feeds.id))
+		.leftJoin(stars, and(eq(stars.articleId, articles.id), eq(stars.userId, userId)))
+		.leftJoin(listens, and(eq(listens.articleId, articles.id), eq(listens.userId, userId)))
+		.where(inArray(articles.id, ids))
+		.orderBy(desc(articles.createdAt));
+	return filterArticles(rows);
+};
+
 export const getUserArticles = async (
 	userId,
 	folderId,
@@ -40,14 +116,24 @@ export const getUserArticles = async (
 	endOfArticleIds,
 	endOfCreatedAt,
 ) => {
+	// Folder view spans many feeds: pick top-N per feed (LATERAL) then merge, so
+	// work is bounded to (#feeds * limit), not the whole folder's recent articles.
+	if (folderId && !feedId) {
+		const ids = await pickArticleIds({
+			userId,
+			scope: { folderId },
+			unread,
+			limit,
+			endOfArticleIds,
+			endOfCreatedAt,
+		});
+		return hydrateArticles(ids, userId, unread);
+	}
+
 	let whereConditions = [];
 
 	if (feedId) {
 		whereConditions.push(eq(articles.feedId, feedId));
-	}
-
-	if (folderId && !feedId) {
-		whereConditions.push(eq(follows.userId, userId), eq(follows.folderId, folderId));
 	}
 
 	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
@@ -102,13 +188,7 @@ export const getUserArticles = async (
 			and(eq(listens.articleId, articles.id), eq(listens.userId, userId)),
 		);
 
-	if (folderId && !feedId) {
-		query = query
-			.innerJoin(follows, eq(articles.feedId, follows.feedId))
-			.leftJoin(feeds, eq(articles.feedId, feeds.id));
-	} else {
-		query = query.leftJoin(feeds, eq(articles.feedId, feeds.id));
-	}
+	query = query.leftJoin(feeds, eq(articles.feedId, feeds.id));
 
 	const articlesData = await query
 		.where(and(...whereConditions))
@@ -136,61 +216,16 @@ export const getPrimaryArticles = async (
 		return [];
 	}
 
-	if (endOfArticleIds && endOfCreatedAt && moment(parseInt(endOfCreatedAt)).isValid()) {
-		const endIds = endOfArticleIds.split(',').filter((a) => a);
-		whereConditions.push(
-			and(
-				sql`${articles.id} NOT IN ${endIds}`,
-				sql`${articles.createdAt} <= ${moment(parseInt(endOfCreatedAt)).toISOString()}`,
-			),
-		);
-	}
+	const ids = await pickArticleIds({
+		userId,
+		scope: { primary: true },
+		unread,
+		limit,
+		endOfArticleIds,
+		endOfCreatedAt,
+	});
 
-	if (unread) {
-		whereConditions.push(
-			sql`NOT EXISTS (
-				SELECT 1 FROM ${reads}
-				WHERE ${reads.userId} = ${userId}
-				AND ${reads.articleId} = ${articles.id}
-			)`,
-			sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
-		);
-	}
-
-	const articlesData = await db
-		.select({
-			id: articles.id,
-			url: articles.url,
-			title: articles.title,
-			description: articles.description,
-			attachments: articles.attachments,
-			type: articles.type,
-			createdAt: articles.createdAt,
-			feed: {
-				id: feeds.id,
-				duplicateOfId: feeds.duplicateOfId,
-				title: feeds.title,
-				type: feeds.type,
-				feedUrl: feeds.feedUrl,
-			},
-			stared: sql`CASE WHEN stars.id IS NOT NULL THEN true ELSE false END`,
-			played: sql`CASE WHEN listens.id IS NOT NULL THEN true ELSE false END`,
-			unread: unread ? sql`true` : unreadFilter(userId, articles.id),
-			orderedAt: sql`CAST(EXTRACT(epoch FROM ${articles.createdAt}) * 1000 AS BIGINT)`,
-		})
-		.from(follows)
-		.innerJoin(articles, eq(articles.feedId, follows.feedId))
-		.leftJoin(feeds, eq(articles.feedId, feeds.id))
-		.leftJoin(stars, and(eq(stars.articleId, articles.id), eq(stars.userId, userId)))
-		.leftJoin(
-			listens,
-			and(eq(listens.articleId, articles.id), eq(listens.userId, userId)),
-		)
-		.where(and(...whereConditions))
-		.orderBy(desc(articles.createdAt))
-		.limit(limit);
-
-	return filterArticles(articlesData);
+	return hydrateArticles(ids, userId, unread);
 };
 
 export const getStarArticles = async (

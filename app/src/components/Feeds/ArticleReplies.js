@@ -45,11 +45,6 @@ const ArticleReplies = ({ article = {} }) => {
 		return (
 			<li className="reply-item" key={reply.id}>
 				<div className="reply">
-					{author.avatar && (
-						<div className="avatar">
-							<img src={author.avatar} alt={author.name} referrerPolicy="no-referrer" />
-						</div>
-					)}
 					<div className="body">
 						<div className="reply-meta">
 							{author.url ? (

@@ -292,25 +292,9 @@
   }
 
   .reply {
-    display: flex;
     padding: rem(16px) 0;
 
-    .avatar {
-      flex-shrink: 0;
-      width: rem(36px);
-      height: rem(36px);
-      margin-right: rem(12px);
-
-      img {
-        width: rem(36px);
-        height: rem(36px);
-        border-radius: $border-radius;
-        object-fit: cover;
-      }
-    }
-
     .body {
-      flex: 1;
       min-width: 0;
     }
 

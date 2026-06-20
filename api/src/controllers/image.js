@@ -1,27 +1,20 @@
 import { dataUriToBuffer } from 'data-uri-to-buffer';
 import { eq } from 'drizzle-orm';
+import mime from 'mime';
 
 import { db } from '../db';
 import { feeds, articles } from '../db/schema';
 
 import computeHash from '../utils/hash';
 import download from '../utils/download';
-import { thumbnail, svgIcon } from '../utils/thumbnail';
-import { readStored } from '../utils/storage';
+import { svgIcon } from '../utils/thumbnail';
+import { readStored, r2Enabled, storedId } from '../utils/storage';
 import { isBlockedImageURL } from '../utils/blocklist';
 import { isDataURL } from '../utils/validation';
+import { logger } from '../utils/logger';
 
 exports.feed = async (req, res) => {
 	const id = req.params.feedId;
-	const query = req.query || {};
-
-	let width = parseInt(query.w || 256);
-	width = width < 32 ? 32 : width;
-	width = width > 256 ? 256 : width;
-
-	let height = parseInt(query.h || 256);
-	height = height < 32 ? 32 : height;
-	height = height > 256 ? 256 : height;
 
 	const data = await db.query.feeds.findFirst({
 		where: eq(feeds.id, id),
@@ -42,20 +35,11 @@ exports.feed = async (req, res) => {
 	const keys = ['featured', 'icon', 'og', 'favicon'];
 	const image = await findImageDownload(keys, images, feedId, 'feeds');
 
-	await sendImage(res, image, width, height, feedTitle);
+	await sendImage(res, image, feedTitle);
 };
 
 exports.article = async (req, res) => {
 	const id = req.params.articleId;
-	const query = req.query || {};
-
-	let width = parseInt(query.w || 256);
-	width = width < 32 ? 32 : width;
-	width = width > 256 ? 256 : width;
-
-	let height = parseInt(query.h || 256);
-	height = height < 32 ? 32 : height;
-	height = height > 256 ? 256 : height;
 
 	const data = await db.query.articles.findFirst({
 		where: eq(articles.id, id),
@@ -93,7 +77,7 @@ exports.article = async (req, res) => {
 		image = await findImageDownload(keys, feedImages, feedId, 'feeds');
 	}
 
-	await sendImage(res, image, width, height, feedTitle);
+	await sendImage(res, image, feedTitle);
 };
 
 async function findImageDownload(keys, images, feedId, folder) {
@@ -106,7 +90,20 @@ async function findImageDownload(keys, images, feedId, folder) {
 				image = url;
 			} else {
 				const hash = computeHash(url);
-				image = await download(url, key, hash, feedId, folder);
+				if (r2Enabled) {
+					const id = storedId(folder, feedId, `${key}-${hash}`);
+					const stored = await readStoredSafe(id);
+					if (stored) {
+						image = { id, stored };
+					} else {
+						image = await download(url, key, hash, feedId, folder, {
+							skipFind: true,
+							returnStored: true,
+						});
+					}
+				} else {
+					image = await download(url, key, hash, feedId, folder);
+				}
 			}
 			if (image) {
 				break;
@@ -114,6 +111,17 @@ async function findImageDownload(keys, images, feedId, folder) {
 		}
 	}
 	return image;
+}
+
+async function readStoredSafe(image) {
+	try {
+		return image ? await readStored(image) : null;
+	} catch (err) {
+		if (err?.$metadata?.httpStatusCode !== 404 && err?.name !== 'NoSuchKey') {
+			logger.info(`Read stored image failed for ${image}, ${err.message}.`);
+		}
+		return null;
+	}
 }
 
 // Rewrite emoji-only favicon SVGs so a single emoji glyph is centered/scaled.
@@ -132,40 +140,55 @@ function rewriteEmojiSvg(data) {
 		);
 }
 
-async function sendImage(res, image, width, height, feedTitle) {
+function getStoredSuffix(stored, image) {
+	if (stored?.contentType) {
+		return mime.getExtension(stored.contentType);
+	}
+	const idx = image ? image.lastIndexOf('.') : -1;
+	return idx >= 0 ? image.substring(idx + 1) : '';
+}
+
+function setStoredContentType(res, stored, suffix) {
+	if (stored?.contentType) {
+		res.set('Content-Type', stored.contentType);
+		return;
+	}
+	res.type(suffix || 'application/octet-stream');
+}
+
+async function sendImage(res, image, feedTitle) {
+	res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+
 	// Data URLs are served inline.
-	if (image && isDataURL(image)) {
+	if (typeof image === 'string' && isDataURL(image)) {
 		const img = dataUriToBuffer(image);
 		res.type(img.typeFull);
 		return res.end(Buffer.from(img.buffer));
 	}
 
 	// Stored image (R2 or local disk): read the bytes once, then process by type.
-	let buffer = null;
-	if (image) {
-		try {
-			buffer = await readStored(image);
-		} catch (err) {
-			buffer = null;
-		}
+	let stored = null;
+	let imageId = image;
+	if (image?.stored) {
+		stored = image.stored;
+		imageId = image.id;
+	} else if (image) {
+		stored = await readStoredSafe(image);
 	}
 
-	if (buffer) {
-		const ext = image.substring(image.lastIndexOf('.') + 1);
+	if (stored?.buffer) {
+		const buffer = stored.buffer;
+		const ext = getStoredSuffix(stored, imageId);
 		if (ext === 'svg') {
-			res.type(ext);
+			setStoredContentType(res, stored, ext);
 			return res.send(rewriteEmojiSvg(buffer.toString('utf8')));
 		}
 		if (['ico', 'cur', 'bmp'].includes(ext)) {
-			res.type(ext);
+			setStoredContentType(res, stored, ext);
 			return res.end(buffer);
 		}
-		try {
-			res.type(ext);
-			return res.end(await thumbnail(buffer, width, height));
-		} catch (err) {
-			// fall through to the placeholder
-		}
+		setStoredContentType(res, stored, ext);
+		return res.end(buffer);
 	}
 
 	// Placeholder generated from the feed title.

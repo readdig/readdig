@@ -62,16 +62,18 @@ const fetchImage = async (url) => {
 // Download an image into storage (R2 or local disk) the first time it's needed,
 // returning its storage id (R2 key or file path). Raster formats are stored as a
 // 256px thumbnail; vector/icon formats are stored as-is.
-const download = async (url, prefix, hash, dir, folder) => {
+const download = async (url, prefix, hash, dir, folder, options = {}) => {
 	if (!url || !dir) {
 		return;
 	}
 
 	const name = `${prefix}-${hash}`;
 
-	const existing = await findStored(folder, dir, name);
-	if (existing) {
-		return existing;
+	if (!options.skipFind) {
+		const existing = await findStored(folder, dir, name);
+		if (existing) {
+			return existing;
+		}
 	}
 
 	const img = await fetchImage(url);
@@ -90,7 +92,11 @@ const download = async (url, prefix, hash, dir, folder) => {
 
 	try {
 		const contentType = mime.getType(img.suffix) || 'application/octet-stream';
-		return await putStored(folder, dir, name, img.suffix, buffer, contentType);
+		const id = await putStored(folder, dir, name, img.suffix, buffer, contentType);
+		if (options.returnStored) {
+			return { id, stored: { buffer, contentType } };
+		}
+		return id;
 	} catch (err) {
 		logger.info(`Store image failed for URL ${url}, ${err.message}.`);
 		return;

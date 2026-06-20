@@ -157,7 +157,7 @@ function setStoredContentType(res, stored, suffix) {
 }
 
 async function sendImage(res, image, feedTitle) {
-	res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+	res.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=43200');
 
 	// Data URLs are served inline.
 	if (typeof image === 'string' && isDataURL(image)) {

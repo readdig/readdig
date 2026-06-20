@@ -24,28 +24,34 @@ exports.post = async (req, res) => {
 			return res.status(400).json({ error: 'No valid feed IDs provided' });
 		}
 
-		await db.insert(reads).select(
-			db
-				.select({
-					id: sql`gen_random_uuid()`,
-					userId: sql`${userId}::uuid`,
-					articleId: articles.id,
-					view: sql`false`,
-					createdAt: sql`NOW()`,
-					updatedAt: sql`NOW()`,
-				})
-				.from(articles)
-				.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId)))
-				.where(
-					and(
-						inArray(articles.feedId, validFeedIds),
-						sql`${reads.id} IS NULL`,
-						// Only mark articles within the last 30 days (rolling window) as read,
-						// matching the unread definition used everywhere else.
-						sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
+		await db
+			.insert(reads)
+			.select(
+				db
+					.select({
+						id: sql`gen_random_uuid()`,
+						userId: sql`${userId}::uuid`,
+						articleId: articles.id,
+						view: sql`false`,
+						createdAt: sql`NOW()`,
+						updatedAt: sql`NOW()`,
+					})
+					.from(articles)
+					.leftJoin(
+						reads,
+						and(eq(reads.articleId, articles.id), eq(reads.userId, userId)),
+					)
+					.where(
+						and(
+							inArray(articles.feedId, validFeedIds),
+							sql`${reads.id} IS NULL`,
+							// Only mark articles within the last 30 days (rolling window) as read,
+							// matching the unread definition used everywhere else.
+							sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
+						),
 					),
-				),
-		).onConflictDoNothing();
+			)
+			.onConflictDoNothing();
 	}
 
 	if (folderIds.length > 0) {
@@ -56,30 +62,36 @@ exports.post = async (req, res) => {
 			return res.status(400).json({ error: 'No valid folder IDs provided' });
 		}
 
-		await db.insert(reads).select(
-			db
-				.select({
-					id: sql`gen_random_uuid()`,
-					userId: sql`${userId}::uuid`,
-					articleId: articles.id,
-					view: sql`false`,
-					createdAt: sql`NOW()`,
-					updatedAt: sql`NOW()`,
-				})
-				.from(articles)
-				.innerJoin(follows, eq(articles.feedId, follows.feedId))
-				.leftJoin(reads, and(eq(reads.articleId, articles.id), eq(reads.userId, userId)))
-				.where(
-					and(
-						eq(follows.userId, userId),
-						inArray(follows.folderId, validFolderIds),
-						sql`${reads.id} IS NULL`,
-						// Only mark articles within the last 30 days (rolling window) as read,
-						// matching the unread definition used everywhere else.
-						sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
+		await db
+			.insert(reads)
+			.select(
+				db
+					.select({
+						id: sql`gen_random_uuid()`,
+						userId: sql`${userId}::uuid`,
+						articleId: articles.id,
+						view: sql`false`,
+						createdAt: sql`NOW()`,
+						updatedAt: sql`NOW()`,
+					})
+					.from(articles)
+					.innerJoin(follows, eq(articles.feedId, follows.feedId))
+					.leftJoin(
+						reads,
+						and(eq(reads.articleId, articles.id), eq(reads.userId, userId)),
+					)
+					.where(
+						and(
+							eq(follows.userId, userId),
+							inArray(follows.folderId, validFolderIds),
+							sql`${reads.id} IS NULL`,
+							// Only mark articles within the last 30 days (rolling window) as read,
+							// matching the unread definition used everywhere else.
+							sql`${articles.createdAt} >= NOW()::timestamp - INTERVAL '30 days'`,
+						),
 					),
-				),
-		).onConflictDoNothing();
+			)
+			.onConflictDoNothing();
 	}
 
 	res.sendStatus(204);

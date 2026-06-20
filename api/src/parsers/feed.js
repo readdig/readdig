@@ -287,21 +287,6 @@ export function ParseFeedPosts(posts, limit = 1000) {
 				// fix article
 				article = FeedArticleMakeUp(post, article);
 
-				// Feeds that only carry a link to a discussion page (e.g. Hacker
-				// News, whose body is just a "Comments" link) have no real body once
-				// commentsUrl is captured, so don't store the bare link as content.
-				// Done after FeedArticleMakeUp, which re-derives content from the raw
-				// rss:description.
-				if (article.commentsUrl && article.content) {
-					const withoutLinks = strip(
-						article.content.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, ''),
-					).trim();
-					if (!withoutLinks) {
-						article.content = '';
-						article.summary = '';
-					}
-				}
-
 				const exists = feedContent.items.filter((i) => i.id === article.id).length;
 				if (!exists) {
 					feedContent.items.push(article);

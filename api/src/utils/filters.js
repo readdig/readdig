@@ -24,7 +24,7 @@ export const filterArticles = (articles) => {
 			article.feed.feedUrl &&
 			article.feed.feedUrl.includes('v2ex.com/index.xml')
 		) {
-			hashTitle = article.title.replace(/^\[.*?\]+/, '').trim();
+			hashTitle = article.title.replace(/^\[.*?\]/, '').trim();
 		}
 
 		const contentHash = computeHash(`${hashTitle}:${hashDescription}`);

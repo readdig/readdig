@@ -97,6 +97,24 @@ export const FeedArticleMakeUp = (post, article) => {
 		article.content = post['rss:description']['#'];
 	}
 
+	// Feeds that only carry a link to a discussion page (e.g. Hacker
+	// News, whose body is just a "Comments" link) have no real body once
+	// commentsUrl is captured, so don't store the bare link as content.
+	// Done after FeedArticleMakeUp, which re-derives content from the raw
+	// rss:description.
+	if (article.commentsUrl && article.content) {
+		const withoutLinks = strip(
+			article.content.replace(
+				/<a href="https:\/\/news\.ycombinator\.com\/item\?id=\d+">Comments<\/a>/g,
+				'',
+			),
+		).trim();
+		if (!withoutLinks) {
+			article.content = '';
+			article.summary = '';
+		}
+	}
+
 	// fix image
 	if (!article.image && post['rss:thumbnail'] && post['rss:thumbnail']['#']) {
 		article.image = post['rss:thumbnail']['#'];

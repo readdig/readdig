@@ -37,7 +37,14 @@ const unreadFilter = (userId, articleId) => {
 // ORDER BY created_at DESC LIMIT: any article in the global top-N is necessarily
 // within its own feed's top-N. Cursor conditions are pushed INTO the lateral so a
 // feed whose newest rows are all before the cursor still contributes its older ones.
-const pickArticleIds = async ({ userId, scope, unread, limit, endOfArticleIds, endOfCreatedAt }) => {
+const pickArticleIds = async ({
+	userId,
+	scope,
+	unread,
+	limit,
+	endOfArticleIds,
+	endOfCreatedAt,
+}) => {
 	const windowCond = unread
 		? sql` AND a.created_at >= NOW()::timestamp - INTERVAL '30 days' AND NOT EXISTS (SELECT 1 FROM ${reads} r WHERE r.user_id = ${userId}::uuid AND r.article_id = a.id)`
 		: sql``;
@@ -101,7 +108,10 @@ const hydrateArticles = async (ids, userId, unread) => {
 		.from(articles)
 		.leftJoin(feeds, eq(articles.feedId, feeds.id))
 		.leftJoin(stars, and(eq(stars.articleId, articles.id), eq(stars.userId, userId)))
-		.leftJoin(listens, and(eq(listens.articleId, articles.id), eq(listens.userId, userId)))
+		.leftJoin(
+			listens,
+			and(eq(listens.articleId, articles.id), eq(listens.userId, userId)),
+		)
 		.where(inArray(articles.id, ids))
 		.orderBy(desc(articles.createdAt));
 	return filterArticles(rows);

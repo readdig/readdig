@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { eq, or, count, and, desc, asc, inArray, sql, like } from 'drizzle-orm';
+import { eq, or, and, desc, asc, sql, like } from 'drizzle-orm';
 
 import { db } from '../db';
 import { lower } from '../db/lower';
@@ -52,144 +52,80 @@ exports.list = async (req, res) => {
 		);
 	}
 
+	const paginatedUsers = db.$with('paginated_users').as(
+		db
+			.select({
+				id: users.id,
+				name: users.name,
+				username: users.username,
+				email: users.email,
+				avatar: users.avatar,
+				role: users.role,
+				suspended: users.suspended,
+				activeAt: users.activeAt,
+				createdAt: users.createdAt,
+				updatedAt: users.updatedAt,
+				settings: users.settings,
+			})
+			.from(users)
+			.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+			.orderBy(orderBy)
+			.limit(limit)
+			.offset(offset)
+	);
+
 	const usersData = await db
+		.with(paginatedUsers)
 		.select({
-			id: users.id,
-			name: users.name,
-			username: users.username,
-			email: users.email,
-			avatar: users.avatar,
-			avatar: users.avatar,
-			role: users.role,
-			suspended: users.suspended,
-			activeAt: users.activeAt,
-			createdAt: users.createdAt,
-			updatedAt: users.updatedAt,
-			settings: users.settings,
+			id: paginatedUsers.id,
+			name: paginatedUsers.name,
+			username: paginatedUsers.username,
+			email: paginatedUsers.email,
+			avatar: paginatedUsers.avatar,
+			role: paginatedUsers.role,
+			suspended: paginatedUsers.suspended,
+			activeAt: paginatedUsers.activeAt,
+			createdAt: paginatedUsers.createdAt,
+			updatedAt: paginatedUsers.updatedAt,
+			settings: paginatedUsers.settings,
+			followCount: sql`COALESCE((SELECT COUNT(*) FROM ${follows} WHERE ${follows.userId} = paginated_users.id), 0)::int`,
+			starCount: sql`COALESCE((SELECT COUNT(*) FROM ${stars} WHERE ${stars.userId} = paginated_users.id), 0)::int`,
+			readCount: sql`COALESCE((SELECT COUNT(*) FROM ${reads} WHERE ${reads.userId} = paginated_users.id), 0)::int`,
+			playCount: sql`COALESCE((SELECT COUNT(*) FROM ${listens} WHERE ${listens.userId} = paginated_users.id), 0)::int`,
+			folderCount: sql`COALESCE((SELECT COUNT(*) FROM ${folders} WHERE ${folders.userId} = paginated_users.id), 0)::int`,
+			subscription: sql`
+				(SELECT json_build_object(
+					'status', s.status,
+					'nextBillDate', s.next_bill_date,
+					'expired', CASE WHEN s.next_bill_date <= NOW() THEN true ELSE false END,
+					'plan', json_build_object(
+						'id', p.id,
+						'name', p.name,
+						'basePrice', p.base_price
+					)
+				)
+				 FROM ${subscriptions} s
+				 LEFT JOIN ${plans} p ON p.id = s.plan_id
+				 WHERE s.user_id = paginated_users.id AND s.status IN ('active', 'cancelled', 'deleted')
+				 ORDER BY s.next_bill_date DESC, s.updated_at DESC
+				 LIMIT 1)
+			`,
 		})
-		.from(users)
-		.where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
-		.orderBy(orderBy)
-		.limit(limit)
-		.offset(offset);
-
-	const userIds = usersData.map((u) => u.id);
-	if (userIds.length === 0) {
-		return res.json([]);
-	}
-
-	const [
-		followCounts,
-		starCounts,
-		readCounts,
-		playCount,
-		folderCounts,
-		userSubscriptions,
-	] = await Promise.all([
-		db
-			.select({
-				userId: follows.userId,
-				count: count(follows.id),
-			})
-			.from(follows)
-			.where(inArray(follows.userId, userIds))
-			.groupBy(follows.userId),
-
-		db
-			.select({
-				userId: stars.userId,
-				count: count(stars.id),
-			})
-			.from(stars)
-			.where(inArray(stars.userId, userIds))
-			.groupBy(stars.userId),
-
-		db
-			.select({
-				userId: reads.userId,
-				count: count(reads.id),
-			})
-			.from(reads)
-			.where(inArray(reads.userId, userIds))
-			.groupBy(reads.userId),
-
-		db
-			.select({
-				userId: listens.userId,
-				count: count(listens.id),
-			})
-			.from(listens)
-			.where(inArray(listens.userId, userIds))
-			.groupBy(listens.userId),
-
-		db
-			.select({
-				userId: folders.userId,
-				count: count(folders.id),
-			})
-			.from(folders)
-			.where(inArray(folders.userId, userIds))
-			.groupBy(folders.userId),
-
-		db
-			.select({
-				userId: subscriptions.userId,
-				plan: {
-					id: plans.id,
-					name: plans.name,
-					basePrice: plans.basePrice,
-				},
-				status: subscriptions.status,
-				nextBillDate: subscriptions.nextBillDate,
-				expired: sql`CASE WHEN ${subscriptions.nextBillDate} <= NOW() THEN true ELSE false END`,
-			})
-			.from(subscriptions)
-			.leftJoin(plans, eq(subscriptions.planId, plans.id))
-			.where(
-				and(
-					inArray(subscriptions.userId, userIds),
-					inArray(subscriptions.status, ['active', 'cancelled', 'deleted']),
-				),
-			)
-			.orderBy(desc(subscriptions.nextBillDate), desc(subscriptions.updatedAt)),
-	]);
-
-	const followCountMap = new Map(followCounts.map((f) => [f.userId, f.count]));
-	const starCountMap = new Map(starCounts.map((s) => [s.userId, s.count]));
-	const readCountMap = new Map(readCounts.map((r) => [r.userId, r.count]));
-	const playCountMap = new Map(playCount.map((p) => [p.userId, p.count]));
-	const folderCountMap = new Map(folderCounts.map((f) => [f.userId, f.count]));
-	const subscriptionMap = new Map(userSubscriptions.map((f) => [f.userId, f]));
+		.from(paginatedUsers);
 
 	const gravatarCache = new Map();
-	usersData.forEach((user) => {
+	const data = usersData.map((user) => {
 		if (!user.avatar && user.email && !gravatarCache.has(user.email)) {
 			gravatarCache.set(user.email, gravatar(user.email));
 		}
-	});
 
-	const data = usersData.map((user) => ({
-		id: user.id,
-		name: user.name,
-		username: user.username,
-		email: user.email,
-		avatar: user.avatar || (user.email ? gravatarCache.get(user.email) : null),
-		avatar: user.avatar || (user.email ? gravatarCache.get(user.email) : null),
-		role: user.role,
-		admin: user.role === 'admin',
-		free: user.role === 'free',
-		suspended: user.suspended,
-		activeAt: user.activeAt,
-		createdAt: user.createdAt,
-		updatedAt: user.updatedAt,
-		settings: user.settings,
-		subscription: subscriptionMap.get(user.id) || null,
-		followCount: followCountMap.get(user.id) || 0,
-		starCount: starCountMap.get(user.id) || 0,
-		readCount: readCountMap.get(user.id) || 0,
-		playCount: playCountMap.get(user.id) || 0,
-		folderCount: folderCountMap.get(user.id) || 0,
-	}));
+		return {
+			...user,
+			avatar: user.avatar || (user.email ? gravatarCache.get(user.email) : null),
+			admin: user.role === 'admin',
+			free: user.role === 'free',
+		};
+	});
 
 	res.json(data);
 };

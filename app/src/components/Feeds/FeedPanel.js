@@ -172,6 +172,9 @@ const FeedPanel = () => {
 		}
 	};
 
+	const popoverFeedId = feedPopover.isOpen ? feed?.id : null;
+	const popoverFolderId = folderPopover.isOpen ? folder?.id : null;
+
 	return (
 		<div className="feeds" ref={feedsRef} onScroll={onScroll}>
 			<div className="feeds-header">
@@ -249,6 +252,7 @@ const FeedPanel = () => {
 								<Link
 									className={classNames({
 										active: folderId === folder.id && !feedId,
+										'popover-open': popoverFolderId === folder.id,
 									})}
 									to={`/folder/${folder.id}`}
 									title={folder.name}
@@ -286,6 +290,7 @@ const FeedPanel = () => {
 											key={feed.id}
 											className={classNames({
 												active: feedId === feed.id,
+												'popover-open': popoverFeedId === feed.id,
 											})}
 										>
 											<Link
@@ -322,6 +327,7 @@ const FeedPanel = () => {
 								key={feed.id}
 								className={classNames({
 									active: feedId === feed.id,
+									'popover-open': popoverFeedId === feed.id,
 								})}
 							>
 								<Link to={`/feed/${feed.id}`} title={feed.title}>

@@ -140,6 +140,32 @@
       @media (hover: hover) {
         &:hover {
           background-color: var(--bg-light);
+
+          >a {
+            .count {
+              display: none;
+            }
+
+            .action {
+              display: flex;
+              height: rem(22px);
+              width: rem(22px);
+            }
+          }
+        }
+      }
+
+      &.popover-open {
+        >a {
+          .count {
+            display: none;
+          }
+
+          .action {
+            display: flex;
+            height: rem(22px);
+            width: rem(22px);
+          }
         }
       }
 
@@ -258,6 +284,28 @@
         @media (hover: hover) {
           &:hover {
             background-color: var(--bg-light);
+
+            .count {
+              display: none;
+            }
+
+            .action {
+              display: flex;
+              height: rem(22px);
+              width: rem(22px);
+            }
+          }
+        }
+
+        &.popover-open {
+          .count {
+            display: none;
+          }
+
+          .action {
+            display: flex;
+            height: rem(22px);
+            width: rem(22px);
           }
         }
 

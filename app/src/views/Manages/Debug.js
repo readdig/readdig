@@ -99,7 +99,11 @@ const Debug = () => {
 					</div>
 				</form>
 
-				{loading && <Loader />}
+				{loading && (
+					<div className="debug-loader">
+						<Loader />
+					</div>
+				)}
 
 				{result && (
 					<div className="debug-result">

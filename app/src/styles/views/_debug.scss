@@ -60,9 +60,15 @@
 		line-height: 1.5;
 		max-height: 500px;
 		overflow-y: auto;
+		white-space: pre-wrap;
+		word-wrap: break-word;
 	}
 }
 
 .debug-content {
 	min-height: 200px;
+}
+
+.debug-loader {
+	margin-top: 24px;
 }

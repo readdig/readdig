@@ -18,7 +18,7 @@ import { sort } from 'fast-sort';
 import { config } from '../config';
 import { db } from '../db';
 import { lower } from '../db/lower';
-import { feeds, articles, likes } from '../db/schema';
+import { feeds, articles, likes, follows } from '../db/schema';
 import { isURL, isUUID } from '../utils/validation';
 import { normalizeUrl } from '../utils/urls';
 import { isBlockedFeedURL } from '../utils/blocklist';
@@ -72,40 +72,47 @@ exports.list = async (req, res) => {
 		}
 	}
 
+	const paginatedFeeds = db.$with('paginated_feeds').as(
+		db
+			.select()
+			.from(feeds)
+			.where(whereConditions.length > 0 ? or(...whereConditions) : undefined)
+			.orderBy(orderBy)
+			.limit(limit)
+			.offset(offset)
+	);
+
 	const data = await db
+		.with(paginatedFeeds)
 		.select({
-			id: feeds.id,
-			duplicateOfId: feeds.duplicateOfId,
-			title: feeds.title,
-			url: feeds.url,
-			feedUrl: feeds.feedUrl,
-			feedUrls: feeds.feedUrls,
-			feedType: feeds.feedType,
-			canonicalUrl: feeds.canonicalUrl,
-			type: feeds.type,
-			description: feeds.description,
-			images: feeds.images,
-			featured: feeds.featured,
-			fullText: feeds.fullText,
-			datePublished: feeds.datePublished,
-			dateModified: feeds.dateModified,
-			likes: feeds.likes,
-			valid: feeds.valid,
-			language: feeds.language,
-			fingerprint: feeds.fingerprint,
-			lastScraped: feeds.lastScraped,
-			scrapeInterval: feeds.scrapeInterval,
-			consecutiveScrapeFailures: feeds.consecutiveScrapeFailures,
-			createdAt: feeds.createdAt,
-			updatedAt: feeds.updatedAt,
-			postCount: sql`COALESCE((SELECT COUNT(*) FROM articles WHERE feed_id = feeds.id), 0)`,
-			followerCount: sql`COALESCE((SELECT COUNT(*) FROM follows WHERE feed_id = feeds.id), 0)`,
+			id: paginatedFeeds.id,
+			duplicateOfId: paginatedFeeds.duplicateOfId,
+			title: paginatedFeeds.title,
+			url: paginatedFeeds.url,
+			feedUrl: paginatedFeeds.feedUrl,
+			feedUrls: paginatedFeeds.feedUrls,
+			feedType: paginatedFeeds.feedType,
+			canonicalUrl: paginatedFeeds.canonicalUrl,
+			type: paginatedFeeds.type,
+			description: paginatedFeeds.description,
+			images: paginatedFeeds.images,
+			featured: paginatedFeeds.featured,
+			fullText: paginatedFeeds.fullText,
+			datePublished: paginatedFeeds.datePublished,
+			dateModified: paginatedFeeds.dateModified,
+			likes: paginatedFeeds.likes,
+			valid: paginatedFeeds.valid,
+			language: paginatedFeeds.language,
+			fingerprint: paginatedFeeds.fingerprint,
+			lastScraped: paginatedFeeds.lastScraped,
+			scrapeInterval: paginatedFeeds.scrapeInterval,
+			consecutiveScrapeFailures: paginatedFeeds.consecutiveScrapeFailures,
+			createdAt: paginatedFeeds.createdAt,
+			updatedAt: paginatedFeeds.updatedAt,
+			postCount: sql`COALESCE((SELECT COUNT(*) FROM articles WHERE feed_id = paginated_feeds.id), 0)::int`,
+			followerCount: sql`COALESCE((SELECT COUNT(*) FROM follows WHERE feed_id = paginated_feeds.id), 0)::int`,
 		})
-		.from(feeds)
-		.where(whereConditions.length > 0 ? or(...whereConditions) : undefined)
-		.orderBy(orderBy)
-		.limit(limit)
-		.offset(offset);
+		.from(paginatedFeeds);
 
 	res.json(data);
 };

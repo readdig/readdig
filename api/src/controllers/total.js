@@ -62,76 +62,63 @@ exports.stats = async (req, res) => {
 	}
 
 	try {
-		// Feeds statistics
-		const [feedsTotal, feedsValid, feedsInvalid, feedsFailure, feedsDuplicate] =
-			await Promise.all([
-				db.select({ count: count() }).from(feeds),
-				db.select({ count: count() }).from(feeds).where(eq(feeds.valid, true)),
-				db.select({ count: count() }).from(feeds).where(eq(feeds.valid, false)),
-				db
-					.select({ count: count() })
-					.from(feeds)
-					.where(sql`${feeds.consecutiveScrapeFailures} > 3`),
-				db
-					.select({ count: count() })
-					.from(feeds)
-					.where(sql`${feeds.duplicateOfId} IS NOT NULL`),
-			]);
-
-		// Articles statistics
-		const [articlesTotal, articlesValid, articlesDuplicate] = await Promise.all([
-			db.select({ count: count() }).from(articles),
-			db
-				.select({ count: count() })
-				.from(articles)
-				.where(sql`${articles.duplicateOfId} IS NULL`),
-			db
-				.select({ count: count() })
-				.from(articles)
-				.where(sql`${articles.duplicateOfId} IS NOT NULL`),
-		]);
-
-		// Users statistics - define active as users active in last 30 days
 		const thirtyDaysAgo = new Date();
 		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
 		const oneDayAgo = new Date();
 		oneDayAgo.setDate(oneDayAgo.getDate() - 1);
 
-		const [usersTotal, usersOnline, usersActive, usersInactive] = await Promise.all([
-			db.select({ count: count() }).from(users),
+		const [feedsStats, articlesEstimate, usersStats] = await Promise.all([
+			// Feeds: small table, real count is fine
 			db
-				.select({ count: count() })
-				.from(users)
-				.where(sql`${users.activeAt} > ${oneDayAgo.toISOString()}`),
+				.select({
+					total: sql`COUNT(*)::int`,
+					valid: sql`COUNT(*) FILTER (WHERE ${feeds.valid} = true)::int`,
+					invalid: sql`COUNT(*) FILTER (WHERE ${feeds.valid} = false)::int`,
+					failure: sql`COUNT(*) FILTER (WHERE ${feeds.consecutiveScrapeFailures} > 3)::int`,
+					duplicate: sql`COUNT(*) FILTER (WHERE ${feeds.duplicateOfId} IS NOT NULL)::int`,
+				})
+				.from(feeds),
+
+			// Articles: pg_class estimates for total/valid, indexed COUNT for duplicates
+			db.execute(sql`
+				SELECT
+					(SELECT reltuples::bigint FROM pg_class WHERE relname = 'articles') AS total,
+					(SELECT COUNT(*)::int FROM articles WHERE duplicate_of_id IS NOT NULL) AS duplicate
+			`),
+
+			// Users: small table, real count is fine
 			db
-				.select({ count: count() })
-				.from(users)
-				.where(sql`${users.activeAt} > ${thirtyDaysAgo.toISOString()}`),
-			db
-				.select({ count: count() })
-				.from(users)
-				.where(sql`${users.activeAt} <= ${thirtyDaysAgo.toISOString()}`),
+				.select({
+					total: sql`COUNT(*)::int`,
+					online: sql`COUNT(*) FILTER (WHERE ${users.activeAt} > ${oneDayAgo.toISOString()})::int`,
+					active: sql`COUNT(*) FILTER (WHERE ${users.activeAt} > ${thirtyDaysAgo.toISOString()})::int`,
+					inactive: sql`COUNT(*) FILTER (WHERE ${users.activeAt} <= ${thirtyDaysAgo.toISOString()})::int`,
+				})
+				.from(users),
 		]);
+
+		const articlesRow = articlesEstimate.rows?.[0] || articlesEstimate[0] || {};
+		const articlesTotal = Number(articlesRow.total) || 0;
+		const articlesDuplicate = Number(articlesRow.duplicate) || 0;
 
 		res.json({
 			feeds: {
-				count: feedsTotal[0]?.count || 0,
-				validCount: feedsValid[0]?.count || 0,
-				invalidCount: feedsInvalid[0]?.count || 0,
-				failureCount: feedsFailure[0]?.count || 0,
-				duplicateOfCount: feedsDuplicate[0]?.count || 0,
+				count: feedsStats[0].total,
+				validCount: feedsStats[0].valid,
+				invalidCount: feedsStats[0].invalid,
+				failureCount: feedsStats[0].failure,
+				duplicateOfCount: feedsStats[0].duplicate,
 			},
 			articles: {
-				count: articlesTotal[0]?.count || 0,
-				validCount: articlesValid[0]?.count || 0,
-				duplicateOfCount: articlesDuplicate[0]?.count || 0,
+				count: articlesTotal,
+				duplicateOfCount: articlesDuplicate,
 			},
 			users: {
-				count: usersTotal[0]?.count || 0,
-				onlineCount: usersOnline[0]?.count || 0,
-				activeCount: usersActive[0]?.count || 0,
-				inactiveCount: usersInactive[0]?.count || 0,
+				count: usersStats[0].total,
+				onlineCount: usersStats[0].online,
+				activeCount: usersStats[0].active,
+				inactiveCount: usersStats[0].inactive,
 			},
 		});
 	} catch (err) {

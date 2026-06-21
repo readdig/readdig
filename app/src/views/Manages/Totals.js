@@ -43,7 +43,6 @@ const Totals = () => {
 					<div className="settings-card">
 						<h3>Articles totals</h3>
 						<div>Totals: {data.articles.count || 0}</div>
-						<div>Valid: {data.articles.validCount || 0}</div>
 						<div>Duplicate: {data.articles.duplicateOfCount || 0}</div>
 					</div>
 					<div className="settings-card">

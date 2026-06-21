@@ -90,7 +90,7 @@ exports.list = async (req, res) => {
 			settings: paginatedUsers.settings,
 			followCount: sql`COALESCE((SELECT COUNT(*) FROM ${follows} WHERE ${follows.userId} = paginated_users.id), 0)::int`,
 			starCount: sql`COALESCE((SELECT COUNT(*) FROM ${stars} WHERE ${stars.userId} = paginated_users.id), 0)::int`,
-			readCount: sql`COALESCE((SELECT COUNT(*) FROM ${reads} WHERE ${reads.userId} = paginated_users.id), 0)::int`,
+			readCount: sql`COALESCE((SELECT COUNT(*) FROM ${reads} WHERE ${reads.userId} = paginated_users.id AND ${reads.view} = true), 0)::int`,
 			playCount: sql`COALESCE((SELECT COUNT(*) FROM ${listens} WHERE ${listens.userId} = paginated_users.id), 0)::int`,
 			folderCount: sql`COALESCE((SELECT COUNT(*) FROM ${folders} WHERE ${folders.userId} = paginated_users.id), 0)::int`,
 			subscription: sql`

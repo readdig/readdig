@@ -127,6 +127,13 @@
       "when": 1781836393270,
       "tag": "0017_drop_articles_guid_idx",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1782097912535,
+      "tag": "0018_thick_nico_minoru",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+CREATE INDEX "articles_likes_idx" ON "articles" USING btree ("likes");

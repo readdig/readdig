@@ -97,110 +97,71 @@ exports.articles = async (req, res) => {
 		return res.json(cachedArticles);
 	}
 
-	const recentArticles = db.$with('recent_articles').as(
-		db
-			.select({
-				id: articles.id,
-				feedId: articles.feedId,
-				title: articles.title,
-				description: articles.description,
-				attachments: articles.attachments,
-				type: articles.type,
-				likes: articles.likes,
-				views: articles.views,
-				createdAt: articles.createdAt,
-			})
-			.from(articles)
-			.where(
-				and(
-					sql`${articles.duplicateOfId} IS NULL`,
-					sql`${articles.createdAt} > NOW() - INTERVAL '7 days'`,
-				),
-			)
-	);
+	const sevenDaysAgo = sql`NOW() - INTERVAL '7 days'`;
 
-	const recentStars = db.$with('recent_stars').as(
-		db
-			.select({
-				articleId: stars.articleId,
-				starsCount: sql`count(*)`.mapWith(Number).as('stars_count'),
-			})
-			.from(stars)
-			.innerJoin(recentArticles, eq(stars.articleId, recentArticles.id))
-			.groupBy(stars.articleId)
-	);
+	const feedFollowsSq = db
+		.select({ feedId: follows.feedId, count: sql`count(*)`.mapWith(Number).as('follows_count') })
+		.from(follows)
+		.groupBy(follows.feedId)
+		.as('f_follows');
 
-	const recentListens = db.$with('recent_listens').as(
-		db
-			.select({
-				articleId: listens.articleId,
-				listensCount: sql`count(*)`.mapWith(Number).as('listens_count'),
-			})
-			.from(listens)
-			.innerJoin(recentArticles, eq(listens.articleId, recentArticles.id))
-			.groupBy(listens.articleId)
-	);
+	const articleStarsSq = db
+		.select({ articleId: stars.articleId, count: sql`count(*)`.mapWith(Number).as('stars_count') })
+		.from(stars)
+		.groupBy(stars.articleId)
+		.as('a_stars');
 
-	const recentFeeds = db.$with('recent_feeds').as(
-		db
-			.select({ id: recentArticles.feedId })
-			.from(recentArticles)
-			.groupBy(recentArticles.feedId)
-	);
-
-	const feedFollows = db.$with('feed_follows').as(
-		db
-			.select({
-				feedId: follows.feedId,
-				followsCount: sql`count(*)`.mapWith(Number).as('follows_count'),
-			})
-			.from(follows)
-			.innerJoin(recentFeeds, eq(follows.feedId, recentFeeds.id))
-			.groupBy(follows.feedId)
-	);
+	const articleListensSq = db
+		.select({ articleId: listens.articleId, count: sql`count(*)`.mapWith(Number).as('listens_count') })
+		.from(listens)
+		.groupBy(listens.articleId)
+		.as('a_listens');
 
 	const data = await db
-		.with(recentArticles, recentStars, recentListens, recentFeeds, feedFollows)
 		.select({
-			id: recentArticles.id,
-			title: recentArticles.title,
-			description: recentArticles.description,
-			attachments: recentArticles.attachments,
-			type: recentArticles.type,
-			likes: recentArticles.likes,
-			views: recentArticles.views,
-			createdAt: recentArticles.createdAt,
+			id: articles.id,
+			title: articles.title,
+			description: articles.description,
+			attachments: articles.attachments,
+			type: articles.type,
+			likes: articles.likes,
+			views: articles.views,
+			createdAt: articles.createdAt,
 			feed: {
 				id: feeds.id,
 				title: feeds.title,
 				type: feeds.type,
 			},
 		})
-		.from(recentArticles)
-		.innerJoin(feeds, eq(recentArticles.feedId, feeds.id))
-		.leftJoin(recentStars, eq(recentArticles.id, recentStars.articleId))
-		.leftJoin(recentListens, eq(recentArticles.id, recentListens.articleId))
-		.innerJoin(feedFollows, eq(recentArticles.feedId, feedFollows.feedId))
+		.from(articles)
+		.innerJoin(feeds, eq(articles.feedId, feeds.id))
+		.innerJoin(feedFollowsSq, eq(articles.feedId, feedFollowsSq.feedId))
+		.leftJoin(articleStarsSq, eq(articles.id, articleStarsSq.articleId))
+		.leftJoin(articleListensSq, eq(articles.id, articleListensSq.articleId))
 		.where(
-			or(
-				sql`COALESCE(${recentStars.starsCount}, 0) > 0`,
-				sql`COALESCE(${recentListens.listensCount}, 0) > 0`,
-				sql`${recentArticles.likes} > 0`,
-				sql`${recentArticles.views} > 0`,
+			and(
+				sql`${articles.duplicateOfId} IS NULL`,
+				sql`${articles.createdAt} > ${sevenDaysAgo}`,
+				or(
+					sql`COALESCE(${articleStarsSq.count}, 0) > 0`,
+					sql`COALESCE(${articleListensSq.count}, 0) > 0`,
+					sql`${articles.likes} > 0`,
+					sql`${articles.views} > 0`,
+				),
 			),
 		)
 		.orderBy(
 			desc(sql`
 				(
 					${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
-					(COALESCE(${recentStars.starsCount}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
-					(COALESCE(${recentListens.listensCount}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
-					(${feedFollows.followsCount} * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
-					(COALESCE(${recentArticles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
-					(COALESCE(${recentArticles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})
+					(COALESCE(${articleStarsSq.count}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
+					(COALESCE(${articleListensSq.count}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
+					(${feedFollowsSq.count} * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
+					(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
+					(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})
 				) /
 				POWER(
-					GREATEST((EXTRACT(EPOCH FROM (NOW() - ${recentArticles.createdAt})) / 3600), 0) + 2,
+					GREATEST((EXTRACT(EPOCH FROM (NOW() - ${articles.createdAt})) / 3600), 0) + 2,
 					${sql.raw(String(ARTICLE_WEIGHTS.GRAVITY))}
 				)
 			`),

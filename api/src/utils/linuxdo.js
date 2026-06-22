@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+import FeedParser from 'feedparser';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 
 import { db } from '../db';
@@ -105,6 +107,99 @@ const mapPost = (topicId, post) => {
 		createdAt: new Date(post.created_at || 0),
 	};
 };
+
+// ---------------------------------------------------------------------------
+// RSS source – quick, no auth / rate-limit hassle, returns latest ~25 replies
+// ---------------------------------------------------------------------------
+
+// Extract the post number from a Discourse topic RSS item. The `<link>` is
+// e.g. "https://linux.do/t/topic/1378052/42" — the trailing segment is the
+// post number. Falls back to the `<guid>` ("linux.do-post-1378052-42").
+const postNumberFromRSSItem = (item) => {
+	const link = item.link || item.origlink || '';
+	const linkMatch = link.match(/\/(\d+)\s*$/);
+	if (linkMatch) return Number(linkMatch[1]);
+	const guid = item.guid || '';
+	const guidMatch = guid.match(/-(\d+)$/);
+	return guidMatch ? Number(guidMatch[1]) : 0;
+};
+
+// Discourse's topic RSS appends a trailing "阅读完整话题" link to every item's
+// description. It's not part of the actual reply and doesn't exist in the JSON
+// `cooked` HTML, so strip it to keep the two sources consistent.
+const stripRSSReadMore = (html) =>
+	html.replace(/<p>\s*<a\b[^>]*>阅读完整话题<\/a>\s*<\/p>\s*$/i, '').trim();
+
+// Map a FeedParser RSS item into the shared reply row shape. RSS carries
+// `dc:creator` (username) and `description` (rendered HTML) but no avatar.
+const mapRSSItem = (topicId, item) => {
+	const postNumber = postNumberFromRSSItem(item);
+	const username = (item['dc:creator'] || item.author || '').trim();
+	const content = absolutizeLinuxDOLinks(stripRSSReadMore(item.description || ''));
+	return {
+		source: SOURCE,
+		topicId,
+		replyId: postNumber,
+		content,
+		contentRendered: content,
+		author: {
+			name: username,
+			url: username ? `https://linux.do/u/${username}` : '',
+			avatar: '', // RSS has no avatar; JSON upsert fills it later.
+		},
+		createdAt: item.pubDate ? new Date(item.pubDate) : new Date(0),
+	};
+};
+
+// Fetch and parse the topic's RSS feed. Returns reply rows for all items
+// except the opening post and blanks. On any failure returns an empty array
+// so the caller falls through to the JSON path.
+const fetchRSSReplies = async (topicId, topicUrl) => {
+	try {
+		const res = await requestURL(`${topicUrl}.rss`);
+		if (!res.ok) {
+			logger.info(`linux.do RSS returned ${res.status} for topic ${topicId}, skipping`);
+			return [];
+		}
+
+		const items = await new Promise((resolve, reject) => {
+			const results = [];
+			const feedparser = new FeedParser();
+			feedparser.on('error', reject);
+			feedparser.on('readable', function () {
+				let item;
+				while ((item = this.read())) {
+					delete item.meta;
+					results.push(item);
+				}
+			});
+			feedparser.on('end', () => resolve(results));
+
+			const responseStream = Readable.fromWeb(res.body);
+			responseStream.pipe(feedparser);
+		});
+
+		const rows = [];
+		const seen = new Set();
+		for (const item of items) {
+			const row = mapRSSItem(topicId, item);
+			if (row.replyId === OP_POST_NUMBER || row.replyId === 0) continue;
+			if (seen.has(row.replyId)) continue;
+			seen.add(row.replyId);
+			if (isBlankContent(row.content)) continue;
+			rows.push(row);
+		}
+		logger.info(`linux.do RSS fetched ${rows.length} replies for topic ${topicId}`);
+		return rows;
+	} catch (err) {
+		logger.warn(`linux.do RSS failed for topic ${topicId}: ${err.message}`);
+		return [];
+	}
+};
+
+// ---------------------------------------------------------------------------
+// JSON source – paginated, full data (avatars), fills in historical replies
+// ---------------------------------------------------------------------------
 
 // Fetch a single page of a topic's posts from Discourse's topic JSON. The slug
 // in `topicUrl` must match the topic (Discourse 403s otherwise), so the URL is
@@ -251,17 +346,25 @@ export const syncLinuxDOReplies = async (article) => {
 		const freshKey = `linuxdo:replies:fetched:${topicId}`;
 		const fresh = await cache.exists(freshKey);
 		if (!fresh) {
-			// Posts are append-only, so resume from the page holding the first
-			// not-yet-stored reply: post_number maxStored+1 lives on page
-			// floor(maxStored / PAGE_SIZE) + 1. Big/rate-limited topics fill in
-			// across refreshes this way without re-downloading earlier pages.
-			const maxPostNumber = await maxStoredPostNumber(topicId);
-			const startPage = Math.floor(maxPostNumber / PAGE_SIZE) + 1;
-			const { rows, rateLimited } = await fetchRepliesFrom(topicId, topicUrl, startPage);
-			await saveReplies(topicId, rows);
-			// The freshness gate is just the key's existence; Redis TTL handles
-			// expiry. The value is the fetch timestamp (epoch ms), for debugging only.
-			// A rate-limited (incomplete) sync re-arms quickly so paging resumes.
+			// --- Phase 1: RSS (primary, fast, no rate-limit hassle) ---
+			const rssRows = await fetchRSSReplies(topicId, topicUrl);
+			await saveReplies(topicId, rssRows);
+
+			// --- Phase 2: JSON (supplement, fills in avatars + history) ---
+			// JSON errors are caught independently so RSS data is preserved.
+			let rateLimited = false;
+			try {
+				const maxPostNumber = await maxStoredPostNumber(topicId);
+				const startPage = Math.floor(maxPostNumber / PAGE_SIZE) + 1;
+				const result = await fetchRepliesFrom(topicId, topicUrl, startPage);
+				await saveReplies(topicId, result.rows);
+				rateLimited = result.rateLimited;
+			} catch (jsonErr) {
+				logger.warn(
+					`linux.do JSON failed for topic ${topicId}: ${jsonErr.message}; RSS data preserved`,
+				);
+			}
+
 			const ttlMinutes = rateLimited
 				? RATE_LIMIT_RETRY_MINUTES
 				: config.linuxdo.ttl || 30;

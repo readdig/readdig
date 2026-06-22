@@ -142,7 +142,13 @@ const Feeds = () => {
 								</div>
 								<div className="right">
 									<div className="info">
-										<div className="title" title={feed.title}>
+										<div
+											className={classNames('title', {
+												danger: feed.valid === false,
+												warning: feed.valid === true && feed.consecutiveScrapeFailures > 0,
+											})}
+											title={feed.title}
+										>
 											{feed.title}
 										</div>
 										<div className="type">

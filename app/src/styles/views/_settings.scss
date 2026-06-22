@@ -254,6 +254,14 @@
 					white-space: nowrap;
 					max-width: 100%;
 
+					&.danger {
+						color: var(--danger);
+					}
+
+					&.warning {
+						color: #F39C12;
+					}
+
 					.username {
 						color: var(--text-light);
 					}

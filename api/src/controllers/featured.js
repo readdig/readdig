@@ -90,12 +90,16 @@ exports.list = async (req, res) => {
 
 exports.articles = async (req, res) => {
 	const limit = 100;
-	const articlesCacheKey = 'featured:articles';
+	const articlesCacheKey = 'featured:articles:7days';
 
 	const cachedArticles = await cache.get(articlesCacheKey);
 	if (cachedArticles) {
 		return res.json(cachedArticles);
 	}
+
+	const starsCountSq = sql`(SELECT count(*) FROM ${stars} WHERE ${stars.articleId} = ${articles.id})`;
+	const listensCountSq = sql`(SELECT count(*) FROM ${listens} WHERE ${listens.articleId} = ${articles.id})`;
+	const followsCountSq = sql`(SELECT count(*) FROM ${follows} WHERE ${follows.feedId} = ${feeds.id})`;
 
 	const data = await db
 		.select({
@@ -115,22 +119,14 @@ exports.articles = async (req, res) => {
 		})
 		.from(articles)
 		.innerJoin(feeds, eq(articles.feedId, feeds.id))
-		.leftJoin(stars, eq(stars.articleId, articles.id))
-		.leftJoin(listens, eq(listens.articleId, articles.id))
-		.leftJoin(follows, eq(follows.feedId, feeds.id))
 		.where(
 			and(
 				sql`${articles.duplicateOfId} IS NULL`,
-				sql`${articles.createdAt} > NOW() - INTERVAL '1 day'`,
-			),
-		)
-		.groupBy(articles.id, feeds.id)
-		.having(
-			and(
-				sql`COUNT(DISTINCT ${follows.id}) > 0`,
+				sql`${articles.createdAt} > NOW() - INTERVAL '7 days'`,
+				sql`${followsCountSq} > 0`,
 				or(
-					sql`COUNT(DISTINCT ${stars.id}) > 0`,
-					sql`COUNT(DISTINCT ${listens.id}) > 0`,
+					sql`${starsCountSq} > 0`,
+					sql`${listensCountSq} > 0`,
 					sql`${articles.likes} > 0`,
 					sql`${articles.views} > 0`,
 				),
@@ -140,9 +136,9 @@ exports.articles = async (req, res) => {
 			desc(sql`
 				(
 					${sql.raw(String(ARTICLE_WEIGHTS.BASE))} +
-					(COUNT(DISTINCT ${stars.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
-					(COUNT(DISTINCT ${listens.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
-					(COUNT(DISTINCT ${follows.id}) * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
+					(${starsCountSq} * ${sql.raw(String(ARTICLE_WEIGHTS.SAVED))}) +
+					(${listensCountSq} * ${sql.raw(String(ARTICLE_WEIGHTS.PLAYED))}) +
+					(${followsCountSq} * ${sql.raw(String(ARTICLE_WEIGHTS.FOLLOWER))}) +
 					(COALESCE(${articles.likes}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.LIKE))}) +
 					(COALESCE(${articles.views}, 0) * ${sql.raw(String(ARTICLE_WEIGHTS.VIEW))})
 				) /

@@ -90,14 +90,14 @@ exports.list = async (req, res) => {
 
 exports.articles = async (req, res) => {
 	const limit = 100;
-	const articlesCacheKey = 'featured:articles:7days';
+	const articlesCacheKey = 'featured:articles';
 
 	const cachedArticles = await cache.get(articlesCacheKey);
 	if (cachedArticles) {
 		return res.json(cachedArticles);
 	}
 
-	const sevenDaysAgo = sql`NOW() - INTERVAL '7 days'`;
+	const sevenDaysAgo = sql`NOW() - INTERVAL '2 days'`;
 
 	const feedFollowsSq = db
 		.select({ feedId: follows.feedId, count: sql`count(*)`.mapWith(Number).as('follows_count') })

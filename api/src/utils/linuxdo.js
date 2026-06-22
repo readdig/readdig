@@ -96,6 +96,7 @@ const mapPost = (topicId, post) => {
 		// is all the (source, topic, reply) upsert key needs — and stable across
 		// the RSS/JSON sources so re-fetches update rather than duplicate.
 		replyId: post.post_number,
+		parentReplyId: post.reply_to_post_number || null,
 		content,
 		contentRendered: content,
 		author: {
@@ -140,6 +141,7 @@ const mapRSSItem = (topicId, item) => {
 		source: SOURCE,
 		topicId,
 		replyId: postNumber,
+		parentReplyId: null, // RSS doesn't provide this; JSON fills it in later
 		content,
 		contentRendered: content,
 		author: {
@@ -300,7 +302,11 @@ const saveReplies = async (topicId, rows) => {
 	if (rows.length === 0) return;
 
 	const existing = await db
-		.select({ replyId: replies.replyId, content: replies.content })
+		.select({
+			replyId: replies.replyId,
+			content: replies.content,
+			parentReplyId: replies.parentReplyId,
+		})
 		.from(replies)
 		.where(
 			and(
@@ -312,12 +318,15 @@ const saveReplies = async (topicId, rows) => {
 				),
 			),
 		);
-	const storedContent = new Map(existing.map((row) => [row.replyId, row.content]));
+	const storedRows = new Map(existing.map((row) => [row.replyId, row]));
 
-	// New row → not in the map (get returns undefined ≠ content); edited row →
-	// stored content differs; unchanged row → equal, skipped.
-	const changed = rows.filter((row) => storedContent.get(row.replyId) !== row.content);
-	await upsertReplies(changed);
+	// New row → not in the map (get returns undefined); edited row →
+	// stored content differs; updated thread → parentReplyId differs.
+	const changed = rows.filter((row) => {
+		const old = storedRows.get(row.replyId);
+		return !old || old.content !== row.content || old.parentReplyId !== row.parentReplyId;
+	});
+	await upsertReplies(changed, { threaded: true });
 };
 
 /**

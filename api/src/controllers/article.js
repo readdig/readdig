@@ -12,9 +12,7 @@ import {
 	getArticleById,
 	getParsedArticle,
 } from '../utils/articles';
-import { isV2EXEnabled, isV2EXArticle, syncV2EXReplies } from '../utils/v2ex';
-import { isHNEnabled, isHNArticle, syncHNComments } from '../utils/hackernews';
-import { isLinuxDOEnabled, isLinuxDOArticle, syncLinuxDOReplies } from '../utils/linuxdo';
+
 
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
@@ -137,28 +135,7 @@ exports.get = async (req, res) => {
 		}
 	}
 
-	// Auto-fetch external replies for supported sources. v2ex and linux.do are
-	// keyed off the article's own URL, Hacker News off its discussion (comments)
-	// URL; in the rare case more than one matches, the first checked wins.
-	if (isV2EXEnabled() && isV2EXArticle(article)) {
-		try {
-			article.replies = await syncV2EXReplies(article);
-		} catch (err) {
-			article.replies = [];
-		}
-	} else if (isHNEnabled() && isHNArticle(article)) {
-		try {
-			article.replies = await syncHNComments(article);
-		} catch (err) {
-			article.replies = [];
-		}
-	} else if (isLinuxDOEnabled() && isLinuxDOArticle(article)) {
-		try {
-			article.replies = await syncLinuxDOReplies(article);
-		} catch (err) {
-			article.replies = [];
-		}
-	}
+
 
 	const existsRead = await db.query.reads.findFirst({
 		where: and(
@@ -273,3 +250,5 @@ exports.remove = async (req, res) => {
 
 	res.sendStatus(204);
 };
+
+

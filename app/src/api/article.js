@@ -17,6 +17,7 @@ export const getArticleById = async (dispatch, articleId, params, cancelToken) =
 		null,
 		cancelToken,
 	);
+	
 	dispatch({
 		article: res.data,
 		type: 'UPDATE_ARTICLE_CONTENT',

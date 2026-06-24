@@ -351,15 +351,16 @@ const ACTION_HANDLERS = {
 		return {
 			...previousState,
 			article: undefined,
+			replies: {},
 		};
 	},
 	UPDATE_ARTICLE_CONTENT: (previousState, action) => {
-		const article = action.article;
+		let article = { ...action.article };
 		const articles = { ...previousState.articles };
 		const totals = { ...previousState.totals };
 		const follows = { ...previousState.follows };
 
-		if (articles[article.id] && articles[article.id].unread) {
+		if (article && articles[article.id] && articles[article.id].unread) {
 			articles[article.id].unread = false;
 			totals.recentRead = totals.recentRead + 1;
 
@@ -380,6 +381,18 @@ const ACTION_HANDLERS = {
 			follows,
 		};
 	},
+
+	UPDATE_ARTICLE_REPLIES: (previousState, action) => {
+		return {
+			...previousState,
+			replies: {
+				...previousState.replies,
+				[action.articleId]: action.replies || [],
+			},
+		};
+	},
+
+
 	STAR_ARTICLE: (previousState, action) => {
 		let article = { ...previousState.article };
 		if (article.id === action.articleId) {

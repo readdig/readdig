@@ -1,12 +1,36 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import Time from '../Time';
 import { sanitizeHTML } from '../../utils/sanitize';
+import { getRepliesByArticleId } from '../../api/reply';
 
 const ArticleReplies = ({ article = {} }) => {
 	const { t } = useTranslation();
-	const replies = Array.isArray(article.replies) ? article.replies : [];
+	const dispatch = useDispatch();
+
+	const source = useRef(null);
+
+	useEffect(() => {
+		if (source && source.current) {
+			source.current.cancel();
+		}
+		if (article.id) {
+			source.current = axios.CancelToken.source();
+			getRepliesByArticleId(dispatch, article.id, source.current.token);
+		}
+
+		return () => {
+			if (source && source.current) {
+				source.current.cancel();
+			}
+		};
+	}, [dispatch, article.id]);
+
+	const repliesState = useSelector((state) => state.replies) || {};
+	const replies = Array.isArray(repliesState[article.id]) ? repliesState[article.id] : [];
 
 	if (replies.length === 0) {
 		return null;

@@ -12,7 +12,7 @@ import {
 	getArticleById,
 	getParsedArticle,
 } from '../utils/articles';
-
+import { isV2EXEnabled, isV2EXArticle, syncV2EXSupplements } from '../utils/v2ex';
 
 exports.list = async (req, res) => {
 	const userId = req.user.sub;
@@ -160,6 +160,17 @@ exports.get = async (req, res) => {
 	}
 
 	article.unread = false;
+
+	if (isV2EXEnabled() && isV2EXArticle(article)) {
+		try {
+			const supplements = await syncV2EXSupplements(article);
+			if (supplements && supplements.length > 0) {
+				article.supplements = supplements;
+			}
+		} catch (err) {
+			// Fail silently; supplements are non-critical and shouldn't fail the article fetch
+		}
+	}
 
 	res.json(article);
 };

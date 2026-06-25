@@ -51,6 +51,49 @@ const mapReply = (topicId, item) => ({
 	createdAt: new Date((item.created || 0) * 1000),
 });
 
+// Fetch the topic to get any supplements (主题附言)
+const fetchTopicSupplements = async (topicId) => {
+	const url = `${config.v2ex.baseUrl}/api/v2/topics/${topicId}`;
+	const res = await requestURL(url, {
+		headers: { Authorization: `Bearer ${config.v2ex.token}` },
+	});
+
+	if (res.status === 401 || res.status === 403) {
+		throw new Error(`v2ex auth failed (status ${res.status})`);
+	}
+	if (!res.ok) {
+		throw new Error(`v2ex bad status ${res.status}`);
+	}
+
+	const body = await res.json();
+	if (!body || body.success === false) {
+		throw new Error(`v2ex api error: ${(body && body.message) || 'unknown'}`);
+	}
+
+	const topic = body.result || {};
+	return {
+		supplements: Array.isArray(topic.supplements) ? topic.supplements : [],
+		member: topic.member || {},
+	};
+};
+
+// Map a supplement into a reply row. Using a distinct source namespaces them
+// completely, allowing their native ID to be used without conflict, and keeps
+// them naturally isolated from normal reply counts (pagination).
+const mapSupplement = (topicId, supplement, member) => ({
+	source: `${SOURCE}-supplement`,
+	topicId,
+	replyId: supplement.id,
+	content: supplement.content || '',
+	contentRendered: absolutizeV2EXLinks(supplement.content_rendered || supplement.content || ''),
+	author: {
+		name: member.username || '',
+		url: member.username ? `https://v2ex.com/member/${member.username}` : '',
+		avatar: member.avatar_mini || member.avatar_normal || member.avatar_large || '',
+	},
+	createdAt: new Date((supplement.created || 0) * 1000),
+});
+
 // Fetch a single page of replies from the v2ex API v2. Uses the shared
 // requestURL helper (HTTP/2 agent, User-Agent, timeout and proxy fallback); the
 // v2ex API token is passed as a per-request Authorization header.
@@ -166,6 +209,7 @@ export const syncV2EXReplies = async (article) => {
 			const startPage = Math.floor(storedCount / PAGE_SIZE) + 1;
 			const items = await fetchRepliesFrom(topicId, startPage);
 			await saveReplies(topicId, items);
+
 			// The freshness gate is just the key's existence; Redis TTL handles
 			// expiry. The value is the fetch timestamp (epoch ms), for debugging only.
 			await cache.set(freshKey, Date.now(), (config.v2ex.ttl || 30) * 60);
@@ -175,4 +219,34 @@ export const syncV2EXReplies = async (article) => {
 	}
 
 	return loadStoredReplies(SOURCE, topicId);
+};
+
+/**
+ * Return the supplements (附言) for an article's v2ex topic.
+ * Supplements are fetched from the topic API and stored using a dedicated
+ * source namespace (`v2ex-supplement`) in the replies table to keep them
+ * isolated from paginated comment counts.
+ */
+export const syncV2EXSupplements = async (article) => {
+	if (!isV2EXEnabled()) return [];
+
+	const topicId = getTopicId(article.url);
+	if (!topicId) return [];
+
+	try {
+		const freshKey = `v2ex:supplements:fetched:${topicId}`;
+		const fresh = await cache.exists(freshKey);
+		if (!fresh) {
+			const { supplements, member } = await fetchTopicSupplements(topicId);
+			if (supplements.length > 0) {
+				const supplementRows = supplements.map((s) => mapSupplement(topicId, s, member));
+				await upsertReplies(supplementRows);
+			}
+			await cache.set(freshKey, Date.now(), (config.v2ex.ttl || 30) * 60);
+		}
+	} catch (err) {
+		logger.warn(`Failed to refresh v2ex supplements for topic ${topicId}: ${err.message}`);
+	}
+
+	return loadStoredReplies(`${SOURCE}-supplement`, topicId);
 };

@@ -8,6 +8,7 @@ import Lightbox from '../Lightbox';
 import HtmlRender from '../HtmlRender';
 import PlayOrPause from './PlayOrPause';
 import ArticleReplies from './ArticleReplies';
+import { sanitizeHTML } from '../../utils/sanitize';
 
 const ArticleContent = ({ article = {} }) => {
 	const { t } = useTranslation();
@@ -123,6 +124,30 @@ const ArticleContent = ({ article = {} }) => {
 					</div>
 				)}
 			<HtmlRender article={article} openModal={openModal} />
+			{article.supplements && article.supplements.length > 0 && (
+				<div className="article-supplements">
+					{article.supplements.map((supplement, index) => (
+						<div className="supplement-item" key={supplement.id || supplement.replyId}>
+							<div className="supplement-header">
+								<span className="floor">{t('Supplement {{floor}}', { floor: index + 1 })}</span>
+								<span className="dot"> · </span>
+								<Time className="time" value={supplement.createdAt} />
+							</div>
+							<div
+								className="supplement-content"
+								dangerouslySetInnerHTML={{
+									__html: sanitizeHTML(
+										(supplement.contentRendered || supplement.content || '')
+											.trim()
+											.replace(/(<br\s*\/?>)+$/i, '')
+											.trim()
+									),
+								}}
+							/>
+						</div>
+					))}
+				</div>
+			)}
 			<ArticleReplies article={article} />
 			<Lightbox isOpen={modalIsOpen} attribs={imageAttribs} closeModal={closeModal} />
 		</div>

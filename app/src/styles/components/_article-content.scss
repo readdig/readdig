@@ -223,6 +223,50 @@
     }
   }
 
+  .article-supplements {
+    border-top: 1px dashed var(--divider-light);
+
+    .supplement-item {
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--bg-light);
+      border-radius: $border-radius-sm;
+      border-left: 4px solid var(--divider-medium);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .supplement-header {
+        font-size: 0.8125rem;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+
+        .floor {
+          font-weight: 500;
+          color: var(--text-medium);
+        }
+
+        .dot {
+          margin: 0 0.3rem;
+        }
+      }
+
+      .supplement-content {
+        font-size: 0.9375rem;
+        color: var(--text-dark);
+
+        p {
+          margin: 0 0 0.5rem;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+
   figure {
     text-align: center;
     outline: none;

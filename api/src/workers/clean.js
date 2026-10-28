@@ -68,7 +68,7 @@ async function cleanInvalidFeeds() {
 }
 
 /**
- * Clean old articles (1+ years) that have no reads, stars, or listens
+ * Clean old articles (6+ months) that have no reads, stars, or listens
  * Process in batches to avoid memory issues
  */
 async function cleanOldArticles() {
@@ -82,7 +82,7 @@ async function cleanOldArticles() {
 				WITH old_unused_articles AS (
 					SELECT a.id
 					FROM articles a
-					WHERE a.created_at < NOW() - INTERVAL '1 year'
+					WHERE a.created_at < NOW() - INTERVAL '6 months'
 						AND NOT EXISTS (SELECT 1 FROM reads r WHERE r.article_id = a.id)
 						AND NOT EXISTS (SELECT 1 FROM stars s WHERE s.article_id = a.id)
 						AND NOT EXISTS (SELECT 1 FROM listens l WHERE l.article_id = a.id)

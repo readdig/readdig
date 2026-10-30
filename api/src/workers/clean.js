@@ -1,3 +1,4 @@
+
 import { client } from '../db';
 import { logger } from '../utils/logger';
 
@@ -5,18 +6,19 @@ const conductorInterval = 60 * 60; // seconds
 const BATCH_SIZE = 1000;
 const MAX_BATCHES_PER_RUN = 20;
 
-// Article retention period in months (default: 3)
-const ARTICLE_RETENTION_MONTHS = Number(process.argv[2] ?? 3);
+// Retention period in months (default: 6)
+const RETENTION_MONTHS = Number(process.argv[2] ?? 6);
 
 if (
-	!Number.isSafeInteger(ARTICLE_RETENTION_MONTHS) ||
-	ARTICLE_RETENTION_MONTHS < 1
+	!Number.isSafeInteger(RETENTION_MONTHS) ||
+	RETENTION_MONTHS < 1
 ) {
-	throw new Error('Article retention months must be a positive integer');
+	throw new Error('Retention months must be a positive integer');
 }
 
 let timeout = null;
 let isShuttingDown = false;
+let currentRun = null;
 
 if (require.main === module) {
 	process.on('SIGINT', shutdown);
@@ -27,9 +29,7 @@ if (require.main === module) {
 	logger.info(
 		`Starting the clean... will conduct every ${conductorInterval} seconds`,
 	);
-	logger.info(
-		`Article retention period: ${ARTICLE_RETENTION_MONTHS} months`,
-	);
+	logger.info(`Retention period: ${RETENTION_MONTHS} months`);
 
 	void forever();
 }
@@ -39,12 +39,16 @@ if (require.main === module) {
  * Start the next iteration after the current one completes.
  */
 async function forever() {
+	currentRun = conduct();
+
 	try {
-		await conduct();
+		await currentRun;
 		logger.info('Clean worker iteration completed...');
 	} catch (err) {
 		logger.error(`Clean worker broke down ${err.stack || err.message}`);
 	} finally {
+		currentRun = null;
+
 		if (!isShuttingDown) {
 			timeout = setTimeout(() => {
 				void forever();
@@ -63,8 +67,10 @@ async function conduct() {
 }
 
 /**
- * Clean invalid feeds that are older than 6 months.
- * Articles and associated data are cascade deleted due to foreign key constraints.
+ * Clean invalid feeds based on the configured retention period.
+ *
+ * Articles and associated data are cascade deleted
+ * due to foreign key constraints.
  */
 async function cleanInvalidFeeds() {
 	try {
@@ -72,7 +78,8 @@ async function cleanInvalidFeeds() {
 			WITH invalid_feeds AS (
 				SELECT id
 				FROM feeds
-				WHERE created_at < NOW() - INTERVAL '6 months'
+				WHERE created_at < NOW() -
+					(${RETENTION_MONTHS} * INTERVAL '1 month')
 					AND (
 						valid = false
 						OR (
@@ -97,6 +104,7 @@ async function cleanInvalidFeeds() {
 			logger.info(
 				`Clean worker deleted ${result.length} invalid feeds`,
 			);
+
 			logger.info(
 				'Associated articles, follows, reads, stars, and listens were cascade deleted',
 			);
@@ -112,11 +120,13 @@ async function cleanInvalidFeeds() {
  * Clean old articles based on the configured retention period.
  *
  * Eligible articles:
- * - Older than ARTICLE_RETENTION_MONTHS.
+ * - Older than RETENTION_MONTHS.
  * - Have no reads records with view = true or NULL.
  * - Have no stars, listens, or likes records.
  *
  * reads records with view = false are deleted together with the articles.
+ *
+ * Process in batches to reduce disk pressure.
  */
 async function cleanOldArticles() {
 	try {
@@ -130,7 +140,7 @@ async function cleanOldArticles() {
 					SELECT a.id
 					FROM articles a
 					WHERE a.created_at < NOW() -
-						(${ARTICLE_RETENTION_MONTHS} * INTERVAL '1 month')
+						(${RETENTION_MONTHS} * INTERVAL '1 month')
 						AND NOT EXISTS (
 							SELECT 1
 							FROM reads r
@@ -224,7 +234,10 @@ async function cleanOldArticles() {
 	}
 }
 
-function shutdown(signal) {
+/**
+ * Gracefully shut down the worker.
+ */
+async function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
 
 	isShuttingDown = true;
@@ -234,9 +247,18 @@ function shutdown(signal) {
 		timeout = null;
 	}
 
+	if (currentRun) {
+		logger.info('Waiting for current cleanup iteration to finish...');
+
+		await currentRun;
+	}
+
 	process.exit(0);
 }
 
+/**
+ * Handle unhandled errors.
+ */
 function failure(reason, err) {
 	logger.error(
 		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down Clean worker.`,

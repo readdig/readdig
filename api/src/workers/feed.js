@@ -13,16 +13,23 @@ import {
 	addQueue,
 	processQueue,
 	shutdownQueue,
-	getQueueStatus,
+	hasQueueStatus,
 	addQueueStatus,
 	removeQueueStatus,
 } from '../utils/queue';
 
+let isShuttingDown = false;
+
 if (require.main === module) {
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+	process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
+	process.on('uncaughtException', failure.bind(null, 'exception'));
+
 	EventEmitter.defaultMaxListeners = 128;
 
 	logger.info('Starting the feed worker');
-	processQueue('feed', 35, feedProcessor);
+	processQueue('feed', 15, feedProcessor);
 }
 
 export async function feedProcessor(job) {
@@ -189,9 +196,7 @@ async function handleFeed(job) {
 	);
 
 	if (updatedCount > 0) {
-		const feeds = await getQueueStatus('og');
-		const ids = feeds.map((v) => v);
-		if (!ids.includes(feedId)) {
+		if (!(await hasQueueStatus('og', feedId))) {
 			await addQueueStatus('og', feedId);
 			await addQueue('og', { feed: feedId });
 			logger.info(`OG queue add. feed with id ${feedId}`);
@@ -199,9 +204,7 @@ async function handleFeed(job) {
 
 		// Add to fulltext queue if feed has fullText enabled
 		if (feed.fullText) {
-			const fulltextFeeds = await getQueueStatus('fulltext');
-			const fulltextIds = fulltextFeeds.map((v) => v);
-			if (!fulltextIds.includes(feedId)) {
+			if (!(await hasQueueStatus('fulltext', feedId))) {
 				await addQueueStatus('fulltext', feedId);
 				await addQueue('fulltext', { feed: feedId });
 				logger.info(`Fulltext queue add. feed with id ${feedId}`);
@@ -220,26 +223,44 @@ async function markDone(feedId) {
 
 async function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
+
+	if (isShuttingDown) {
+		logger.info('Waiting for active feed jobs to finish...');
+		return;
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('feed');
 	} catch (err) {
-		logger.error(`Failure during feed worker shutdown: ${err.stack || err.message}`);
+		logger.error(
+			`Failure during feed worker shutdown: ${err.stack || err.message}`,
+		);
 		process.exit(1);
 	}
+
 	process.exit(0);
 }
 
-async function failure(source, err) {
-	logger.error(`Unhandled ${source}: ${err.stack}. Shutting down feed worker.`);
+async function failure(reason, err) {
+	logger.error(
+		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down feed worker.`,
+	);
+
+	if (isShuttingDown) {
+		process.exit(1);
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('feed');
 	} catch (err) {
-		logger.error(`Failure during feed worker shutdown: ${err.message}`);
+		logger.error(
+			`Failure during feed worker shutdown: ${err.stack || err.message}`,
+		);
 	}
+
 	process.exit(1);
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
-process.on('uncaughtException', failure.bind(null, 'exception'));

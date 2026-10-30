@@ -7,7 +7,14 @@ import { logger } from '../utils/logger';
 import { processQueue, shutdownQueue, removeQueueStatus } from '../utils/queue';
 import { ParseContent } from '../parsers/content';
 
+let isShuttingDown = false;
+
 if (require.main === module) {
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+	process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
+	process.on('uncaughtException', failure.bind(null, 'exception'));
+
 	EventEmitter.defaultMaxListeners = 128;
 
 	logger.info('Starting the fulltext worker');
@@ -141,26 +148,44 @@ async function markDone(feedId) {
 
 async function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
+
+	if (isShuttingDown) {
+		logger.info('Waiting for active fulltext jobs to finish...');
+		return;
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('fulltext');
 	} catch (err) {
-		logger.error(`Failure during fulltext worker shutdown: ${err.message}`);
+		logger.error(
+			`Failure during fulltext worker shutdown: ${err.stack || err.message}`,
+		);
 		process.exit(1);
 	}
+
 	process.exit(0);
 }
 
 async function failure(reason, err) {
-	logger.error(`Unhandled ${reason}: ${err.stack}. Shutting down fulltext worker.`);
+	logger.error(
+		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down fulltext worker.`,
+	);
+
+	if (isShuttingDown) {
+		process.exit(1);
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('fulltext');
 	} catch (err) {
-		logger.error(`Failure during fulltext worker shutdown: ${err.message}`);
+		logger.error(
+			`Failure during fulltext worker shutdown: ${err.stack || err.message}`,
+		);
 	}
+
 	process.exit(1);
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
-process.on('uncaughtException', failure.bind(null, 'exception'));

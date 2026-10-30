@@ -123,7 +123,7 @@ module.exports = {
 		{
 			name: 'clean',
 			script: 'babel-node',
-			args: './src/workers/clean.js',
+			args: './src/workers/clean.js 6',
 			watch: ['src'],
 			ignore_watch: [
 				'node_modules',

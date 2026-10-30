@@ -9,11 +9,18 @@ import { processQueue, shutdownQueue, removeQueueStatus } from '../utils/queue';
 import { ParseOG } from '../parsers/og';
 import { isBlockedFeedURL } from '../utils/blocklist';
 
+let isShuttingDown = false;
+
 if (require.main === module) {
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+	process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
+	process.on('uncaughtException', failure.bind(null, 'exception'));
+
 	EventEmitter.defaultMaxListeners = 128;
 
 	logger.info('Starting the OG worker');
-	processQueue('og', 35, ogProcessor);
+	processQueue('og', 10, ogProcessor);
 }
 
 export async function ogProcessor(job) {
@@ -105,26 +112,44 @@ async function markDone(feedId) {
 
 async function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
+
+	if (isShuttingDown) {
+		logger.info('Waiting for active OG jobs to finish...');
+		return;
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('og');
 	} catch (err) {
-		logger.error(`Failure during OG worker shutdown: ${err.stack || err.message}`);
+		logger.error(
+			`Failure during OG worker shutdown: ${err.stack || err.message}`,
+		);
 		process.exit(1);
 	}
+
 	process.exit(0);
 }
 
 async function failure(reason, err) {
-	logger.error(`Unhandled ${reason}: ${err.stack}. Shutting down OG worker.`);
+	logger.error(
+		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down OG worker.`,
+	);
+
+	if (isShuttingDown) {
+		process.exit(1);
+	}
+
+	isShuttingDown = true;
+
 	try {
 		await shutdownQueue('og');
 	} catch (err) {
-		logger.error(`Failure during OG worker shutdown: ${err.message}`);
+		logger.error(
+			`Failure during OG worker shutdown: ${err.stack || err.message}`,
+		);
 	}
+
 	process.exit(1);
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
-process.on('uncaughtException', failure.bind(null, 'exception'));

@@ -99,6 +99,19 @@ export async function getQueueStatus(queueName) {
 	return await redis.zrange(key, 0, -1);
 }
 
+export async function hasQueueStatus(queueName, value) {
+	const key = `queue-status:${queueName}`;
+	return (await redis.zscore(key, value)) !== null;
+}
+
+// Remove entries added more than maxAgeSeconds ago (scores are Redis time in seconds)
+export async function removeExpiredQueueStatus(queueName, maxAgeSeconds) {
+	const key = `queue-status:${queueName}`;
+	const time = await redis.time();
+	const now = parseInt(time[0]);
+	return await redis.zremrangebyscore(key, '-inf', now - maxAgeSeconds);
+}
+
 export async function removeQueueStatus(queueName, value) {
 	const key = `queue-status:${queueName}`;
 	return await redis.zrem(key, value);

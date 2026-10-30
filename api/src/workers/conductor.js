@@ -1,31 +1,58 @@
 import { db, client } from '../db';
 import { feeds } from '../db/schema';
 import { logger } from '../utils/logger';
-import { addBulkQueue, addQueueStatus, getQueueStatus } from '../utils/queue';
+import {
+	addBulkQueue,
+	addQueueStatus,
+	getQueueStatus,
+	removeExpiredQueueStatus,
+} from '../utils/queue';
 
 const conductorInterval = 120; // seconds
+const queueStatusMaxAge = 6 * 60 * 60; // seconds
 const normalScrapeInterval = 10; // minutes
 const invalidScrapeInterval = 720; // minutes
 const failureScrapeInterval = 10080; // minutes
 
 let timeout = null;
+let isRunning = false;
+let isShuttingDown = false;
 
 if (require.main === module) {
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+	process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
+	process.on('uncaughtException', failure.bind(null, 'exception'));
+
 	logger.info(
 		`Starting the conductor... will conduct every ${conductorInterval} seconds`,
 	);
-	forever();
+	void forever();
 }
 
-function forever() {
-	conduct()
-		.then(() => {
-			logger.info('Conductor iteration completed...');
-		})
-		.catch((err) => {
-			logger.error(`Conductor broke down ${err.stack || err.message}`);
-		});
-	timeout = setTimeout(forever, conductorInterval * 1000);
+/**
+ * Run conductor periodically.
+ * Start the next iteration after the current one completes.
+ */
+async function forever() {
+	isRunning = true;
+
+	try {
+		await conduct();
+		logger.info('Conductor iteration completed...');
+	} catch (err) {
+		logger.error(`Conductor broke down ${err.stack || err.message}`);
+	} finally {
+		isRunning = false;
+
+		if (isShuttingDown) {
+			process.exit(0);
+		}
+
+		timeout = setTimeout(() => {
+			void forever();
+		}, conductorInterval * 1000);
+	}
 }
 
 async function getPublications(limit) {
@@ -77,17 +104,42 @@ async function getPublications(limit) {
 	return feedsToScrape;
 }
 
+/**
+ * Remove stale queue status entries.
+ * Jobs that never reach markDone (e.g. dropped after stalling) would otherwise
+ * keep their feed out of scheduling until the next restart.
+ */
+async function removeExpiredQueueStatuses() {
+	for (const queueName of ['feed', 'og', 'fulltext']) {
+		const removed = await removeExpiredQueueStatus(
+			queueName,
+			queueStatusMaxAge,
+		);
+
+		if (removed > 0) {
+			logger.info(
+				`Conductor removed ${removed} expired ${queueName} queue status entries`,
+			);
+		}
+	}
+}
+
 async function conduct() {
+	await removeExpiredQueueStatuses();
+
 	const total = await db.$count(feeds);
-	// never schedule more than 1/10 per minute interval
+
+	// Never schedule more than 1/10 per minute interval
 	const maxToSchedule = Math.max(200, Math.floor(total / 10 / 4));
+
 	logger.info(
 		`Conductor will schedule at most ${maxToSchedule} of feed ` +
 			`to scrape per ${conductorInterval} seconds`,
 	);
 
-	// find the publications that we need to update
+	// Find the publications that we need to update
 	const publications = await getPublications(maxToSchedule);
+
 	logger.info(`Conductor found ${publications.length} of feed to scrape`);
 
 	if (publications.length > 0) {
@@ -95,37 +147,47 @@ async function conduct() {
 			'feed',
 			publications.map((p) => p.id),
 		);
+
 		await addBulkQueue(
 			'feed',
 			publications.map((p) => ({ data: { feed: p.id } })),
 		);
 	}
 
-	logger.info(`Processing complete! Will try again in ${conductorInterval} seconds...`);
+	logger.info(
+		`Processing complete! Will try again in ${conductorInterval} seconds...`,
+	);
 }
 
 function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
-	try {
+
+	isShuttingDown = true;
+
+	if (timeout) {
 		clearTimeout(timeout);
-	} catch (err) {
-		logger.error(`Failure during Conductor worker shutdown: ${err.stack || err.message}`);
-		process.exit(1);
+		timeout = null;
 	}
+
+	if (isRunning) {
+		logger.info('Waiting for current conductor iteration to finish...');
+		return;
+	}
+
 	process.exit(0);
 }
 
 function failure(reason, err) {
-	logger.error(`Unhandled ${reason}: ${err.stack}. Shutting down Conductor worker.`);
-	try {
+	logger.error(
+		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down Conductor worker.`,
+	);
+
+	isShuttingDown = true;
+
+	if (timeout) {
 		clearTimeout(timeout);
-	} catch (err) {
-		logger.error(`Failure during Conductor worker shutdown: ${err.message}`);
+		timeout = null;
 	}
+
 	process.exit(1);
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
-process.on('uncaughtException', failure.bind(null, 'exception'));

@@ -26,7 +26,7 @@ import { isFeedType, findFeed, createFeed, parseFeedFind } from '../utils/feed';
 import { mergeFeeds } from '../utils/merge';
 import { ParseFeedType, ParseArticleType } from '../parsers/types';
 import { DiscoverFeed } from '../parsers/discovery';
-import { addQueue, addQueueStatus } from '../utils/queue';
+import { addQueue, addQueueStatus, hasQueueStatus } from '../utils/queue';
 
 exports.list = async (req, res) => {
 	if (!req.User || !req.User.admin) {
@@ -193,7 +193,8 @@ exports.post = async (req, res) => {
 
 	const newFeed = await createFeed(normalizedUrl, feed.feedContent);
 	if (newFeed) {
-		if (await addQueueStatus('og', newFeed.id)) {
+		if (!(await hasQueueStatus('og', newFeed.id))) {
+			await addQueueStatus('og', newFeed.id);
 			await addQueue('og', { feed: newFeed.id });
 		}
 	}

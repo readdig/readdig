@@ -44,6 +44,7 @@ module.exports = {
 		{
 			name: 'clean',
 			script: './dist/workers/clean.js',
+			args: ['6'],
 			instances: 1,
 			env: {
 				NODE_ENV: 'production',

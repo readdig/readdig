@@ -2,39 +2,72 @@ import { client } from '../db';
 import { logger } from '../utils/logger';
 
 const conductorInterval = 60 * 60; // seconds
-const BATCH_SIZE = 10000; // Process articles in batches
+const BATCH_SIZE = 1000;
+const MAX_BATCHES_PER_RUN = 20;
 
-let timeout = null;
+// Article retention period in months (default: 3)
+const ARTICLE_RETENTION_MONTHS = Number(process.argv[2] ?? 3);
 
-if (require.main === module) {
-	logger.info(`Starting the clean... will conduct every ${conductorInterval} seconds`);
-	forever();
+if (
+	!Number.isSafeInteger(ARTICLE_RETENTION_MONTHS) ||
+	ARTICLE_RETENTION_MONTHS < 1
+) {
+	throw new Error('Article retention months must be a positive integer');
 }
 
-function forever() {
-	conduct()
-		.then(() => {
-			logger.info('Clean worker iteration completed...');
-		})
-		.catch((err) => {
-			logger.error(`Clean worker broke down ${err.stack || err.message}`);
-		});
-	timeout = setTimeout(forever, conductorInterval * 1000);
+let timeout = null;
+let isShuttingDown = false;
+
+if (require.main === module) {
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+	process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
+	process.on('uncaughtException', failure.bind(null, 'exception'));
+
+	logger.info(
+		`Starting the clean... will conduct every ${conductorInterval} seconds`,
+	);
+	logger.info(
+		`Article retention period: ${ARTICLE_RETENTION_MONTHS} months`,
+	);
+
+	void forever();
+}
+
+/**
+ * Run cleanup periodically.
+ * Start the next iteration after the current one completes.
+ */
+async function forever() {
+	try {
+		await conduct();
+		logger.info('Clean worker iteration completed...');
+	} catch (err) {
+		logger.error(`Clean worker broke down ${err.stack || err.message}`);
+	} finally {
+		if (!isShuttingDown) {
+			timeout = setTimeout(() => {
+				void forever();
+			}, conductorInterval * 1000);
+		}
+	}
 }
 
 async function conduct() {
 	await cleanInvalidFeeds();
 	await cleanOldArticles();
-	logger.info(`Processing complete! Will try again in ${conductorInterval} seconds...`);
+
+	logger.info(
+		`Processing complete! Will try again in ${conductorInterval} seconds...`,
+	);
 }
 
 /**
- * Clean invalid feeds that are older than 6 months
- * Articles will be cascade deleted due to foreign key constraint
+ * Clean invalid feeds that are older than 6 months.
+ * Articles and associated data are cascade deleted due to foreign key constraints.
  */
 async function cleanInvalidFeeds() {
 	try {
-		// Find invalid feeds older than 6 months
 		const result = await client`
 			WITH invalid_feeds AS (
 				SELECT id
@@ -46,7 +79,11 @@ async function cleanInvalidFeeds() {
 							featured = false
 							AND (
 								consecutive_scrape_failures > 1050
-								AND NOT EXISTS (SELECT 1 FROM follows f WHERE f.feed_id = feeds.id)
+								AND NOT EXISTS (
+									SELECT 1
+									FROM follows f
+									WHERE f.feed_id = feeds.id
+								)
 							)
 						)
 					)
@@ -57,91 +94,160 @@ async function cleanInvalidFeeds() {
 		`;
 
 		if (result.length > 0) {
-			logger.info(`Clean worker deleted ${result.length} invalid feeds`);
 			logger.info(
-				`Associated articles, follows, reads, stars, and listens were cascade deleted`,
+				`Clean worker deleted ${result.length} invalid feeds`,
+			);
+			logger.info(
+				'Associated articles, follows, reads, stars, and listens were cascade deleted',
 			);
 		}
 	} catch (err) {
-		logger.error(`Error cleaning invalid feeds: ${err.stack || err.message}`);
+		logger.error(
+			`Error cleaning invalid feeds: ${err.stack || err.message}`,
+		);
 	}
 }
 
 /**
- * Clean old articles (6+ months) that have no reads, stars, or listens
- * Process in batches to avoid memory issues
+ * Clean old articles based on the configured retention period.
+ *
+ * Eligible articles:
+ * - Older than ARTICLE_RETENTION_MONTHS.
+ * - Have no reads records with view = true or NULL.
+ * - Have no stars, listens, or likes records.
+ *
+ * reads records with view = false are deleted together with the articles.
  */
 async function cleanOldArticles() {
 	try {
 		let totalDeleted = 0;
-		let batchDeleted = 0;
 
-		do {
-			// Find and delete old unused articles in batches
-			const result = await client`
-				WITH old_unused_articles AS (
+		for (let batch = 0; batch < MAX_BATCHES_PER_RUN; batch++) {
+			const result = await client.begin(async (tx) => {
+				// Select eligible articles in batches.
+				await tx`
+					CREATE TEMP TABLE cleanup_batch ON COMMIT DROP AS
 					SELECT a.id
 					FROM articles a
-					WHERE a.created_at < NOW() - INTERVAL '6 months'
-						AND NOT EXISTS (SELECT 1 FROM reads r WHERE r.article_id = a.id)
-						AND NOT EXISTS (SELECT 1 FROM stars s WHERE s.article_id = a.id)
-						AND NOT EXISTS (SELECT 1 FROM listens l WHERE l.article_id = a.id)
-						AND NOT EXISTS (SELECT 1 FROM likes lk WHERE lk.article_id = a.id)
-					ORDER BY a.created_at
+					WHERE a.created_at < NOW() -
+						(${ARTICLE_RETENTION_MONTHS} * INTERVAL '1 month')
+						AND NOT EXISTS (
+							SELECT 1
+							FROM reads r
+							WHERE r.article_id = a.id
+								AND r.view IS DISTINCT FROM FALSE
+						)
+						AND NOT EXISTS (
+							SELECT 1
+							FROM stars s
+							WHERE s.article_id = a.id
+						)
+						AND NOT EXISTS (
+							SELECT 1
+							FROM listens l
+							WHERE l.article_id = a.id
+						)
+						AND NOT EXISTS (
+							SELECT 1
+							FROM likes lk
+							WHERE lk.article_id = a.id
+						)
+					ORDER BY a.created_at, a.id
 					LIMIT ${BATCH_SIZE}
-				),
-				deleted_contents AS (
-					DELETE FROM contents
-					WHERE article_id IN (SELECT id FROM old_unused_articles)
-					RETURNING article_id
-				)
-				DELETE FROM articles
-				WHERE id IN (SELECT id FROM old_unused_articles)
-				RETURNING id
-			`;
+				`;
 
-			batchDeleted = result.length;
+				const [batchResult] = await tx`
+					SELECT COUNT(*)::int AS count
+					FROM cleanup_batch
+				`;
+
+				if (batchResult.count === 0) {
+					return [];
+				}
+
+				// Delete associated contents first.
+				await tx`
+					DELETE FROM contents c
+					USING cleanup_batch b
+					WHERE c.article_id = b.id
+				`;
+
+				// Delete unread records (view = false).
+				await tx`
+					DELETE FROM reads r
+					USING cleanup_batch b
+					WHERE r.article_id = b.id
+						AND r.view = FALSE
+				`;
+
+				// Delete articles last.
+				return await tx`
+					DELETE FROM articles a
+					USING cleanup_batch b
+					WHERE a.id = b.id
+					RETURNING a.id
+				`;
+			});
+
+			const batchDeleted = result.length;
+
+			if (batchDeleted === 0) {
+				break;
+			}
+
 			totalDeleted += batchDeleted;
 
-			if (batchDeleted > 0) {
+			logger.info(
+				`Clean worker deleted batch of ${batchDeleted} old articles (total: ${totalDeleted})`,
+			);
+
+			if (batchDeleted < BATCH_SIZE) {
+				break;
+			}
+
+			if (batch === MAX_BATCHES_PER_RUN - 1) {
 				logger.info(
-					`Clean worker deleted batch of ${batchDeleted} old articles (total: ${totalDeleted})`,
+					'Clean worker reached the batch limit; remaining eligible articles will be processed in the next iteration',
 				);
 			}
-		} while (batchDeleted === BATCH_SIZE);
+		}
 
 		if (totalDeleted > 0) {
 			logger.info(
-				`Clean worker completed: deleted ${totalDeleted} old articles and their contents`,
+				`Clean worker completed: deleted ${totalDeleted} old articles, their contents, and unread records`,
 			);
 		}
 	} catch (err) {
-		logger.error(`Error cleaning old articles: ${err.stack || err.message}`);
+		logger.error(
+			`Error cleaning old articles: ${err.stack || err.message}`,
+		);
 	}
 }
 
 function shutdown(signal) {
 	logger.info(`Received ${signal}. Shutting down.`);
-	try {
+
+	isShuttingDown = true;
+
+	if (timeout) {
 		clearTimeout(timeout);
-	} catch (err) {
-		logger.error(`Failure during Clean worker shutdown: ${err.stack || err.message}`);
-		process.exit(1);
+		timeout = null;
 	}
+
 	process.exit(0);
 }
 
 function failure(reason, err) {
-	logger.error(`Unhandled ${reason}: ${err.stack}. Shutting down Clean worker.`);
-	try {
+	logger.error(
+		`Unhandled ${reason}: ${err?.stack || err?.message || err}. Shutting down Clean worker.`,
+	);
+
+	isShuttingDown = true;
+
+	if (timeout) {
 		clearTimeout(timeout);
-	} catch (err) {
-		logger.error(`Failure during Clean worker shutdown: ${err.stack || err.message}`);
+		timeout = null;
 	}
+
 	process.exit(1);
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('unhandledRejection', failure.bind(null, 'promise rejection'));
-process.on('uncaughtException', failure.bind(null, 'exception'));

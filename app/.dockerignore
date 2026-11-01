@@ -5,6 +5,7 @@ Dockerfile
 .dockerignore
 
 # Environment and config files
+.env
 .env.*
 .env.example
 

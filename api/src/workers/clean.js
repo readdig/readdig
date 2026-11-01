@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 const conductorInterval = 60 * 60; // seconds
 const BATCH_SIZE = 1000;
 const MAX_BATCHES_PER_RUN = 20;
+const LOCK_NAME = 'clean-worker';
 
 // Retention period in months (default: 6)
 const RETENTION_MONTHS = Number(process.argv[2] ?? 6);
@@ -58,12 +59,39 @@ async function forever() {
 }
 
 async function conduct() {
-	await cleanInvalidFeeds();
-	await cleanOldArticles();
+	// Use a PostgreSQL session-level advisory lock so that only one clean
+	// worker (across all servers sharing the same database) runs at a time.
+	// The lock is held on a dedicated reserved connection and is released
+	// automatically by PostgreSQL if the connection/process dies.
+	const reserved = await client.reserve();
 
-	logger.info(
-		`Processing complete! Will try again in ${conductorInterval} seconds...`,
-	);
+	try {
+		const [{ locked }] = await reserved`
+			SELECT pg_try_advisory_lock(hashtext(${LOCK_NAME})) AS locked
+		`;
+
+		if (!locked) {
+			logger.info(
+				'Another clean worker is running, skipping this iteration...',
+			);
+			return;
+		}
+
+		try {
+			await cleanInvalidFeeds();
+			await cleanOldArticles();
+		} finally {
+			await reserved`
+				SELECT pg_advisory_unlock(hashtext(${LOCK_NAME}))
+			`;
+		}
+
+		logger.info(
+			`Processing complete! Will try again in ${conductorInterval} seconds...`,
+		);
+	} finally {
+		reserved.release();
+	}
 }
 
 /**

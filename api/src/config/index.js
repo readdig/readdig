@@ -60,6 +60,9 @@ const _default = {
 		url: process.env.CLOUDFLARE_PROXY_URL || '',
 		secret: process.env.CLOUDFLARE_PROXY_SECRET || '',
 	},
+	flaresolverr: {
+		url: process.env.FLARESOLVERR_URL || '',
+	},
 	v2ex: {
 		token: process.env.V2EX_TOKEN || '',
 		baseUrl: process.env.V2EX_BASE_URL || '',

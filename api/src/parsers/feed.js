@@ -126,6 +126,7 @@ export function ReadFeedResponse(response) {
 		new Promise(async (resolve, reject) => {
 			if (!response.ok) {
 				reject(new Error(`${response.status} ${response.statusText}`));
+				return;
 			}
 
 			const contentType = response.headers.get('content-type');

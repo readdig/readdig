@@ -63,6 +63,8 @@ services:
       # Optional - Cloudflare proxy
       # CLOUDFLARE_PROXY_URL: ''
       # CLOUDFLARE_PROXY_SECRET: ''
+      # Optional - FlareSolverr bypass Cloudflare protection
+      # FLARESOLVERR_URL: 'http://flaresolverr:8191/v1'
       # Optional - Paddle payment
       # PADDLE_PUBLIC_KEY: ''
       # PADDLE_API_URL: ''
@@ -111,6 +113,16 @@ services:
       interval: 10s
       timeout: 30s
       retries: 300
+
+  # FlareSolverr (Optional - bypass Cloudflare challenge & WAF)
+  # flaresolverr:
+  #   image: ghcr.io/flaresolverr/flaresolverr:latest
+  #   restart: always
+  #   networks:
+  #     - readdig
+  #   environment:
+  #     - LOG_LEVEL=info
+  #     - CAPTCHA_SOLVER=none
 
 networks:
   readdig:
